@@ -1,0 +1,644 @@
+{
+  "users": [
+    {
+      "id": "demo_user_1",
+      "email": "demo1@gymovo.com",
+      "name": "דניאל כהן",
+      "nickname": "PowerKing",
+      "suggestedNicknames": [
+        "IronChamp",
+        "הנשר החזק",
+        "FitStar",
+        "הטייגר האלוף",
+        "SteelMaster"
+      ],
+      "age": 27,
+      "image_url": "https://randomuser.me/api/portraits/men/1.jpg",
+      "gender": "male",
+      "preferences": {
+        "fitness_level": "intermediate",
+        "goals": ["strength", "muscle_gain"],
+        "workout_days": ["ראשון", "שלישי", "חמישי"],
+        "preferred_duration": 60,
+        "injuries": ["כתף ימין"],
+        "equipment": ["משקולות", "מכונות", "מוטות"],
+        "achievements": [
+          {
+            "id": "achv_001",
+            "name": "10 אימונים ראשונים",
+            "date": "2024-03-10T18:00:00Z"
+          }
+        ]
+      },
+      "workout_history": [
+        {
+          "id": "workout_1_1",
+          "date": "2024-03-17T16:00:00Z",
+          "type": "strength",
+          "duration": 60,
+          "exercises": [
+            { "name": "לחיצת חזה", "sets": 4, "reps": 12, "weight": "60" },
+            { "name": "הרמת כתפיים", "sets": 3, "reps": 15, "weight": "20" }
+          ],
+          "rating": 4,
+          "feedback": "אימון טוב, הרגשתי חזק"
+        }
+      ],
+      "last_workout_date": "2024-03-15T14:30:00Z",
+      "workout_streak": 5,
+      "total_workouts": 45
+    },
+    {
+      "id": "demo_user_2",
+      "email": "demo2@gymovo.com",
+      "name": "מיכל לוי",
+      "nickname": "FitQueen",
+      "suggestedNicknames": [
+        "PowerStar",
+        "SteelChamp",
+        "הבולדוזר המנצח",
+        "FitQueen",
+        "הטייגר המהולל"
+      ],
+      "age": 23,
+      "image_url": "https://randomuser.me/api/portraits/women/2.jpg",
+      "gender": "female",
+      "preferences": {
+        "fitness_level": "beginner",
+        "goals": ["weight_loss", "toning"],
+        "workout_days": ["שני", "רביעי", "שישי"],
+        "preferred_duration": 45,
+        "injuries": [],
+        "equipment": ["משקולות קלות", "גומיות", "מזרן"],
+        "achievements": []
+      },
+      "workout_history": [
+        {
+          "id": "workout_2_1",
+          "date": "2024-03-13T17:00:00Z",
+          "type": "cardio",
+          "duration": 45,
+          "exercises": [
+            {
+              "name": "ריצה",
+              "duration": "30",
+              "distance": "5",
+              "intensity": "medium"
+            }
+          ],
+          "rating": 3,
+          "feedback": "היה קשה אבל עמדתי בזה"
+        }
+      ],
+      "last_workout_date": "2024-03-14T16:00:00Z",
+      "workout_streak": 3,
+      "total_workouts": 28
+    },
+    {
+      "id": "demo_user_3",
+      "email": "demo3@gymovo.com",
+      "name": "יונתן רז",
+      "nickname": "SteelBeast",
+      "suggestedNicknames": [
+        "PowerKing",
+        "האריה החזק",
+        "IronStar",
+        "FitChamp",
+        "הבולדוזר האלוף"
+      ],
+      "age": 32,
+      "image_url": "https://randomuser.me/api/portraits/men/3.jpg",
+      "gender": "male",
+      "preferences": {
+        "fitness_level": "advanced",
+        "goals": ["power", "endurance"],
+        "workout_days": ["ראשון", "רביעי", "שבת"],
+        "preferred_duration": 75,
+        "injuries": [],
+        "equipment": ["מכונות", "מוטות", "רצועות"],
+        "achievements": [
+          {
+            "id": "achv_002",
+            "name": "רצף של 20 אימונים",
+            "date": "2024-04-01T10:00:00Z"
+          }
+        ]
+      },
+      "workout_history": [],
+      "last_workout_date": "2024-03-12T13:00:00Z",
+      "workout_streak": 10,
+      "total_workouts": 60
+    },
+    {
+      "id": "demo_user_4",
+      "email": "demo4@gymovo.com",
+      "name": "נועה דהן",
+      "nickname": "TigerGirl",
+      "suggestedNicknames": [
+        "FitQueen",
+        "SteelStar",
+        "הנשר המהולל",
+        "IronChamp",
+        "PowerStar"
+      ],
+      "age": 21,
+      "image_url": "https://randomuser.me/api/portraits/women/4.jpg",
+      "gender": "female",
+      "preferences": {
+        "fitness_level": "intermediate",
+        "goals": ["muscle_gain", "strength"],
+        "workout_days": ["שני", "חמישי", "שבת"],
+        "preferred_duration": 50,
+        "injuries": ["ברך שמאל"],
+        "equipment": ["משקולות", "רצועות", "מוטות"],
+        "achievements": []
+      },
+      "workout_history": [],
+      "last_workout_date": "2024-03-18T12:00:00Z",
+      "workout_streak": 3,
+      "total_workouts": 22
+    },
+    {
+      "id": "demo_user_5",
+      "email": "demo5@gymovo.com",
+      "name": "יוסי זיו",
+      "nickname": "IronStar",
+      "suggestedNicknames": [
+        "PowerBeast",
+        "SteelChamp",
+        "הנמר האלוף",
+        "IronKing",
+        "הבולדוזר המהולל"
+      ],
+      "age": 29,
+      "image_url": "https://randomuser.me/api/portraits/men/5.jpg",
+      "gender": "male",
+      "preferences": {
+        "fitness_level": "advanced",
+        "goals": ["strength", "muscle_gain"],
+        "workout_days": ["ראשון", "שלישי"],
+        "preferred_duration": 70,
+        "injuries": [],
+        "equipment": ["מוטות", "משקולות", "מכונות"],
+        "achievements": [
+          {
+            "id": "achv_003",
+            "name": "שיא אישי לחיצה",
+            "date": "2024-03-05T20:30:00Z"
+          }
+        ]
+      },
+      "workout_history": [
+        {
+          "id": "workout_5_1",
+          "date": "2024-03-08T17:00:00Z",
+          "type": "strength",
+          "duration": 70,
+          "exercises": [
+            { "name": "סקוואט", "sets": 5, "reps": 10, "weight": "90" }
+          ],
+          "rating": 5,
+          "feedback": "שיפור מדהים!"
+        }
+      ],
+      "last_workout_date": "2024-03-10T15:00:00Z",
+      "workout_streak": 6,
+      "total_workouts": 77
+    },
+    {
+      "id": "demo_user_6",
+      "email": "demo6@gymovo.com",
+      "name": "שירה ביטון",
+      "nickname": "FitStar",
+      "suggestedNicknames": [
+        "הבולדוזר המהולל",
+        "IronQueen",
+        "SteelStar",
+        "TigerGirl",
+        "הנשר החזק"
+      ],
+      "age": 24,
+      "image_url": "https://randomuser.me/api/portraits/women/6.jpg",
+      "gender": "female",
+      "preferences": {
+        "fitness_level": "intermediate",
+        "goals": ["muscle_gain", "strength"],
+        "workout_days": ["ראשון", "רביעי", "שישי"],
+        "preferred_duration": 65,
+        "injuries": ["גב תחתון"],
+        "equipment": ["משקולות", "גומיות"],
+        "achievements": []
+      },
+      "workout_history": [],
+      "last_workout_date": "2024-03-15T18:30:00Z",
+      "workout_streak": 4,
+      "total_workouts": 40
+    },
+    {
+      "id": "demo_user_7",
+      "email": "demo7@gymovo.com",
+      "name": "דוד גרין",
+      "nickname": "SteelMaster",
+      "suggestedNicknames": [
+        "IronBeast",
+        "PowerKing",
+        "הבולדוזר המנצח",
+        "FitStar",
+        "הנמר האלוף"
+      ],
+      "age": 31,
+      "image_url": "https://randomuser.me/api/portraits/men/7.jpg",
+      "gender": "male",
+      "preferences": {
+        "fitness_level": "advanced",
+        "goals": ["power", "endurance"],
+        "workout_days": ["שלישי", "חמישי", "שבת"],
+        "preferred_duration": 80,
+        "injuries": [],
+        "equipment": ["מוטות", "מכונות"],
+        "achievements": []
+      },
+      "workout_history": [],
+      "last_workout_date": "2024-03-09T16:00:00Z",
+      "workout_streak": 7,
+      "total_workouts": 70
+    },
+    {
+      "id": "demo_user_8",
+      "email": "demo8@gymovo.com",
+      "name": "יעל שפירא",
+      "nickname": "IronQueen",
+      "suggestedNicknames": [
+        "FitQueen",
+        "PowerStar",
+        "האריה המהולל",
+        "SteelStar",
+        "TigerGirl"
+      ],
+      "age": 22,
+      "image_url": "https://randomuser.me/api/portraits/women/8.jpg",
+      "gender": "female",
+      "preferences": {
+        "fitness_level": "beginner",
+        "goals": ["weight_loss"],
+        "workout_days": ["ראשון", "שלישי"],
+        "preferred_duration": 45,
+        "injuries": [],
+        "equipment": ["גומיות", "משקולות קלות"],
+        "achievements": []
+      },
+      "workout_history": [],
+      "last_workout_date": "2024-03-04T18:00:00Z",
+      "workout_streak": 2,
+      "total_workouts": 14
+    },
+    {
+      "id": "demo_user_9",
+      "email": "demo9@gymovo.com",
+      "name": "עמית שלו",
+      "nickname": "PowerBeast",
+      "suggestedNicknames": [
+        "SteelMaster",
+        "הנשר החזק",
+        "IronKing",
+        "FitChamp",
+        "הבולדוזר המהולל"
+      ],
+      "age": 34,
+      "image_url": "https://randomuser.me/api/portraits/men/9.jpg",
+      "gender": "male",
+      "preferences": {
+        "fitness_level": "advanced",
+        "goals": ["strength", "endurance"],
+        "workout_days": ["רביעי", "שישי"],
+        "preferred_duration": 80,
+        "injuries": ["קרסול ימין"],
+        "equipment": ["משקולות", "רצועות"],
+        "achievements": []
+      },
+      "workout_history": [],
+      "last_workout_date": "2024-03-13T19:30:00Z",
+      "workout_streak": 10,
+      "total_workouts": 95
+    },
+    {
+      "id": "demo_user_10",
+      "email": "demo10@gymovo.com",
+      "name": "מיכל כהן",
+      "nickname": "SteelStar",
+      "suggestedNicknames": [
+        "FitQueen",
+        "הנמר המנצח",
+        "IronQueen",
+        "PowerStar",
+        "האריה החזק"
+      ],
+      "age": 25,
+      "image_url": "https://randomuser.me/api/portraits/women/10.jpg",
+      "gender": "female",
+      "preferences": {
+        "fitness_level": "intermediate",
+        "goals": ["muscle_gain", "toning"],
+        "workout_days": ["ראשון", "חמישי"],
+        "preferred_duration": 55,
+        "injuries": [],
+        "equipment": ["משקולות", "מכונות"],
+        "achievements": []
+      },
+      "workout_history": [],
+      "last_workout_date": "2024-03-18T11:00:00Z",
+      "workout_streak": 6,
+      "total_workouts": 50
+    },
+    {
+      "id": "demo_user_11",
+      "email": "demo11@gymovo.com",
+      "name": "רוני בן עמי",
+      "nickname": "FitChamp",
+      "suggestedNicknames": [
+        "PowerStar",
+        "SteelKing",
+        "האריה האלוף",
+        "IronQueen",
+        "TigerGirl"
+      ],
+      "age": 28,
+      "image_url": "https://randomuser.me/api/portraits/men/11.jpg",
+      "gender": "male",
+      "preferences": {
+        "fitness_level": "beginner",
+        "goals": ["cardio"],
+        "workout_days": ["שני", "רביעי"],
+        "preferred_duration": 40,
+        "injuries": [],
+        "equipment": ["אופניים", "מדרגה"],
+        "achievements": []
+      },
+      "workout_history": [],
+      "last_workout_date": "2024-03-06T15:30:00Z",
+      "workout_streak": 1,
+      "total_workouts": 12
+    },
+    {
+      "id": "demo_user_12",
+      "email": "demo12@gymovo.com",
+      "name": "הגר וייס",
+      "nickname": "TigerGirl",
+      "suggestedNicknames": [
+        "FitQueen",
+        "SteelStar",
+        "הבולדוזר המנצח",
+        "IronChamp",
+        "הנמר המהולל"
+      ],
+      "age": 26,
+      "image_url": "https://randomuser.me/api/portraits/women/12.jpg",
+      "gender": "female",
+      "preferences": {
+        "fitness_level": "intermediate",
+        "goals": ["strength", "toning"],
+        "workout_days": ["שלישי", "חמישי"],
+        "preferred_duration": 60,
+        "injuries": [],
+        "equipment": ["מכונות", "משקולות"],
+        "achievements": []
+      },
+      "workout_history": [],
+      "last_workout_date": "2024-03-12T13:30:00Z",
+      "workout_streak": 3,
+      "total_workouts": 21
+    },
+    {
+      "id": "demo_user_13",
+      "email": "demo13@gymovo.com",
+      "name": "עידן אילון",
+      "nickname": "IronKing",
+      "suggestedNicknames": [
+        "PowerChamp",
+        "SteelBeast",
+        "הבולדוזר האלוף",
+        "FitMaster",
+        "הנשר החזק"
+      ],
+      "age": 33,
+      "image_url": "https://randomuser.me/api/portraits/men/13.jpg",
+      "gender": "male",
+      "preferences": {
+        "fitness_level": "intermediate",
+        "goals": ["power"],
+        "workout_days": ["ראשון", "רביעי", "חמישי"],
+        "preferred_duration": 65,
+        "injuries": [],
+        "equipment": ["מוטות", "רצועות"],
+        "achievements": []
+      },
+      "workout_history": [],
+      "last_workout_date": "2024-03-19T16:00:00Z",
+      "workout_streak": 2,
+      "total_workouts": 36
+    },
+    {
+      "id": "demo_user_14",
+      "email": "demo14@gymovo.com",
+      "name": "שרון בן נון",
+      "nickname": "SteelQueen",
+      "suggestedNicknames": [
+        "FitQueen",
+        "TigerGirl",
+        "הבולדוזר המנצח",
+        "IronStar",
+        "PowerStar"
+      ],
+      "age": 24,
+      "image_url": "https://randomuser.me/api/portraits/women/14.jpg",
+      "gender": "female",
+      "preferences": {
+        "fitness_level": "beginner",
+        "goals": ["weight_loss", "cardio"],
+        "workout_days": ["שני", "חמישי"],
+        "preferred_duration": 50,
+        "injuries": [],
+        "equipment": ["משקולות קלות", "אופניים"],
+        "achievements": []
+      },
+      "workout_history": [],
+      "last_workout_date": "2024-03-05T17:00:00Z",
+      "workout_streak": 2,
+      "total_workouts": 15
+    },
+    {
+      "id": "demo_user_15",
+      "email": "demo15@gymovo.com",
+      "name": "אביב אסף",
+      "nickname": "FitMaster",
+      "suggestedNicknames": [
+        "IronKing",
+        "SteelStar",
+        "PowerChamp",
+        "האריה האלוף",
+        "הנשר החזק"
+      ],
+      "age": 30,
+      "image_url": "https://randomuser.me/api/portraits/men/15.jpg",
+      "gender": "male",
+      "preferences": {
+        "fitness_level": "intermediate",
+        "goals": ["strength", "muscle_gain"],
+        "workout_days": ["ראשון", "שלישי", "חמישי"],
+        "preferred_duration": 60,
+        "injuries": ["מרפק שמאל"],
+        "equipment": ["משקולות", "מכונות"],
+        "achievements": []
+      },
+      "workout_history": [],
+      "last_workout_date": "2024-03-20T19:00:00Z",
+      "workout_streak": 5,
+      "total_workouts": 46
+    },
+    {
+      "id": "demo_user_16",
+      "email": "demo16@gymovo.com",
+      "name": "גילי ברק",
+      "nickname": "IronChamp",
+      "suggestedNicknames": [
+        "SteelBeast",
+        "PowerKing",
+        "הטייגר החזק",
+        "FitStar",
+        "האריה המהולל"
+      ],
+      "age": 29,
+      "image_url": "https://randomuser.me/api/portraits/men/16.jpg",
+      "gender": "male",
+      "preferences": {
+        "fitness_level": "beginner",
+        "goals": ["cardio"],
+        "workout_days": ["שני", "רביעי", "שבת"],
+        "preferred_duration": 45,
+        "injuries": [],
+        "equipment": ["אופניים"],
+        "achievements": []
+      },
+      "workout_history": [],
+      "last_workout_date": "2024-03-10T17:00:00Z",
+      "workout_streak": 2,
+      "total_workouts": 18
+    },
+    {
+      "id": "demo_user_17",
+      "email": "demo17@gymovo.com",
+      "name": "שני רון",
+      "nickname": "PowerStar",
+      "suggestedNicknames": [
+        "SteelQueen",
+        "IronStar",
+        "FitQueen",
+        "TigerGirl",
+        "הבולדוזר המנצח"
+      ],
+      "age": 27,
+      "image_url": "https://randomuser.me/api/portraits/women/17.jpg",
+      "gender": "female",
+      "preferences": {
+        "fitness_level": "intermediate",
+        "goals": ["muscle_gain", "toning"],
+        "workout_days": ["ראשון", "שלישי"],
+        "preferred_duration": 60,
+        "injuries": [],
+        "equipment": ["מכונות", "משקולות"],
+        "achievements": []
+      },
+      "workout_history": [],
+      "last_workout_date": "2024-03-16T16:30:00Z",
+      "workout_streak": 4,
+      "total_workouts": 37
+    },
+    {
+      "id": "demo_user_18",
+      "email": "demo18@gymovo.com",
+      "name": "ניב עוז",
+      "nickname": "FitBeast",
+      "suggestedNicknames": [
+        "IronMaster",
+        "PowerChamp",
+        "הנשר החזק",
+        "SteelStar",
+        "האריה האלוף"
+      ],
+      "age": 31,
+      "image_url": "https://randomuser.me/api/portraits/men/18.jpg",
+      "gender": "male",
+      "preferences": {
+        "fitness_level": "advanced",
+        "goals": ["strength", "power"],
+        "workout_days": ["רביעי", "חמישי"],
+        "preferred_duration": 70,
+        "injuries": [],
+        "equipment": ["מוטות", "רצועות", "משקולות"],
+        "achievements": []
+      },
+      "workout_history": [],
+      "last_workout_date": "2024-03-21T15:00:00Z",
+      "workout_streak": 8,
+      "total_workouts": 68
+    },
+    {
+      "id": "demo_user_19",
+      "email": "demo19@gymovo.com",
+      "name": "ענת גל",
+      "nickname": "SteelStar",
+      "suggestedNicknames": [
+        "TigerGirl",
+        "IronQueen",
+        "FitQueen",
+        "PowerStar",
+        "האריה המהולל"
+      ],
+      "age": 25,
+      "image_url": "https://randomuser.me/api/portraits/women/19.jpg",
+      "gender": "female",
+      "preferences": {
+        "fitness_level": "beginner",
+        "goals": ["cardio", "weight_loss"],
+        "workout_days": ["שלישי", "חמישי"],
+        "preferred_duration": 50,
+        "injuries": [],
+        "equipment": ["אופניים", "גומיות"],
+        "achievements": []
+      },
+      "workout_history": [],
+      "last_workout_date": "2024-03-10T10:00:00Z",
+      "workout_streak": 2,
+      "total_workouts": 13
+    },
+    {
+      "id": "demo_user_20",
+      "email": "demo20@gymovo.com",
+      "name": "אלון הלוי",
+      "nickname": "IronStar",
+      "suggestedNicknames": [
+        "SteelBeast",
+        "FitMaster",
+        "PowerKing",
+        "הטייגר החזק",
+        "הנמר האלוף"
+      ],
+      "age": 30,
+      "image_url": "https://randomuser.me/api/portraits/men/20.jpg",
+      "gender": "male",
+      "preferences": {
+        "fitness_level": "intermediate",
+        "goals": ["muscle_gain", "strength"],
+        "workout_days": ["שני", "חמישי", "שבת"],
+        "preferred_duration": 55,
+        "injuries": ["מרפק ימין"],
+        "equipment": ["משקולות", "מוטות"],
+        "achievements": []
+      },
+      "workout_history": [],
+      "last_workout_date": "2024-03-17T18:30:00Z",
+      "workout_streak": 3,
+      "total_workouts": 29
+    }
+  ]
+}

@@ -1,0 +1,102 @@
+{
+  "plans": [
+    {
+      "id": "demo_male_plan",
+      "user_id": "demo_male",
+      "title": "תוכנית דמו לגבר",
+      "description": "תוכנית אימונים לדוגמה לגבר",
+      "start_date": "2024-03-20T00:00:00.000Z",
+      "end_date": "2024-03-27T00:00:00.000Z",
+      "workouts": [
+        {
+          "id": "workout_1",
+          "title": "אימון חזה",
+          "description": "אימון חזה בסיסי",
+          "date": "2024-03-20T00:00:00.000Z",
+          "exercises": [
+            {
+              "id": "bench_press",
+              "name": "לחיצת חזה",
+              "sets": [
+                {
+                  "id": "set_1",
+                  "weight": 60,
+                  "reps": 12,
+                  "restTime": 90,
+                  "isCompleted": false
+                },
+                {
+                  "id": "set_2",
+                  "weight": 60,
+                  "reps": 12,
+                  "restTime": 90,
+                  "isCompleted": false
+                },
+                {
+                  "id": "set_3",
+                  "weight": 60,
+                  "reps": 12,
+                  "restTime": 90,
+                  "isCompleted": false
+                }
+              ],
+              "notes": "לבצע לאט ובשליטה"
+            }
+          ],
+          "isCompleted": false
+        }
+      ],
+      "is_active": true,
+      "last_updated": "2024-03-20T00:00:00.000Z"
+    },
+    {
+      "id": "demo_female_plan",
+      "user_id": "demo_female",
+      "title": "תוכנית דמו לאישה",
+      "description": "תוכנית אימונים לדוגמה לאישה",
+      "start_date": "2024-03-20T00:00:00.000Z",
+      "end_date": "2024-03-27T00:00:00.000Z",
+      "workouts": [
+        {
+          "id": "workout_1",
+          "title": "אימון גוף עליון",
+          "description": "אימון גוף עליון בסיסי",
+          "date": "2024-03-20T00:00:00.000Z",
+          "exercises": [
+            {
+              "id": "push_ups",
+              "name": "כפיפות בטן",
+              "sets": [
+                {
+                  "id": "set_1",
+                  "weight": 0,
+                  "reps": 15,
+                  "restTime": 60,
+                  "isCompleted": false
+                },
+                {
+                  "id": "set_2",
+                  "weight": 0,
+                  "reps": 15,
+                  "restTime": 60,
+                  "isCompleted": false
+                },
+                {
+                  "id": "set_3",
+                  "weight": 0,
+                  "reps": 15,
+                  "restTime": 60,
+                  "isCompleted": false
+                }
+              ],
+              "notes": "לבצע לאט ובשליטה"
+            }
+          ],
+          "isCompleted": false
+        }
+      ],
+      "is_active": true,
+      "last_updated": "2024-03-20T00:00:00.000Z"
+    }
+  ]
+}

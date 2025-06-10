@@ -1,0 +1,61 @@
+name: gymovo_app
+description: A new Flutter project for fitness tracking.
+publish_to: "none"
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  cupertino_icons: ^1.0.2
+  provider: ^6.0.5
+  google_fonts: ^6.2.1
+  shared_preferences: ^2.2.2
+  fl_chart: ^1.0.0
+  share_plus: ^11.0.0
+  cross_file: ^0.3.3
+  path_provider: ^2.1.1
+  logging: ^1.2.0
+  http: ^1.1.0
+  cached_network_image: ^3.2.3
+  flutter_animate: ^4.1.1+1
+  uuid: ^4.3.3
+  url_launcher: ^6.2.2
+  video_player: ^2.8.2
+  intl: ^0.20.2
+  chewie: ^1.7.5
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+  generate: true
+
+  assets:
+    - assets/icons/google_logo.png
+    - assets/icons/facebook_logo.png
+    - assets/icons/google.png
+    - assets/icons/facebook.png
+    - assets/icons/apple.png
+    - assets/images/minimalist_bench_athlete.png
+    - assets/images/gymovo_logo.png
+    - assets/images/avatar_female.png
+    - assets/images/avatar_male.png
+    - assets/images/avatar_neutral.png
+    - assets/data/demo_users.json
+    - assets/data/demo_plans.json
+
+    - assets/data/workout_exercises.json
+    - assets/avatars/
+
+    # הערות: תמונות גוף יוגדרו בהמשך
+    # - assets/images/male_body.png
+    # - assets/images/female_body.png
