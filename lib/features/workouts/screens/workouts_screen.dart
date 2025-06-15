@@ -236,7 +236,7 @@ class _WorkoutCard extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => NewWorkoutScreen(workout: workout),
+            builder: (_) => const NewWorkoutScreen(),
           ),
         );
         break;

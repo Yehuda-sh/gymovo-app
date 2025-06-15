@@ -18,6 +18,7 @@ class ExerciseSet {
   final bool isCompleted;
   final DateTime date;
   final DateTime createdAt;
+  final int? restTime;
 
   ExerciseSet({
     required this.id,
@@ -28,6 +29,7 @@ class ExerciseSet {
     this.isCompleted = true,
     required this.date,
     DateTime? createdAt,
+    this.restTime,
   }) : createdAt = createdAt ?? date;
 
   ExerciseSet copyWith({
@@ -39,6 +41,7 @@ class ExerciseSet {
     bool? isCompleted,
     DateTime? date,
     DateTime? createdAt,
+    int? restTime,
   }) {
     return ExerciseSet(
       id: id ?? this.id,
@@ -49,6 +52,7 @@ class ExerciseSet {
       isCompleted: isCompleted ?? this.isCompleted,
       date: date ?? this.date,
       createdAt: createdAt ?? this.createdAt,
+      restTime: restTime ?? this.restTime,
     );
   }
 
@@ -62,6 +66,7 @@ class ExerciseSet {
       'isCompleted': isCompleted,
       'date': date.toIso8601String(),
       'createdAt': createdAt.toIso8601String(),
+      'restTime': restTime,
     };
   }
 
@@ -77,6 +82,7 @@ class ExerciseSet {
       createdAt: json['createdAt'] != null
           ? DateTime.parse(json['createdAt'] as String)
           : null,
+      restTime: json['restTime'] as int?,
     );
   }
 }
@@ -141,30 +147,64 @@ class ExerciseHistory {
   }) : personalRecords = personalRecords ?? [];
 
   factory ExerciseHistory.fromMap(Map<String, dynamic> map) {
+    final exerciseId = map['exercise_id']?.toString() ?? '';
+    final setsRaw = map['sets'] as List?;
+    List<ExerciseSet> setsList = [];
+    if (setsRaw != null) {
+      setsList = setsRaw
+          .map((e) {
+            if (e is ExerciseSet) return e;
+            if (e is Map<String, dynamic>) return ExerciseSet.fromJson(e);
+            if (e is String) {
+              try {
+                return ExerciseSet.fromJson(json.decode(e));
+              } catch (_) {
+                return null;
+              }
+            }
+            return null;
+          })
+          .whereType<ExerciseSet>()
+          .toList();
+    }
+    final lastWorkoutDate = map['last_workout_date'] != null
+        ? DateTime.parse(map['last_workout_date'].toString())
+        : null;
+    final personalRecordsRaw = map['personal_records'] as List?;
+    List<PersonalRecord> personalRecordsList = [];
+    if (personalRecordsRaw != null) {
+      personalRecordsList = personalRecordsRaw
+          .map((e) {
+            if (e is PersonalRecord) return e;
+            if (e is Map<String, dynamic>) return PersonalRecord.fromMap(e);
+            if (e is String) {
+              try {
+                return PersonalRecord.fromMap(json.decode(e));
+              } catch (_) {
+                return null;
+              }
+            }
+            return null;
+          })
+          .whereType<PersonalRecord>()
+          .toList();
+    }
+    final totalVolume = map['total_volume'] as int?;
+    final totalSets = map['total_sets'] as int?;
     return ExerciseHistory(
-      exerciseId: map['exercise_id']?.toString() ?? '',
-      sets: (map['sets'] as List?)
-              ?.map((e) => ExerciseSet.fromMap(
-                  e is Map<String, dynamic> ? e : json.decode(e.toString())))
-              .toList() ??
-          [],
-      lastWorkoutDate: map['last_workout_date'] != null
-          ? DateTime.parse(map['last_workout_date'].toString())
-          : null,
-      personalRecords: (map['personal_records'] as List?)
-              ?.map((e) => PersonalRecord.fromMap(
-                  e is Map<String, dynamic> ? e : json.decode(e.toString())))
-              .toList() ??
-          [],
-      totalVolume: map['total_volume'] as int?,
-      totalSets: map['total_sets'] as int?,
+      exerciseId: exerciseId,
+      sets: setsList,
+      lastWorkoutDate: lastWorkoutDate,
+      personalRecords: personalRecordsList,
+      totalVolume: totalVolume,
+      totalSets: totalSets,
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
       'exercise_id': exerciseId,
-      'sets': sets.map((e) => e.toMap()).toList(),
+      'sets': sets.map((e) => e.toJson()).toList(),
       'last_workout_date': lastWorkoutDate?.toIso8601String(),
       'personal_records': personalRecords.map((e) => e.toMap()).toList(),
       'total_volume': totalVolume,

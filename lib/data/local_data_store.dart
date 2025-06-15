@@ -34,6 +34,113 @@ class LocalDataStore {
     return guestId;
   }
 
+// הוסף את הפונקציות הבאות לקובץ lib/data/local_data_store.dart
+
+  // שמירת משתמש מעודכן
+  static Future<void> saveUser(UserModel user) async {
+    try {
+      debugPrint('=== DEBUG: saveUser called ===');
+      debugPrint('User ID: ${user.id}');
+      debugPrint('User isGuest: ${user.isGuest}');
+      debugPrint(
+          'questionnaireAnswers before save: ${user.questionnaireAnswers}');
+      debugPrint(
+          'questionnaireAnswers keys: ${user.questionnaireAnswers?.keys.toList()}');
+
+      final prefs = await SharedPreferences.getInstance();
+
+      // עדכון הזמן האחרון
+      final updatedUser = user.copyWith(
+        profileLastUpdated: DateTime.now(),
+      );
+
+      debugPrint(
+          'Updated user questionnaireAnswers: ${updatedUser.questionnaireAnswers}');
+
+      final userMap = updatedUser.toMap();
+      debugPrint('User toMap result keys: ${userMap.keys.toList()}');
+      debugPrint(
+          'questionnaire_answers in map: ${userMap['questionnaire_answers']}');
+
+      // שמירה ב-SharedPreferences
+      final jsonString = jsonEncode(userMap);
+      debugPrint('JSON string length: ${jsonString.length}');
+      // הדפס רק חלק מה-JSON אם הוא ארוך מדי
+      if (jsonString.length > 500) {
+        debugPrint(
+            'JSON string (first 500 chars): ${jsonString.substring(0, 500)}...');
+      } else {
+        debugPrint('JSON string to save: $jsonString');
+      }
+
+      await prefs.setString('current_user', jsonString);
+
+      // בדיקה מיידית אחרי שמירה
+      final savedString = prefs.getString('current_user');
+      if (savedString != null) {
+        final savedMap = jsonDecode(savedString);
+        debugPrint(
+            'Immediately after save - parsed questionnaire_answers: ${savedMap['questionnaire_answers']}');
+      } else {
+        debugPrint(
+            'ERROR: Could not retrieve saved user immediately after save!');
+      }
+
+      // אם זה לא משתמש אורח, שמור גם במאגר המשתמשים
+      if (!user.isGuest) {
+        final usersJson = prefs.getString('users') ?? '{}';
+        final users = Map<String, dynamic>.from(jsonDecode(usersJson));
+        users[user.id] = updatedUser.toMap();
+        await prefs.setString('users', jsonEncode(users));
+        debugPrint('Also saved to users collection');
+      }
+
+      debugPrint('User saved successfully: ${user.id}');
+      debugPrint('================================');
+    } catch (e, stackTrace) {
+      debugPrint('Error saving user: $e');
+      debugPrint('Stack trace: $stackTrace');
+      throw Exception('Failed to save user: $e');
+    }
+  }
+
+  // עדכון תשובות השאלון בלבד
+  static Future<void> updateQuestionnaireAnswers(
+    String userId,
+    Map<String, dynamic> answers,
+  ) async {
+    try {
+      debugPrint('=== DEBUG: updateQuestionnaireAnswers called ===');
+      debugPrint('UserId: $userId');
+      debugPrint('Answers to update: $answers');
+      debugPrint('Answers keys: ${answers.keys.toList()}');
+
+      final user = await getCurrentUser();
+      debugPrint('Current user found: ${user != null}');
+      debugPrint('Current user ID matches: ${user?.id == userId}');
+
+      if (user != null && user.id == userId) {
+        debugPrint('Updating user with new questionnaire answers...');
+        final updatedUser = user.copyWith(
+          questionnaireAnswers: answers,
+          profileLastUpdated: DateTime.now(),
+        );
+        debugPrint(
+            'Updated user questionnaireAnswers: ${updatedUser.questionnaireAnswers}');
+        await saveUser(updatedUser);
+        debugPrint('User saved successfully via updateQuestionnaireAnswers');
+      } else {
+        debugPrint(
+            'ERROR: User not found or ID mismatch in updateQuestionnaireAnswers');
+      }
+      debugPrint('================================================');
+    } catch (e, stackTrace) {
+      debugPrint('Error updating questionnaire answers: $e');
+      debugPrint('Stack trace: $stackTrace');
+      throw Exception('Failed to update questionnaire answers: $e');
+    }
+  }
+
   // === יצירת משתמש אורח ושמירתו כמשתמש נוכחי
   static Future<UserModel> createGuestUser() async {
     final guestId = await createOrGetGuestId();
@@ -98,11 +205,31 @@ class LocalDataStore {
 
   // === טעינת משתמש נוכחי
   static Future<UserModel?> getCurrentUser() async {
-    final prefs = await SharedPreferences.getInstance();
-    final userJson = prefs.getString(_currentUserKey);
-    if (userJson == null) return null;
     try {
-      return UserModel.fromMap(json.decode(userJson));
+      debugPrint('=== DEBUG: getCurrentUser called ===');
+      final prefs = await SharedPreferences.getInstance();
+      final userJson = prefs.getString(_currentUserKey);
+      debugPrint(
+          'Raw JSON from SharedPreferences: ${userJson?.substring(0, userJson.length > 200 ? 200 : userJson.length)}${userJson != null && userJson.length > 200 ? '...' : ''}');
+
+      if (userJson == null) {
+        debugPrint('getCurrentUser: No user data found in SharedPreferences');
+        return null;
+      }
+
+      final userMap = json.decode(userJson);
+      debugPrint('Parsed user map keys: ${userMap.keys.toList()}');
+      debugPrint(
+          'questionnaire_answers from parsed map: ${userMap['questionnaire_answers']}');
+
+      final user = UserModel.fromMap(userMap);
+      debugPrint(
+          'UserModel created - questionnaireAnswers: ${user.questionnaireAnswers}');
+      debugPrint(
+          'UserModel questionnaireAnswers keys: ${user.questionnaireAnswers?.keys.toList()}');
+      debugPrint('=====================================');
+
+      return user;
     } catch (e) {
       debugPrint('Error loading current user: $e');
       return null;
@@ -160,13 +287,45 @@ class LocalDataStore {
   // === טעינת משתמשי דמו מה־JSON המקומי
   static Future<List<UserModel>> loadDemoUsers() async {
     try {
+      debugPrint('=== DEBUG: loadDemoUsers called ===');
       final String jsonString =
           await rootBundle.loadString('assets/data/demo_users.json');
+      debugPrint('Loaded JSON string length: ${jsonString.length}');
+
       final Map<String, dynamic> jsonData = json.decode(jsonString);
+      debugPrint('JSON data keys: ${jsonData.keys.toList()}');
+
       final List<dynamic> usersJson = jsonData['users'] as List<dynamic>;
-      return usersJson.map((userJson) => UserModel.fromMap(userJson)).toList();
-    } catch (e) {
+      debugPrint('Found ${usersJson.length} demo users');
+
+      final List<UserModel> users = [];
+      for (var i = 0; i < usersJson.length; i++) {
+        try {
+          final userJson = usersJson[i];
+          debugPrint('Processing user $i:');
+          debugPrint('User JSON keys: ${userJson.keys.toList()}');
+          debugPrint('User ID: ${userJson['id']}');
+
+          if (userJson['id'] == null) {
+            debugPrint('ERROR: User $i has null ID, skipping');
+            continue;
+          }
+
+          final user = UserModel.fromMap(userJson);
+          users.add(user);
+          debugPrint('Successfully loaded user ${user.id}');
+        } catch (e) {
+          debugPrint('Error processing user $i: $e');
+          continue;
+        }
+      }
+
+      debugPrint('Successfully loaded ${users.length} demo users');
+      debugPrint('=====================================');
+      return users;
+    } catch (e, stackTrace) {
       debugPrint('Error loading demo users: $e');
+      debugPrint('Stack trace: $stackTrace');
       return [];
     }
   }

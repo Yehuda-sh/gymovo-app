@@ -177,6 +177,16 @@ class Exercise {
     this.metadata,
   });
 
+  // Computed properties
+  List<String>? get mainMuscles => metadata?['mainMuscles']?.cast<String>();
+  List<String>? get secondaryMuscles =>
+      metadata?['secondaryMuscles']?.cast<String>();
+  List<String>? get muscleGroups => metadata?['muscleGroups']?.cast<String>();
+  String? get type => metadata?['type'];
+  String? get nameEn => name;
+  String? get instructionsEn => instructions.join('\n');
+  List<String>? get tips => metadata?['tips']?.cast<String>();
+
   // Create a copy of the exercise with some fields updated
   Exercise copyWith({
     String? id,
@@ -233,12 +243,12 @@ class Exercise {
   factory Exercise.fromJson(Map<String, dynamic> json) {
     return Exercise(
       id: json['id'] as String,
-      name: json['name'] as String,
-      nameHe: json['nameHe'] as String,
-      description: json['description'] as String?,
-      descriptionHe: json['descriptionHe'] as String?,
-      instructions: (json['instructions'] as List).cast<String>(),
-      instructionsHe: (json['instructionsHe'] as List).cast<String>(),
+      name: json['name'] as String? ?? 'תרגיל ללא שם',
+      nameHe: json['nameHe'] as String? ?? 'תרגיל ללא שם',
+      description: json['description'] as String? ?? 'תרגיל ללא תיאור',
+      descriptionHe: json['descriptionHe'] as String? ?? 'תרגיל ללא תיאור',
+      instructions: (json['instructions'] as List?)?.cast<String>() ?? [],
+      instructionsHe: (json['instructionsHe'] as List?)?.cast<String>() ?? [],
       imageUrl: json['imageUrl'] as String?,
       videoUrl: json['videoUrl'] as String?,
       category: json['category'] as String?,

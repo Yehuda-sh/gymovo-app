@@ -1,7 +1,13 @@
 import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
-import '../models/exercise.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../../models/exercise.dart';
 import 'package:flutter/material.dart';
+
+// lib/screens/select_exercises_screen.dart
+// --------------------------------------------------
+// מסך בחירת תרגילים ראשי
+// --------------------------------------------------
 
 class SelectExercisesScreen extends StatefulWidget {
   final List<Exercise> initiallySelected;
@@ -55,12 +61,13 @@ class _SelectExercisesScreenState extends State<SelectExercisesScreen> {
     return _exercises.where((e) {
       final matchesSearch = _search.isEmpty ||
           e.nameHe.toLowerCase().contains(_search.toLowerCase()) ||
-          (e.mainMuscles
-              .any((m) => m.toLowerCase().contains(_search.toLowerCase())));
-      final matchesMuscle =
-          _selectedMuscle == null || e.mainMuscles.contains(_selectedMuscle);
+          (e.mainMuscles?.any(
+                  (m) => m.toLowerCase().contains(_search.toLowerCase())) ==
+              true);
+      final matchesMuscle = _selectedMuscle == null ||
+          (e.mainMuscles?.contains(_selectedMuscle) == true);
       final matchesEquipment = _selectedEquipment == null ||
-          e.equipment.contains(_selectedEquipment);
+          (e.equipment != null && e.equipment!.contains(_selectedEquipment!));
       return matchesSearch && matchesMuscle && matchesEquipment;
     }).toList();
   }
@@ -73,6 +80,27 @@ class _SelectExercisesScreenState extends State<SelectExercisesScreen> {
         _selectedIds.add(exercise.id);
       }
     });
+  }
+
+  bool _matchesFilter(Exercise exercise, String filter) {
+    if (filter.isEmpty) return true;
+
+    final lowerFilter = filter.toLowerCase();
+
+    // Check name
+    if (exercise.nameHe.toLowerCase().contains(lowerFilter)) return true;
+
+    // Check main muscles
+    if (exercise.mainMuscles != null &&
+        exercise.mainMuscles!
+            .any((muscle) => muscle.toLowerCase().contains(lowerFilter)))
+      return true;
+
+    // Check equipment
+    if (exercise.equipment != null &&
+        exercise.equipment!.toLowerCase().contains(lowerFilter)) return true;
+
+    return false;
   }
 
   @override
@@ -127,10 +155,11 @@ class _SelectExercisesScreenState extends State<SelectExercisesScreen> {
                           )
                         : const Icon(Icons.image_not_supported),
                     title: Text(exercise.nameHe),
-                    subtitle: Text((exercise.mainMuscles.join(', ')) +
-                        (exercise.equipment.isNotEmpty
-                            ? ' • ${exercise.equipment.join(", ")}'
-                            : '')),
+                    subtitle: Text(
+                        (exercise.mainMuscles?.join(', ') ?? 'לא צוין') +
+                            (exercise.equipment?.isNotEmpty == true
+                                ? ' • ${exercise.equipment}'
+                                : '')),
                     trailing: Checkbox(
                       value: selected,
                       onChanged: (_) => _toggleSelect(exercise),

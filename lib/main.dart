@@ -1,3 +1,4 @@
+// main.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
@@ -6,10 +7,10 @@ import 'providers/auth_provider.dart';
 import 'providers/workouts_provider.dart';
 import 'providers/week_plan_provider.dart';
 import 'providers/settings_provider.dart';
-import 'screens/splash_screen.dart';
-import 'screens/welcome_screen.dart';
-import 'screens/home_screen.dart';
-import 'screens/questionnaire_results_screen.dart';
+import 'screens/splash/splash_screen.dart';
+import 'screens/welcome/welcome_screen.dart';
+import 'screens/home/home_screen.dart';
+import 'screens/questionnaire_results/questionnaire_results_screen.dart';
 
 import 'providers/exercise_provider.dart';
 

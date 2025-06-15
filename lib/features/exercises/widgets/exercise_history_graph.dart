@@ -28,16 +28,16 @@ class ExerciseHistoryGraph extends StatelessWidget {
       height: 120,
       child: LineChart(
         LineChartData(
-          gridData: const FlGridData(show: false),
-          borderData: const FlBorderData(show: false),
-          titlesData: const FlTitlesData(show: false),
+          gridData: FlGridData(show: false),
+          borderData: FlBorderData(show: false),
+          titlesData: FlTitlesData(show: false),
           lineBarsData: [
             LineChartBarData(
               spots: spots,
               isCurved: true,
               barWidth: 4,
-              dotData: const FlDotData(show: false),
-              belowBarData: const BarAreaData(show: false),
+              dotData: FlDotData(show: false),
+              belowBarData: BarAreaData(show: false),
               color: Colors.teal,
             ),
           ],

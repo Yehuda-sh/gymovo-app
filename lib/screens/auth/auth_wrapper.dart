@@ -2,12 +2,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../../providers/auth_provider.dart';
 import '../../data/local_data_store.dart';
-import '../home_screen.dart';
-import '../questionnaire_screen.dart';
-import '../welcome_screen.dart';
+import '../home/home_screen.dart';
+import '../questionnaire/questionnaire_screen.dart';
+import '../welcome/welcome_screen.dart';
+import '../questionnaire/questionnaire_intro_screen.dart';
 
 class AuthWrapper extends StatefulWidget {
   const AuthWrapper({super.key});
@@ -18,35 +18,46 @@ class AuthWrapper extends StatefulWidget {
 
 class _AuthWrapperState extends State<AuthWrapper> {
   bool _isLoading = true;
-  bool _questionnaireCompleted = false;
+  bool _hasQuestionnaireAnswers = false;
   String? _lastCheckedUserId;
 
   @override
   void initState() {
     super.initState();
-    // נטען בשלב הראשון בלי תלות במשתמש
-    _checkQuestionnaireStatus();
+    _checkUserStatus();
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    // נטען מחדש אם המשתמש התחלף
-    if (authProvider.currentUser?.id != _lastCheckedUserId) {
-      _checkQuestionnaireStatus();
+    if (_lastCheckedUserId == null ||
+        authProvider.currentUser?.id != _lastCheckedUserId) {
+      _checkUserStatus();
     }
   }
 
-  Future<void> _checkQuestionnaireStatus() async {
+  Future<void> _checkUserStatus() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final userId = authProvider.currentUser?.id ?? '';
-    final completed = await LocalDataStore.isQuestionnaireCompleted(userId);
-    setState(() {
-      _questionnaireCompleted = completed;
-      _isLoading = false;
-      _lastCheckedUserId = userId;
-    });
+    final user = authProvider.currentUser;
+
+    if (user != null && !user.isGuest) {
+      // בדיקה אם למשתמש יש תשובות שאלון
+      final hasAnswers = user.questionnaireAnswers != null &&
+          user.questionnaireAnswers!.isNotEmpty;
+
+      setState(() {
+        _hasQuestionnaireAnswers = hasAnswers;
+        _isLoading = false;
+        _lastCheckedUserId = user.id;
+      });
+    } else {
+      setState(() {
+        _hasQuestionnaireAnswers = false;
+        _isLoading = false;
+        _lastCheckedUserId = user?.id;
+      });
+    }
   }
 
   @override
@@ -61,14 +72,25 @@ class _AuthWrapperState extends State<AuthWrapper> {
       );
     }
 
-    if (authProvider.currentUser != null &&
-        !(authProvider.currentUser?.isGuest ?? false)) {
-      return _questionnaireCompleted
-          ? const HomeScreen()
-          : const QuestionnaireScreen();
+    final user = authProvider.currentUser;
+
+    // אם אין משתמש מחובר - לדף הברוכים הבאים
+    if (user == null) {
+      return const WelcomeScreen();
     }
 
-    // משתמש לא מחובר – תמיד WelcomeScreen (גם אם מילא שאלון)
-    return const WelcomeScreen();
+    // אם זה משתמש אורח - לדף הברוכים הבאים (כדי לעודד התחברות)
+    if (user.isGuest) {
+      return const WelcomeScreen();
+    }
+
+    // משתמש רשום:
+    // אם יש לו תשובות שאלון - לדף הבית
+    if (_hasQuestionnaireAnswers) {
+      return const HomeScreen();
+    }
+
+    // אם אין לו תשובות שאלון - לדף היכרות עם השאלון
+    return const QuestionnaireIntroScreen();
   }
 }

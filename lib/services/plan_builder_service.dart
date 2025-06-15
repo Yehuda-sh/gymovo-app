@@ -28,8 +28,10 @@ class PlanBuilderService {
 
     final filtered = allExercises.where((e) {
       final matchesEquipment = equipmentAnswer.isEmpty ||
-          e.equipment.any((eq) => equipmentAnswer
-              .any((a) => eq.toLowerCase().contains(a.toLowerCase())));
+          (e.equipment != null &&
+              e.equipment!.isNotEmpty &&
+              equipmentAnswer.any(
+                  (a) => e.equipment!.toLowerCase().contains(a.toLowerCase())));
       final isAllowed = avoid.every((a) => !e.nameHe.contains(a));
       final safe = pain.every((p) => !e.nameHe.contains(p));
       return matchesEquipment && isAllowed && safe;
@@ -74,6 +76,7 @@ class PlanBuilderService {
         id: 'custom_day_$i',
         title: 'אימון מותאם אישית ${i + 1}',
         description: 'אימון אוטומטי לפי העדפות המשתמש',
+        createdAt: DateTime.now(),
         date: DateTime.now().add(Duration(days: i)),
         exercises: buildSets(picked),
         metadata: {
@@ -90,8 +93,11 @@ class PlanBuilderService {
   static Map<String, List<Exercise>> _groupByMuscle(List<Exercise> exercises) {
     final Map<String, List<Exercise>> map = {};
     for (var e in exercises) {
-      for (var group in e.muscleGroups) {
-        map.putIfAbsent(group, () => []).add(e);
+      final muscleGroups = e.muscleGroups;
+      if (muscleGroups != null) {
+        for (var group in muscleGroups) {
+          map.putIfAbsent(group, () => []).add(e);
+        }
       }
     }
     return map;
@@ -130,6 +136,7 @@ class PlanBuilderService {
         id: 'demo_day_$i',
         title: 'אימון דמו $title ${i + 1}',
         description: 'אימון לדוגמה שהוכן מראש',
+        createdAt: DateTime.now(),
         date: DateTime.now().add(Duration(days: i)),
         exercises: buildSets(chosen),
         metadata: {'demo': true, 'day': i + 1},

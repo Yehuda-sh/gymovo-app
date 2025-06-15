@@ -171,9 +171,10 @@ class WeekPlanModel {
     try {
       return workouts.firstWhere(
         (workout) =>
-            workout.date.year == today.year &&
-            workout.date.month == today.month &&
-            workout.date.day == today.day,
+            workout.date != null &&
+            workout.date!.year == today.year &&
+            workout.date!.month == today.month &&
+            workout.date!.day == today.day,
       );
     } catch (e) {
       return null;
@@ -184,7 +185,7 @@ class WeekPlanModel {
     final now = DateTime.now();
     try {
       return workouts.firstWhere(
-        (workout) => workout.date.isAfter(now),
+        (workout) => workout.date != null && workout.date!.isAfter(now),
         orElse: () => throw Exception('No future workouts found'),
       );
     } catch (e) {
@@ -195,8 +196,8 @@ class WeekPlanModel {
   WorkoutModel? getLastCompletedWorkout() {
     try {
       return workouts
-          .where((workout) => workout.isCompleted)
-          .reduce((a, b) => a.date.isAfter(b.date) ? a : b);
+          .where((workout) => workout.isCompleted && workout.date != null)
+          .reduce((a, b) => a.date!.isAfter(b.date!) ? a : b);
     } catch (e) {
       return null;
     }
@@ -204,22 +205,22 @@ class WeekPlanModel {
 
   Map<String, dynamic> getWeeklySummary() {
     final completedWorkouts = workouts.where((w) => w.isCompleted);
-    int totalSets = 0;
-    int totalReps = 0;
+    double totalSets = 0;
+    double totalReps = 0;
     double totalVolume = 0;
-    List<String> personalRecords = [];
+    List<int> personalRecords = [];
 
     for (final workout in completedWorkouts) {
-      totalSets += workout.totalSets;
-      totalReps += workout.totalReps;
+      totalSets += workout.totalSets.toDouble();
+      totalReps += workout.totalReps.toDouble();
       totalVolume += workout.totalVolume;
-      personalRecords.addAll(workout.personalRecords);
+      personalRecords.add(workout.personalRecords);
     }
 
     return {
       'total_workouts': completedWorkouts.length,
-      'total_sets': totalSets,
-      'total_reps': totalReps,
+      'total_sets': totalSets.toInt(),
+      'total_reps': totalReps.toInt(),
       'total_volume': totalVolume,
       'personal_records': personalRecords,
       'completion_percentage': completionPercentage,

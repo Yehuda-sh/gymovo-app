@@ -1,11 +1,17 @@
-// lib/screens/exercises_screen.dart
+// lib/screens/exercises/exercises_screen.dart
+// --------------------------------------------------
+// מסך תרגילים ראשי
+// --------------------------------------------------
 
 import 'dart:convert';
-import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/material.dart';
-import '../models/exercise.dart';
-import '../widgets/exercise_card.dart';
-import 'exercise_details_screen.dart';
+import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../../models/exercise.dart';
+import '../../theme/app_theme.dart';
+import '../../widgets/exercise_card.dart';
+import '../../features/exercises/screens/exercise_details_screen.dart';
+// TODO: import 'exercise_details_screen.dart'; - קובץ זה לא נמצא, צריך ליצור או להחליף
 
 class ExercisesScreen extends StatefulWidget {
   const ExercisesScreen({Key? key}) : super(key: key);

@@ -1,15 +1,18 @@
-// lib/screens/register_screen.dart
+// lib/screens/register/register_screen.dart
+// --------------------------------------------------
+// מסך הרשמה ראשי לאפליקציה
+// --------------------------------------------------
 
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../providers/auth_provider.dart';
-import '../models/user_model.dart';
-import '../theme/app_theme.dart';
-import 'auth/login_screen.dart';
-import '../data/local_data_store.dart';
-import 'home_screen.dart';
+import '../../providers/auth_provider.dart';
+import '../../models/user_model.dart';
+import '../../theme/app_theme.dart';
+import '../auth/login/login_screen.dart';
+import '../../data/local_data_store.dart';
+import '../home/home_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});

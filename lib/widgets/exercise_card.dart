@@ -16,15 +16,11 @@ class ExerciseCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final muscles = exercise.mainMuscles.isNotEmpty
-        ? exercise.mainMuscles.join(', ')
-        : 'לא צויין';
-    final secondary = (exercise.secondaryMuscles?.isNotEmpty ?? false)
-        ? exercise.secondaryMuscles!.join(', ')
-        : null;
-    final equipment = exercise.equipment.isNotEmpty
-        ? exercise.equipment.join(', ')
-        : 'ללא ציוד';
+    final muscles = primaryMuscles;
+    final secondary = secondaryMuscles;
+    final equipment = exercise.equipment?.isNotEmpty == true
+        ? exercise.equipment!
+        : 'לא צוין';
     final instructionsPreview = exercise.instructionsHe.isNotEmpty
         ? exercise.instructionsHe.join('\n')
         : '';
@@ -131,5 +127,21 @@ class ExerciseCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String get primaryMuscles {
+    final mainMuscles = exercise.mainMuscles;
+    if (mainMuscles != null && mainMuscles.isNotEmpty) {
+      return mainMuscles.join(', ');
+    }
+    return 'לא צוין';
+  }
+
+  String get secondaryMuscles {
+    final secondaryMuscles = exercise.secondaryMuscles;
+    if (secondaryMuscles != null && secondaryMuscles.isNotEmpty) {
+      return secondaryMuscles.join(', ');
+    }
+    return '';
   }
 }

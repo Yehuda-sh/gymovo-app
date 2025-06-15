@@ -61,7 +61,12 @@ class WeekPlanProvider with ChangeNotifier {
 
     final history = await LocalDataStore.getUserWorkoutHistory(_currentUserId!);
     if (history.isNotEmpty) {
-      history.sort((a, b) => b.date.compareTo(a.date));
+      history.sort((a, b) {
+        if (a.date == null && b.date == null) return 0;
+        if (a.date == null) return 1;
+        if (b.date == null) return -1;
+        return b.date!.compareTo(a.date!);
+      });
       _lastWorkoutDate = history.first.date;
     }
     notifyListeners();
@@ -79,6 +84,7 @@ class WeekPlanProvider with ChangeNotifier {
       id: '${DateTime.now().millisecondsSinceEpoch}',
       title: 'אימון אישי',
       description: 'אימון שנבנה עבורך',
+      createdAt: DateTime.now(),
       date: DateTime.now(),
       exercises: sets
           .map((set) => ExerciseModel(

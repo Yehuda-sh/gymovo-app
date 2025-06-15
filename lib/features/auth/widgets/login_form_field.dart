@@ -1,3 +1,6 @@
+// --------------------------------------------------
+// שדה טקסט לכניסת סיסמה
+// --------------------------------------------------
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -42,7 +45,7 @@ class LoginFormField extends StatelessWidget {
       decoration: InputDecoration(
         labelText: label,
         labelStyle: GoogleFonts.assistant(
-          color: colors.onSurface.withOpacity(0.7),
+          color: colors.onSurface.withValues(alpha: 0.7),
         ),
         errorText: error,
         errorStyle: GoogleFonts.assistant(
@@ -53,7 +56,7 @@ class LoginFormField extends StatelessWidget {
             ? IconButton(
                 icon: Icon(
                   isPasswordVisible ? Icons.visibility_off : Icons.visibility,
-                  color: colors.onSurface.withOpacity(0.7),
+                  color: colors.onSurface.withValues(alpha: 0.7),
                 ),
                 onPressed: onTogglePasswordVisibility,
               )
@@ -61,13 +64,13 @@ class LoginFormField extends StatelessWidget {
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(
-            color: colors.onSurface.withOpacity(0.2),
+            color: colors.onSurface.withValues(alpha: 0.2),
           ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(
-            color: colors.onSurface.withOpacity(0.2),
+            color: colors.onSurface.withValues(alpha: 0.2),
           ),
         ),
         focusedBorder: OutlineInputBorder(

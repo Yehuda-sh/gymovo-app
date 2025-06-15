@@ -1,9 +1,14 @@
-// lib/screens/splash_screen.dart
+// lib/screens/splash/splash_screen.dart
+// --------------------------------------------------
+// מסך פתיחה (Splash) משופר
+// --------------------------------------------------
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import '../theme/app_theme.dart';
-import 'auth/auth_wrapper.dart';
+import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../../theme/app_theme.dart';
+import '../../data/local_data_store.dart';
+import '../auth/auth_wrapper.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -13,79 +18,364 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _scaleAnim;
+    with TickerProviderStateMixin {
+  late AnimationController _logoController;
+  late AnimationController _textController;
+  late AnimationController _progressController;
+
+  late Animation<double> _logoScale;
+  late Animation<double> _logoRotation;
+  late Animation<double> _textOpacity;
+  late Animation<Offset> _textSlide;
+  late Animation<double> _progressOpacity;
+
+  bool _isLoading = true;
+  String _loadingMessage = 'מאתחל...';
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-        duration: const Duration(milliseconds: 900), vsync: this);
-    _scaleAnim =
-        CurvedAnimation(parent: _controller, curve: Curves.easeOutBack);
-    _controller.forward();
 
-    _navigateAfterDelay();
+    // Hide status bar for immersive experience
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
+
+    _initAnimations();
+    _startAnimations();
+    _initializeApp();
   }
 
-  Future<void> _navigateAfterDelay() async {
-    await Future.delayed(const Duration(seconds: 2));
-    if (!mounted) return;
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => const AuthWrapper()),
+  void _initAnimations() {
+    // Logo animations
+    _logoController = AnimationController(
+      duration: const Duration(milliseconds: 1200),
+      vsync: this,
     );
+
+    _logoScale = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _logoController,
+      curve: Curves.elasticOut,
+    ));
+
+    _logoRotation = Tween<double>(
+      begin: -0.1,
+      end: 0.0,
+    ).animate(CurvedAnimation(
+      parent: _logoController,
+      curve: Curves.easeOutBack,
+    ));
+
+    // Text animations
+    _textController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+
+    _textOpacity = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _textController,
+      curve: Curves.easeIn,
+    ));
+
+    _textSlide = Tween<Offset>(
+      begin: const Offset(0, 0.3),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _textController,
+      curve: Curves.easeOutCubic,
+    ));
+
+    // Progress animations
+    _progressController = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
+
+    _progressOpacity = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _progressController,
+      curve: Curves.easeIn,
+    ));
+  }
+
+  void _startAnimations() async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    if (mounted) {
+      _logoController.forward();
+      await Future.delayed(const Duration(milliseconds: 600));
+      if (mounted) {
+        _textController.forward();
+        await Future.delayed(const Duration(milliseconds: 400));
+        if (mounted) {
+          _progressController.forward();
+        }
+      }
+    }
+  }
+
+  Future<void> _initializeApp() async {
+    try {
+      // Simulate loading steps
+      await Future.delayed(const Duration(milliseconds: 1500));
+
+      setState(() => _loadingMessage = 'טוען הגדרות...');
+
+      setState(() => _loadingMessage = 'בודק משתמש...');
+      final user = await LocalDataStore.getCurrentUser();
+
+      setState(() => _loadingMessage = 'מכין את האפליקציה...');
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      setState(() => _isLoading = false);
+
+      // Navigate after a short delay
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      if (!mounted) return;
+
+      // Restore status bar
+      SystemChrome.setEnabledSystemUIMode(
+        SystemUiMode.manual,
+        overlays: SystemUiOverlay.values,
+      );
+
+      Navigator.of(context).pushReplacement(
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const AuthWrapper(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(
+              opacity: animation,
+              child: child,
+            );
+          },
+          transitionDuration: const Duration(milliseconds: 800),
+        ),
+      );
+    } catch (e) {
+      // Handle initialization errors
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _loadingMessage = 'שגיאה בטעינה';
+        });
+
+        // Show error dialog
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(
+              'שגיאה',
+              style: GoogleFonts.assistant(fontWeight: FontWeight.bold),
+            ),
+            content: Text(
+              'אירעה שגיאה בטעינת האפליקציה. אנא נסה שוב.',
+              style: GoogleFonts.assistant(),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  _initializeApp(); // Retry
+                },
+                child: Text(
+                  'נסה שוב',
+                  style: GoogleFonts.assistant(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+    }
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _logoController.dispose();
+    _textController.dispose();
+    _progressController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final colors = AppTheme.colors;
+    final size = MediaQuery.of(context).size;
 
     return Scaffold(
       backgroundColor: colors.background,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            ScaleTransition(
-              scale: _scaleAnim,
-              child: Image.asset(
-                'assets/images/gymovo_logo.png',
-                width: 160,
-                height: 160,
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              colors.background,
+              colors.primary.withValues(alpha: 0.05),
+              colors.background,
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Logo
+              AnimatedBuilder(
+                animation: _logoController,
+                builder: (context, child) {
+                  return Transform.rotate(
+                    angle: _logoRotation.value,
+                    child: Transform.scale(
+                      scale: _logoScale.value,
+                      child: Container(
+                        width: 160,
+                        height: 160,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: colors.primary.withValues(alpha: 0.3),
+                              blurRadius: 30,
+                              spreadRadius: 5,
+                            ),
+                          ],
+                        ),
+                        child: Image.asset(
+                          'assets/images/gymovo_logo.png',
+                          width: 160,
+                          height: 160,
+                        ),
+                      ),
+                    ),
+                  );
+                },
               ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              'Gymovo',
-              style: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                color: colors.primary,
-                letterSpacing: 2.2,
+
+              const SizedBox(height: 40),
+
+              // Text content
+              AnimatedBuilder(
+                animation: _textController,
+                builder: (context, child) {
+                  return FadeTransition(
+                    opacity: _textOpacity,
+                    child: SlideTransition(
+                      position: _textSlide,
+                      child: Column(
+                        children: [
+                          Text(
+                            'Gymovo',
+                            style: GoogleFonts.poppins(
+                              fontSize: 42,
+                              fontWeight: FontWeight.bold,
+                              color: colors.primary,
+                              letterSpacing: 3,
+                              shadows: [
+                                Shadow(
+                                  color: colors.primary.withValues(alpha: 0.3),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'חווית הכושר שלך מתחילה כאן',
+                            style: GoogleFonts.assistant(
+                              fontSize: 20,
+                              color: colors.headline,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
               ),
-            ),
-            const SizedBox(height: 7),
-            Text(
-              'חווית הכושר שלך מתחילה כאן',
-              style: TextStyle(
-                fontSize: 18,
-                color: colors.headline,
-                fontWeight: FontWeight.w600,
+
+              const SizedBox(height: 60),
+
+              // Loading indicator
+              AnimatedBuilder(
+                animation: _progressController,
+                builder: (context, child) {
+                  return FadeTransition(
+                    opacity: _progressOpacity,
+                    child: Column(
+                      children: [
+                        if (_isLoading) ...[
+                          SizedBox(
+                            width: 40,
+                            height: 40,
+                            child: CircularProgressIndicator(
+                              color: colors.primary,
+                              strokeWidth: 3,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                colors.primary,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            _loadingMessage,
+                            style: GoogleFonts.assistant(
+                              fontSize: 14,
+                              color: colors.text.withValues(alpha: 0.6),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ] else ...[
+                          Icon(
+                            Icons.check_circle,
+                            color: colors.primary,
+                            size: 40,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'מוכן!',
+                            style: GoogleFonts.assistant(
+                              fontSize: 16,
+                              color: colors.primary,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  );
+                },
               ),
-            ),
-            const SizedBox(height: 32),
-            CircularProgressIndicator(
-              color: colors.primary,
-              strokeWidth: 3.2,
-            ),
-          ],
+
+              // Version info
+              const Spacer(),
+              FadeTransition(
+                opacity: _textOpacity,
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 20),
+                  child: Text(
+                    'גרסה 1.0.0',
+                    style: GoogleFonts.assistant(
+                      fontSize: 12,
+                      color: colors.text.withValues(alpha: 0.4),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

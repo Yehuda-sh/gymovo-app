@@ -1,4 +1,5 @@
 import 'exercise_model.dart';
+import 'package:flutter/foundation.dart';
 
 class WorkoutModel {
   final String id;
@@ -9,6 +10,10 @@ class WorkoutModel {
   final DateTime? updatedAt;
   final String? userId;
   final bool isTemplate;
+  final DateTime? date;
+  final bool isCompleted;
+  final String? notes;
+  final Map<String, dynamic>? metadata;
 
   WorkoutModel({
     required this.id,
@@ -19,7 +24,33 @@ class WorkoutModel {
     this.updatedAt,
     this.userId,
     this.isTemplate = false,
+    this.date,
+    this.isCompleted = false,
+    this.notes,
+    this.metadata,
   });
+
+  // Computed properties
+  int get totalSets =>
+      exercises.fold(0, (sum, exercise) => sum + exercise.sets.length);
+  int get totalReps => exercises.fold(
+      0,
+      (sum, exercise) =>
+          sum +
+          exercise.sets.fold(0, (setSum, set) => setSum + (set.reps ?? 0)));
+  double get totalVolume => exercises.fold(
+      0.0,
+      (sum, exercise) =>
+          sum +
+          exercise.sets.fold(0.0,
+              (setSum, set) => setSum + ((set.weight ?? 0) * (set.reps ?? 0))));
+  int get personalRecords => exercises.fold(
+      0,
+      (sum, exercise) =>
+          sum +
+          exercise.sets
+              .where((set) => set.weight != null && set.weight! > 0)
+              .length);
 
   // Create a copy of the workout with some fields updated
   WorkoutModel copyWith({
@@ -31,6 +62,10 @@ class WorkoutModel {
     DateTime? updatedAt,
     String? userId,
     bool? isTemplate,
+    DateTime? date,
+    bool? isCompleted,
+    String? notes,
+    Map<String, dynamic>? metadata,
   }) {
     return WorkoutModel(
       id: id ?? this.id,
@@ -41,6 +76,50 @@ class WorkoutModel {
       updatedAt: updatedAt ?? this.updatedAt,
       userId: userId ?? this.userId,
       isTemplate: isTemplate ?? this.isTemplate,
+      date: date ?? this.date,
+      isCompleted: isCompleted ?? this.isCompleted,
+      notes: notes ?? this.notes,
+      metadata: metadata ?? this.metadata,
+    );
+  }
+
+  // Convert workout to Map
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'title': title,
+      'description': description,
+      'exercises': exercises.map((e) => e.toMap()).toList(),
+      'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt?.toIso8601String(),
+      'userId': userId,
+      'isTemplate': isTemplate,
+      'date': date?.toIso8601String(),
+      'isCompleted': isCompleted,
+      'notes': notes,
+      'metadata': metadata,
+    };
+  }
+
+  // Create workout from Map
+  factory WorkoutModel.fromMap(Map<String, dynamic> map) {
+    return WorkoutModel(
+      id: map['id'] as String,
+      title: map['title'] as String,
+      description: map['description'] as String?,
+      exercises: (map['exercises'] as List)
+          .map((e) => ExerciseModel.fromMap(e as Map<String, dynamic>))
+          .toList(),
+      createdAt: DateTime.parse(map['createdAt'] as String),
+      updatedAt: map['updatedAt'] != null
+          ? DateTime.parse(map['updatedAt'] as String)
+          : null,
+      userId: map['userId'] as String?,
+      isTemplate: map['isTemplate'] as bool? ?? false,
+      date: map['date'] != null ? DateTime.parse(map['date'] as String) : null,
+      isCompleted: map['isCompleted'] as bool? ?? false,
+      notes: map['notes'] as String?,
+      metadata: map['metadata'] as Map<String, dynamic>?,
     );
   }
 
@@ -55,6 +134,10 @@ class WorkoutModel {
       'updatedAt': updatedAt?.toIso8601String(),
       'userId': userId,
       'isTemplate': isTemplate,
+      'date': date?.toIso8601String(),
+      'isCompleted': isCompleted,
+      'notes': notes,
+      'metadata': metadata,
     };
   }
 
@@ -73,6 +156,11 @@ class WorkoutModel {
           : null,
       userId: json['userId'] as String?,
       isTemplate: json['isTemplate'] as bool? ?? false,
+      date:
+          json['date'] != null ? DateTime.parse(json['date'] as String) : null,
+      isCompleted: json['isCompleted'] as bool? ?? false,
+      notes: json['notes'] as String?,
+      metadata: json['metadata'] as Map<String, dynamic>?,
     );
   }
 
@@ -83,6 +171,10 @@ class WorkoutModel {
     List<ExerciseModel> exercises = const [],
     String? userId,
     bool isTemplate = false,
+    DateTime? date,
+    bool isCompleted = false,
+    String? notes,
+    Map<String, dynamic>? metadata,
   }) {
     return WorkoutModel(
       id: '', // Will be set by the server
@@ -92,6 +184,10 @@ class WorkoutModel {
       createdAt: DateTime.now(),
       userId: userId,
       isTemplate: isTemplate,
+      date: date,
+      isCompleted: isCompleted,
+      notes: notes,
+      metadata: metadata,
     );
   }
 
@@ -106,7 +202,11 @@ class WorkoutModel {
         other.createdAt == createdAt &&
         other.updatedAt == updatedAt &&
         other.userId == userId &&
-        other.isTemplate == isTemplate;
+        other.isTemplate == isTemplate &&
+        other.date == date &&
+        other.isCompleted == isCompleted &&
+        other.notes == notes &&
+        mapEquals(other.metadata, metadata);
   }
 
   @override
@@ -120,6 +220,10 @@ class WorkoutModel {
       updatedAt,
       userId,
       isTemplate,
+      date,
+      isCompleted,
+      notes,
+      metadata != null ? Object.hashAll(metadata!.entries) : null,
     );
   }
 }
@@ -130,6 +234,7 @@ class ExerciseModel {
   final List<ExerciseSet> sets;
   final String? notes;
   final String? videoUrl;
+  final int? restTime;
 
   ExerciseModel({
     required this.id,
@@ -137,7 +242,34 @@ class ExerciseModel {
     required this.sets,
     this.notes,
     this.videoUrl,
+    this.restTime,
   });
+
+  // Add toJson method
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'sets': sets.map((s) => s.toMap()).toList(),
+      'notes': notes,
+      'video_url': videoUrl,
+      'rest_time': restTime,
+    };
+  }
+
+  // Add fromJson method
+  factory ExerciseModel.fromJson(Map<String, dynamic> json) {
+    return ExerciseModel(
+      id: json['id'] ?? '',
+      name: json['name'] ?? '',
+      sets: (json['sets'] as List? ?? [])
+          .map((s) => ExerciseSet.fromMap(s as Map<String, dynamic>))
+          .toList(),
+      notes: json['notes'],
+      videoUrl: json['video_url'],
+      restTime: json['rest_time'],
+    );
+  }
 
   factory ExerciseModel.fromMap(Map<String, dynamic> map) {
     return ExerciseModel(
@@ -148,6 +280,7 @@ class ExerciseModel {
           .toList(),
       notes: map['notes'],
       videoUrl: map['video_url'],
+      restTime: map['rest_time'],
     );
   }
 
@@ -158,6 +291,7 @@ class ExerciseModel {
       'sets': sets.map((s) => s.toMap()).toList(),
       'notes': notes,
       'video_url': videoUrl,
+      'rest_time': restTime,
     };
   }
 
@@ -167,6 +301,7 @@ class ExerciseModel {
     List<ExerciseSet>? sets,
     String? notes,
     String? videoUrl,
+    int? restTime,
   }) {
     return ExerciseModel(
       id: id ?? this.id,
@@ -174,6 +309,7 @@ class ExerciseModel {
       sets: sets ?? this.sets,
       notes: notes ?? this.notes,
       videoUrl: videoUrl ?? this.videoUrl,
+      restTime: restTime ?? this.restTime,
     );
   }
 }
@@ -185,6 +321,8 @@ class ExerciseSet {
   final int? restTime;
   final bool isCompleted;
   final String? notes;
+  final String? setType;
+  final String? workoutId;
 
   ExerciseSet({
     required this.id,
@@ -193,6 +331,8 @@ class ExerciseSet {
     this.restTime,
     this.isCompleted = false,
     this.notes,
+    this.setType,
+    this.workoutId,
   });
 
   factory ExerciseSet.fromMap(Map<String, dynamic> map) {
@@ -203,6 +343,8 @@ class ExerciseSet {
       restTime: map['rest_time'],
       isCompleted: map['is_completed'] ?? false,
       notes: map['notes'],
+      setType: map['set_type'],
+      workoutId: map['workout_id'],
     );
   }
 
@@ -214,6 +356,8 @@ class ExerciseSet {
       'rest_time': restTime,
       'is_completed': isCompleted,
       'notes': notes,
+      'set_type': setType,
+      'workout_id': workoutId,
     };
   }
 
@@ -224,6 +368,8 @@ class ExerciseSet {
     int? restTime,
     bool? isCompleted,
     String? notes,
+    String? setType,
+    String? workoutId,
   }) {
     return ExerciseSet(
       id: id ?? this.id,
@@ -232,6 +378,8 @@ class ExerciseSet {
       restTime: restTime ?? this.restTime,
       isCompleted: isCompleted ?? this.isCompleted,
       notes: notes ?? this.notes,
+      setType: setType ?? this.setType,
+      workoutId: workoutId ?? this.workoutId,
     );
   }
 }

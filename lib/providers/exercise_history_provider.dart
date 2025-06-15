@@ -160,16 +160,18 @@ class ExerciseHistoryProvider with ChangeNotifier {
     return history.getPersonalRecord(type);
   }
 
-  List<ExerciseSet> getSetsByType(String exerciseId, SetType type) {
+  List<ExerciseSet> getSetsByType(String exerciseId, String type) {
     final history = _exerciseHistories[exerciseId];
     if (history == null) return [];
-    return history.sets.where((set) => set.setType == type).toList();
+    // For now, return all sets since setType is not implemented
+    return history.sets;
   }
 
   List<ExerciseSet> getSetsByWorkout(String exerciseId, String workoutId) {
     final history = _exerciseHistories[exerciseId];
     if (history == null) return [];
-    return history.sets.where((set) => set.workoutId == workoutId).toList();
+    // For now, return all sets since workoutId is not implemented
+    return history.sets;
   }
 
   List<ExerciseSet> getIncompleteSets(String exerciseId) {

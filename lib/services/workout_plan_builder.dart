@@ -58,21 +58,24 @@ class WorkoutPlanBuilder {
     );
 
     final filtered = allExercises.where((e) {
-      final hasEquipment = equipment.isEmpty ||
-          e.equipment.any((eq) =>
-              equipment.any((a) => eq.toLowerCase().contains(a.toLowerCase())));
+      final matchesEquipment = equipment.isEmpty ||
+          (e.equipment != null &&
+              e.equipment!.isNotEmpty &&
+              equipment.any((eq) =>
+                  e.equipment!.toLowerCase().contains(eq.toLowerCase())));
 
       final safeFromPain = pain.every((p) => !e.nameHe.contains(p));
       final notAvoided = avoid.every((a) => !e.nameHe.contains(a));
 
-      return hasEquipment && safeFromPain && notAvoided;
+      return matchesEquipment && safeFromPain && notAvoided;
     }).toList();
 
     final prioritized = preferredMuscles.isEmpty
         ? filtered
         : filtered.where((e) {
-            return e.muscleGroups
-                .any((muscle) => preferredMuscles.contains(muscle));
+            return e.muscleGroups != null &&
+                e.muscleGroups!
+                    .any((muscle) => preferredMuscles.contains(muscle));
           }).toList();
 
     final usableExercises = prioritized.isNotEmpty ? prioritized : filtered;

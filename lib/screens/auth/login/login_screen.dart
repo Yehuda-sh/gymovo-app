@@ -1,12 +1,15 @@
-// lib/screens/auth/login_screen.dart
+// lib/screens/auth/login/login_screen.dart
+// --------------------------------------------------
+// מסך התחברות ראשי לאפליקציה
+// --------------------------------------------------
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../providers/auth_provider.dart';
-import '../../screens/register_screen.dart';
-import '../../theme/app_theme.dart';
-import '../../screens/home_screen.dart';
+import '../../../providers/auth_provider.dart';
+import '../../register/register_screen.dart';
+import '../../../theme/app_theme.dart';
+import '../../home/home_screen.dart';
 import 'dart:math';
 
 class LoginScreen extends StatefulWidget {

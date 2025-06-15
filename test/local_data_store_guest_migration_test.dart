@@ -40,6 +40,7 @@ void main() {
       id: 'w1',
       title: 'אימון לדוגמה',
       description: 'אימון קרדיו לדוגמה',
+      createdAt: DateTime.now(),
       date: DateTime.now(),
       exercises: [],
       notes: 'הערות לאימון',

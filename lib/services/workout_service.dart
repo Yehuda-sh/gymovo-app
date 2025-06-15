@@ -136,6 +136,7 @@ class WorkoutService {
         id: _uuid.v4(),
         title: 'אימון מתחילים',
         description: 'אימון בסיסי למתחילים',
+        createdAt: DateTime.now(),
         date: now.subtract(const Duration(days: 2)),
         exercises: [
           ExerciseModel(
@@ -193,6 +194,7 @@ class WorkoutService {
           id: _uuid.v4(),
           title: 'אימון $title',
           description: 'אימון מותאם אישית ליום $title',
+          createdAt: DateTime.now(),
           date: DateTime.now(),
           exercises: entry.value.map((ex) {
             return ExerciseModel(

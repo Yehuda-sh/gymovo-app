@@ -1,10 +1,13 @@
-// lib/screens/settings_screen.dart
+// lib/screens/settings/settings_screen.dart
+// --------------------------------------------------
+// מסך הגדרות ראשי
+// --------------------------------------------------
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import '../providers/settings_provider.dart';
-import '../theme/app_theme.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../providers/settings_provider.dart';
+import '../../theme/app_theme.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});

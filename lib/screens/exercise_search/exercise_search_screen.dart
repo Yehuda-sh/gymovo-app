@@ -1,9 +1,12 @@
 // lib/screens/exercise_search_screen.dart
+// --------------------------------------------------
+// מסך חיפוש תרגילים ראשי
+// --------------------------------------------------
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/exercise_provider.dart';
-import '../models/exercise.dart';
+import '../../providers/exercise_provider.dart';
+import '../../models/exercise.dart';
 
 class ExerciseSearchScreen extends StatefulWidget {
   const ExerciseSearchScreen({Key? key}) : super(key: key);
@@ -149,10 +152,9 @@ class _ExerciseSearchScreenState extends State<ExerciseSearchScreen> {
                                           CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                            'שרירים: ${ex.mainMuscles.join(", ")}'),
-                                        if (ex.equipment.isNotEmpty)
-                                          Text(
-                                              'ציוד: ${ex.equipment.join(", ")}'),
+                                            'שרירים: ${ex.mainMuscles?.join(", ") ?? "לא צוין"}'),
+                                        if (ex.equipment?.isNotEmpty == true)
+                                          Text('ציוד: ${ex.equipment}'),
                                       ],
                                     ),
                                     onTap: () {
@@ -213,7 +215,9 @@ class _ExerciseSearchScreenState extends State<ExerciseSearchScreen> {
   List<String> _muscleOptions(List<Exercise> exercises) {
     final set = <String>{};
     for (final ex in exercises) {
-      set.addAll(ex.mainMuscles);
+      if (ex.mainMuscles != null) {
+        set.addAll(ex.mainMuscles!);
+      }
     }
     return set.toList()..sort();
   }
@@ -221,7 +225,9 @@ class _ExerciseSearchScreenState extends State<ExerciseSearchScreen> {
   List<String> _equipmentOptions(List<Exercise> exercises) {
     final set = <String>{};
     for (final ex in exercises) {
-      set.addAll(ex.equipment);
+      if (ex.equipment != null && ex.equipment!.isNotEmpty) {
+        set.add(ex.equipment!);
+      }
     }
     return set.toList()..sort();
   }
@@ -229,9 +235,10 @@ class _ExerciseSearchScreenState extends State<ExerciseSearchScreen> {
   List<String> _typeOptions(List<Exercise> exercises) {
     final set = <String>{};
     for (final ex in exercises) {
-      set.add(ex.type);
+      if (ex.type != null && ex.type!.isNotEmpty) {
+        set.add(ex.type!);
+      }
     }
-    set.removeWhere((e) => e.isEmpty);
     return set.toList()..sort();
   }
 }

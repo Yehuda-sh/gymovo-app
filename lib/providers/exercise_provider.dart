@@ -40,14 +40,34 @@ class ExerciseProvider with ChangeNotifier {
   }) {
     return _exercises.where((ex) {
       final matchesMuscle = muscle == null ||
-          ex.mainMuscles.contains(muscle) ||
-          ex.secondaryMuscles.contains(muscle);
+          (ex.mainMuscles?.contains(muscle) == true) ||
+          (ex.secondaryMuscles?.contains(muscle) == true);
       final matchesEquipment = equipment == null || ex.equipment == equipment;
       final matchesType = type == null || ex.type == type;
       final matchesQuery = query == null ||
           ex.nameHe.contains(query) ||
-          ex.nameEn.toLowerCase().contains(query.toLowerCase());
+          (ex.nameEn?.toLowerCase().contains(query.toLowerCase()) == true);
       return matchesMuscle && matchesEquipment && matchesType && matchesQuery;
     }).toList();
+  }
+
+  // Filter by muscle group
+  bool muscleMatches(Exercise exercise, List<String> selectedMuscleGroups) {
+    if (selectedMuscleGroups.isEmpty) return true;
+    return (exercise.mainMuscles?.any((muscle) =>
+                selectedMuscleGroups.contains(muscle.toLowerCase())) ==
+            true) ||
+        (exercise.secondaryMuscles?.any((muscle) =>
+                selectedMuscleGroups.contains(muscle.toLowerCase())) ==
+            true);
+  }
+
+  // Filter by equipment
+  bool equipmentMatches(Exercise exercise, String selectedEquipment) {
+    if (selectedEquipment.isEmpty) return true;
+    return (exercise.equipment
+            ?.toLowerCase()
+            .contains(selectedEquipment.toLowerCase()) ==
+        true);
   }
 }

@@ -1,4 +1,6 @@
-// lib/features/workouts/screens/workout_mode/workout_mode_screen.dart
+// --------------------------------------------------
+// מסך מודל עבודה
+// --------------------------------------------------
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -121,7 +123,8 @@ class _WorkoutModeViewState extends State<_WorkoutModeView> {
                     WorkoutTopBar(
                       onFinishWorkout: () {
                         // כאן הפעולה שלך לסיום אימון
-                        // לדוג' provider.finishWorkout(); או מעבר למסך סיום וכו'
+                        // לדוג' מעבר למסך סיום, או provider.finishWorkout()
+                        // Navigator.of(context).pushReplacementNamed('/workoutComplete');
                       },
                     ),
                     const SizedBox(height: 10),

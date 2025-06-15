@@ -2,6 +2,7 @@
 import 'dart:math';
 import 'exercise_history.dart';
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 
 enum Gender {
   male,
@@ -75,6 +76,7 @@ class UserModel {
   final int? age;
   final Gender? gender;
   final UserPreferences? preferences;
+  final Map<String, dynamic>? questionnaireAnswers;
   final DateTime? lastWorkoutDate;
   final int workoutStreak;
   final int totalWorkouts;
@@ -96,6 +98,7 @@ class UserModel {
     this.age,
     this.gender,
     this.preferences,
+    this.questionnaireAnswers,
     this.lastWorkoutDate,
     this.workoutStreak = 0,
     this.totalWorkouts = 0,
@@ -118,6 +121,7 @@ class UserModel {
       age: null,
       gender: null,
       preferences: null,
+      questionnaireAnswers: null,
       lastWorkoutDate: null,
       workoutStreak: 0,
       totalWorkouts: 0,
@@ -136,37 +140,131 @@ class UserModel {
 
   // בנאי מ־Map
   factory UserModel.fromMap(Map<String, dynamic> map) {
+    debugPrint('=== DEBUG: UserModel.fromMap called ===');
+    debugPrint('Input map keys: ${map.keys.toList()}');
+    debugPrint(
+        'questionnaire_answers in input map: ${map['questionnaire_answers']}');
+    debugPrint(
+        'questionnaire_answers type: ${map['questionnaire_answers'].runtimeType}');
+
+    Map<String, dynamic>? questionnaireAnswers;
+    if (map['questionnaire_answers'] != null) {
+      debugPrint('Processing questionnaire_answers...');
+      final rawValue = map['questionnaire_answers'];
+      debugPrint('Raw value: $rawValue');
+      debugPrint('Raw value type: ${rawValue.runtimeType}');
+
+      if (rawValue is Map<String, dynamic>) {
+        questionnaireAnswers = rawValue;
+        debugPrint('questionnaire_answers is already Map<String, dynamic>');
+      } else if (rawValue is Map) {
+        // Convert Map to Map<String, dynamic>
+        questionnaireAnswers = Map<String, dynamic>.from(rawValue);
+        debugPrint('questionnaire_answers converted from generic Map');
+      } else if (rawValue is String) {
+        try {
+          final decoded = json.decode(rawValue);
+          if (decoded is Map) {
+            questionnaireAnswers = Map<String, dynamic>.from(decoded);
+            debugPrint('questionnaire_answers decoded from JSON string');
+          } else {
+            debugPrint(
+                'ERROR: Decoded JSON is not a Map: ${decoded.runtimeType}');
+            questionnaireAnswers = null;
+          }
+        } catch (e) {
+          debugPrint('Error decoding questionnaire_answers JSON: $e');
+          debugPrint('Raw string value: $rawValue');
+          questionnaireAnswers = null;
+        }
+      } else {
+        debugPrint(
+            'ERROR: Unexpected questionnaire_answers type: ${rawValue.runtimeType}');
+        debugPrint('Attempting to convert to string and decode...');
+        try {
+          final decoded = json.decode(rawValue.toString());
+          if (decoded is Map) {
+            questionnaireAnswers = Map<String, dynamic>.from(decoded);
+            debugPrint(
+                'questionnaire_answers successfully decoded from toString()');
+          } else {
+            debugPrint('ERROR: Decoded value is not a Map');
+            questionnaireAnswers = null;
+          }
+        } catch (e) {
+          debugPrint('Final attempt failed: $e');
+          questionnaireAnswers = null;
+        }
+      }
+    } else {
+      debugPrint('questionnaire_answers is null in map');
+    }
+
+    debugPrint('Final questionnaireAnswers: $questionnaireAnswers');
+    debugPrint('=========================================');
+
+    // Support both snake_case and camelCase field names
+    final isGuest = map['is_guest'] ?? map['isGuest'] ?? false;
+    final isDemo = map['is_demo'] ?? map['isDemo'] ?? false;
+
+    // Convert workout history
+    List<WorkoutHistory> workoutHistoryList = [];
+    final rawWorkoutHistory = map['workout_history'] ?? map['workoutHistory'];
+    if (rawWorkoutHistory != null) {
+      if (rawWorkoutHistory is List) {
+        workoutHistoryList = rawWorkoutHistory
+            .map((w) {
+              if (w is WorkoutHistory) return w;
+              if (w is Map<String, dynamic>) return WorkoutHistory.fromMap(w);
+              if (w is String) {
+                try {
+                  return WorkoutHistory.fromMap(json.decode(w));
+                } catch (e) {
+                  debugPrint('Error parsing workout history from string: $e');
+                  return null;
+                }
+              }
+              return null;
+            })
+            .whereType<WorkoutHistory>()
+            .toList();
+      }
+    }
+
     return UserModel(
       id: map['id'] ?? '',
       email: map['email'] ?? '',
       name: map['name'] ?? '',
       nickname: map['nickname'],
-      imageUrl: map['image_url'],
+      imageUrl: map['image_url'] ?? map['imageUrl'],
       age: map['age'],
       gender:
           map['gender'] != null ? _parseGender(map['gender'].toString()) : null,
-      isGuest: map['is_guest'] ?? false,
-      isDemo: map['is_demo'] ?? false,
+      isGuest: isGuest,
+      isDemo: isDemo,
       preferences: map['preferences'] != null
           ? UserPreferences.fromMap(map['preferences'] is Map<String, dynamic>
               ? map['preferences']
               : json.decode(map['preferences'].toString()))
           : null,
+      questionnaireAnswers: questionnaireAnswers,
       lastWorkoutDate: map['last_workout_date'] != null
           ? DateTime.parse(map['last_workout_date'].toString())
-          : null,
-      workoutStreak: map['workout_streak'] ?? 0,
-      totalWorkouts: map['total_workouts'] ?? 0,
-      workoutHistory: (map['workout_history'] as List?)
-              ?.map((w) => WorkoutHistory.fromMap(
-                  w is Map<String, dynamic> ? w : json.decode(w.toString())))
-              .toList() ??
-          [],
-      isProfileComplete: map['is_profile_complete'] ?? false,
+          : map['lastWorkoutDate'] != null
+              ? DateTime.parse(map['lastWorkoutDate'].toString())
+              : null,
+      workoutStreak: map['workout_streak'] ?? map['workoutStreak'] ?? 0,
+      totalWorkouts: map['total_workouts'] ?? map['totalWorkouts'] ?? 0,
+      workoutHistory: workoutHistoryList,
+      isProfileComplete:
+          map['is_profile_complete'] ?? map['isProfileComplete'] ?? false,
       profileLastUpdated: map['profile_last_updated'] != null
           ? DateTime.parse(map['profile_last_updated'].toString())
-          : null,
-      nicknameSuggestions: (map['nickname_suggestions'] as List?)
+          : map['profileLastUpdated'] != null
+              ? DateTime.parse(map['profileLastUpdated'].toString())
+              : null,
+      nicknameSuggestions: (map['nickname_suggestions'] ??
+                  map['nicknameSuggestions'] as List?)
               ?.map((n) => NicknameSuggestion.fromMap(
                   n is Map<String, dynamic> ? n : json.decode(n.toString())))
               .toList() ??
@@ -176,7 +274,13 @@ class UserModel {
 
   // המרה ל־Map
   Map<String, dynamic> toMap() {
-    return {
+    debugPrint('=== DEBUG: UserModel.toMap called ===');
+    debugPrint(
+        'questionnaireAnswers before serialization: $questionnaireAnswers');
+    debugPrint(
+        'questionnaireAnswers type: ${questionnaireAnswers.runtimeType}');
+
+    final map = {
       'id': id,
       'email': email,
       'name': name,
@@ -187,6 +291,7 @@ class UserModel {
       'is_guest': isGuest,
       'is_demo': isDemo,
       'preferences': preferences?.toMap(),
+      'questionnaire_answers': questionnaireAnswers,
       'last_workout_date': lastWorkoutDate?.toIso8601String(),
       'workout_streak': workoutStreak,
       'total_workouts': totalWorkouts,
@@ -196,6 +301,13 @@ class UserModel {
       'nickname_suggestions':
           nicknameSuggestions?.map((n) => n.toMap()).toList(),
     };
+
+    debugPrint(
+        'questionnaire_answers in output map: ${map['questionnaire_answers']}');
+    debugPrint('Output map keys: ${map.keys.toList()}');
+    debugPrint('======================================');
+
+    return map;
   }
 
   // יצירת עותק מעודכן
@@ -208,6 +320,7 @@ class UserModel {
     int? age,
     Gender? gender,
     UserPreferences? preferences,
+    Map<String, dynamic>? questionnaireAnswers,
     DateTime? lastWorkoutDate,
     int? workoutStreak,
     int? totalWorkouts,
@@ -218,6 +331,15 @@ class UserModel {
     bool? isGuest,
     bool? isDemo,
   }) {
+    debugPrint('=== DEBUG: UserModel.copyWith called ===');
+    debugPrint('Current questionnaireAnswers: ${this.questionnaireAnswers}');
+    debugPrint('New questionnaireAnswers parameter: $questionnaireAnswers');
+
+    final newQuestionnaireAnswers =
+        questionnaireAnswers ?? this.questionnaireAnswers;
+    debugPrint('Final questionnaireAnswers to use: $newQuestionnaireAnswers');
+    debugPrint('==========================================');
+
     return UserModel(
       id: id ?? this.id,
       email: email ?? this.email,
@@ -229,6 +351,7 @@ class UserModel {
       isGuest: isGuest ?? this.isGuest,
       isDemo: isDemo ?? this.isDemo,
       preferences: preferences ?? this.preferences,
+      questionnaireAnswers: newQuestionnaireAnswers,
       lastWorkoutDate: lastWorkoutDate ?? this.lastWorkoutDate,
       workoutStreak: workoutStreak ?? this.workoutStreak,
       totalWorkouts: totalWorkouts ?? this.totalWorkouts,
@@ -335,12 +458,14 @@ class UserModel {
   // Add method to get profile completion percentage
   double get profileCompletionPercentage {
     int completedFields = 0;
-    int totalFields = 4; // age, gender, preferences, nickname
+    int totalFields = 5; // age, gender, preferences, nickname, questionnaire
 
     if (age != null) completedFields++;
     if (gender != null) completedFields++;
     if (preferences != null) completedFields++;
     if (hasNickname) completedFields++;
+    if (questionnaireAnswers != null && questionnaireAnswers!.isNotEmpty)
+      completedFields++;
 
     return completedFields / totalFields;
   }
@@ -348,8 +473,12 @@ class UserModel {
   static Gender _parseGender(String value) {
     switch (value.toLowerCase()) {
       case 'female':
+      case 'נקבה':
+      case 'אישה':
         return Gender.female;
       case 'male':
+      case 'זכר':
+      case 'גבר':
         return Gender.male;
       default:
         return Gender.other;
@@ -511,15 +640,26 @@ class UserPreferences {
   static WorkoutGoal _parseWorkoutGoal(String value) {
     switch (value.toLowerCase()) {
       case 'weight_loss':
+      case 'ירידה במשקל':
         return WorkoutGoal.weightLoss;
       case 'muscle_gain':
+      case 'עלייה במסת שריר':
+      case 'עלייה במסה':
         return WorkoutGoal.muscleGain;
       case 'endurance':
+      case 'סיבולת':
+      case 'שיפור סיבולת/כושר כללי':
+      case 'שיפור כושר גופני כללי':
         return WorkoutGoal.endurance;
       case 'strength':
+      case 'כוח':
         return WorkoutGoal.strength;
       case 'flexibility':
+      case 'גמישות':
         return WorkoutGoal.flexibility;
+      case 'חיטוב ועיצוב':
+      case 'חיטוב ועיצוב הגוף':
+      case 'שיפור בריאות וחיוניות':
       default:
         return WorkoutGoal.generalFitness;
     }
@@ -528,12 +668,20 @@ class UserPreferences {
   static ExperienceLevel _parseExperienceLevel(String value) {
     switch (value.toLowerCase()) {
       case 'beginner':
+      case 'מתחיל':
+      case 'מתחיל מוחלט':
+      case 'מתחיל עם ניסיון בסיסי':
         return ExperienceLevel.beginner;
       case 'intermediate':
+      case 'בינוני':
+      case 'מתאמן בינוני':
         return ExperienceLevel.intermediate;
       case 'advanced':
+      case 'מתקדם':
         return ExperienceLevel.advanced;
       case 'expert':
+      case 'מומחה':
+      case 'מנוסה מאוד':
         return ExperienceLevel.expert;
       default:
         return ExperienceLevel.beginner;
@@ -557,14 +705,38 @@ class WorkoutHistory {
   });
 
   factory WorkoutHistory.fromMap(Map<String, dynamic> map) {
+    final workoutId =
+        map['workout_id'] ?? 'wrk_${DateTime.now().millisecondsSinceEpoch}';
+    final date = map['date'] != null
+        ? DateTime.parse(map['date'].toString())
+        : DateTime.now();
+    final rating = map['rating'] ?? 0;
+    final feedback = map['feedback'];
+    final rawExerciseHistory = map['exercise_history'];
+    List<ExerciseHistory> exerciseHistoryList = [];
+    if (rawExerciseHistory != null && rawExerciseHistory is List) {
+      exerciseHistoryList = rawExerciseHistory
+          .map((e) {
+            if (e is ExerciseHistory) return e;
+            if (e is Map<String, dynamic>) return ExerciseHistory.fromMap(e);
+            if (e is String) {
+              try {
+                return ExerciseHistory.fromMap(json.decode(e));
+              } catch (_) {
+                return null;
+              }
+            }
+            return null;
+          })
+          .whereType<ExerciseHistory>()
+          .toList();
+    }
     return WorkoutHistory(
-      workoutId: map['workout_id'] ?? '',
-      date: DateTime.parse(map['date']),
-      rating: map['rating'] ?? 0,
-      feedback: map['feedback'],
-      exerciseHistory: (map['exercise_history'] as List?)
-          ?.map((e) => ExerciseHistory.fromMap(e as Map<String, dynamic>))
-          .toList(),
+      workoutId: workoutId,
+      date: date,
+      rating: rating,
+      feedback: feedback,
+      exerciseHistory: exerciseHistoryList,
     );
   }
 

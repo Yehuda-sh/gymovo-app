@@ -77,7 +77,6 @@ class WorkoutsProvider with ChangeNotifier {
       id: '$timestamp-copy',
       title: '${original.title} (העתק)',
       date: DateTime.now(),
-      completedAt: null,
       metadata: {...?original.metadata, 'duplicated': true},
       exercises: original.exercises.map((ex) {
         final exerciseId = '$timestamp-${ex.id.hashCode}';
