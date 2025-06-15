@@ -100,8 +100,9 @@ class EditRestDialog extends StatelessWidget {
                       if (restTime > minRest) setState(() => restTime -= 5);
                     },
                     onLongPress: () {
-                      if (restTime > minRest + 10)
+                      if (restTime > minRest + 10) {
                         setState(() => restTime -= 15);
+                      }
                     },
                   ),
                   // Expanded למנוע גלישה:
@@ -171,8 +172,9 @@ class EditRestDialog extends StatelessWidget {
                       if (restTime < maxRest) setState(() => restTime += 5);
                     },
                     onLongPress: () {
-                      if (restTime < maxRest - 10)
+                      if (restTime < maxRest - 10) {
                         setState(() => restTime += 15);
+                      }
                     },
                   ),
                 ],

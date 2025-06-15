@@ -81,7 +81,7 @@ class EditSetDialog extends StatelessWidget {
                     ),
                     SizedBox(
                       width: 48,
-                      child: Text('${weight.toStringAsFixed(1)}',
+                      child: Text(weight.toStringAsFixed(1),
                           textAlign: TextAlign.center,
                           style: GoogleFonts.assistant(fontSize: 18)),
                     ),

@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:gymovo_app/data/local_data_store.dart';
-import 'package:gymovo_app/models/user_model.dart';
 import 'package:gymovo_app/models/week_plan_model.dart';
 import 'package:gymovo_app/models/workout_model.dart';
 

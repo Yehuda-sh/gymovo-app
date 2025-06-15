@@ -267,8 +267,7 @@ class UserModel {
                   map['nicknameSuggestions'] as List?)
               ?.map((n) => NicknameSuggestion.fromMap(
                   n is Map<String, dynamic> ? n : json.decode(n.toString())))
-              .toList() ??
-          null,
+              .toList(),
     );
   }
 
@@ -464,8 +463,9 @@ class UserModel {
     if (gender != null) completedFields++;
     if (preferences != null) completedFields++;
     if (hasNickname) completedFields++;
-    if (questionnaireAnswers != null && questionnaireAnswers!.isNotEmpty)
+    if (questionnaireAnswers != null && questionnaireAnswers!.isNotEmpty) {
       completedFields++;
+    }
 
     return completedFields / totalFields;
   }

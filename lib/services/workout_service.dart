@@ -173,8 +173,9 @@ class WorkoutService {
     final programs = await getWorkoutPrograms();
     return programs.where((program) {
       final metadata = program.metadata ?? {};
-      if (difficulty != null && metadata['difficulty'] != difficulty)
+      if (difficulty != null && metadata['difficulty'] != difficulty) {
         return false;
+      }
       if (goal != null && metadata['goal'] != goal) return false;
       if (equipment != null && metadata['equipment'] != equipment) return false;
       return true;

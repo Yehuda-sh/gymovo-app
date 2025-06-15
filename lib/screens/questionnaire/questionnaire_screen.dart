@@ -15,7 +15,6 @@ import '../../data/local_data_store.dart';
 import '../register/register_screen.dart';
 import '../../providers/week_plan_provider.dart';
 import '../welcome/welcome_screen.dart';
-import '../questionnaire_results/questionnaire_results_screen.dart';
 import '../home/home_screen.dart';
 
 // Constants for validation ranges
@@ -270,8 +269,9 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
 
   String _getGenderAwareAgeLabel() {
     final gender = _answers['gender'];
-    if (gender == null)
+    if (gender == null) {
       return 'בן/בת כמה את/ה? (${ValidationConstants.minAge}-${ValidationConstants.maxAge})';
+    }
 
     switch (gender.toString().toLowerCase()) {
       case 'זכר':

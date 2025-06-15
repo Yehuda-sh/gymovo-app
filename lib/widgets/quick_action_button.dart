@@ -36,7 +36,7 @@ class QuickActionButton extends StatelessWidget {
     final Color iconClr = iconColor ?? theme.colorScheme.primary;
     final Color bgClr = backgroundColor ??
         (theme.brightness == Brightness.light
-            ? theme.colorScheme.surfaceVariant
+            ? theme.colorScheme.surfaceContainerHighest
             : theme.colorScheme.surface.withOpacity(0.93));
     final Color contentClr = theme.colorScheme.onSurface;
 

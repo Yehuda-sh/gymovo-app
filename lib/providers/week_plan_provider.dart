@@ -4,7 +4,6 @@ import '../models/workout_model.dart'
     show WorkoutModel, ExerciseModel, ExerciseSet;
 import '../models/user_model.dart' hide ExerciseSet;
 import '../data/local_data_store.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../services/plan_builder_service.dart';
 
 enum PlanType { demoMale, demoFemale, aiGenerated, custom }

@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../theme/app_theme.dart';
 import '../../data/local_data_store.dart';
+import '../../models/user_model.dart';
 import '../auth/auth_wrapper.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -119,23 +120,43 @@ class _SplashScreenState extends State<SplashScreen>
     }
   }
 
+  Future<void> _loadSettings() async {
+    // Load any app settings/preferences
+    await Future.delayed(
+        const Duration(milliseconds: 100)); // Simulated loading
+  }
+
+  Future<UserModel?> _loadUser() async {
+    return LocalDataStore.getCurrentUser();
+  }
+
+  Future<void> _loadTheme() async {
+    // Pre-warm theme if needed
+    AppTheme.darkTheme;
+  }
+
   Future<void> _initializeApp() async {
     try {
-      // Simulate loading steps
-      await Future.delayed(const Duration(milliseconds: 1500));
+      // Single initial state update
+      setState(() => _loadingMessage = 'טוען נתונים...');
 
-      setState(() => _loadingMessage = 'טוען הגדרות...');
+      // Parallel loading of all required data
+      await Future.wait([
+        _loadSettings(),
+        _loadUser(),
+        _loadTheme(),
+      ]);
 
-      setState(() => _loadingMessage = 'בודק משתמש...');
-      final user = await LocalDataStore.getCurrentUser();
+      if (!mounted) return;
 
-      setState(() => _loadingMessage = 'מכין את האפליקציה...');
-      await Future.delayed(const Duration(milliseconds: 500));
+      // Single final state update
+      setState(() {
+        _loadingMessage = 'הכל מוכן!';
+        _isLoading = false;
+      });
 
-      setState(() => _isLoading = false);
-
-      // Navigate after a short delay
-      await Future.delayed(const Duration(milliseconds: 500));
+      // Minimal delay for UX only (smooth transition)
+      await Future.delayed(const Duration(milliseconds: 300));
 
       if (!mounted) return;
 
@@ -145,6 +166,7 @@ class _SplashScreenState extends State<SplashScreen>
         overlays: SystemUiOverlay.values,
       );
 
+      // Navigate with optimized transition
       Navigator.of(context).pushReplacement(
         PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>
@@ -155,49 +177,51 @@ class _SplashScreenState extends State<SplashScreen>
               child: child,
             );
           },
-          transitionDuration: const Duration(milliseconds: 800),
+          transitionDuration: const Duration(milliseconds: 300),
         ),
       );
     } catch (e) {
-      // Handle initialization errors
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-          _loadingMessage = 'שגיאה בטעינה';
-        });
+      if (!mounted) return;
 
-        // Show error dialog
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: Text(
-              'שגיאה',
-              style: GoogleFonts.assistant(fontWeight: FontWeight.bold),
-            ),
-            content: Text(
-              'אירעה שגיאה בטעינת האפליקציה. אנא נסה שוב.',
-              style: GoogleFonts.assistant(),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  _initializeApp(); // Retry
-                },
-                child: Text(
-                  'נסה שוב',
-                  style: GoogleFonts.assistant(fontWeight: FontWeight.bold),
-                ),
-              ),
-            ],
+      // Single error state update
+      setState(() {
+        _isLoading = false;
+        _loadingMessage = 'שגיאה בטעינה';
+      });
+
+      // Show error dialog
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          title: Text(
+            'שגיאה',
+            style: GoogleFonts.assistant(fontWeight: FontWeight.bold),
           ),
-        );
-      }
+          content: Text(
+            'אירעה שגיאה בטעינת האפליקציה. אנא נסה שוב.',
+            style: GoogleFonts.assistant(),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _initializeApp(); // Retry
+              },
+              child: Text(
+                'נסה שוב',
+                style: GoogleFonts.assistant(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+      );
     }
   }
 
   @override
   void dispose() {
+    // Proper cleanup of all controllers
     _logoController.dispose();
     _textController.dispose();
     _progressController.dispose();

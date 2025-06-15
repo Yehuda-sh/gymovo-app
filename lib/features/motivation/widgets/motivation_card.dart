@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../theme/app_theme.dart';
+import '../../../models/user_model.dart'; // ודא שקיים
 
 class MotivationCard extends StatelessWidget {
-  final dynamic user;
-  const MotivationCard({required this.user});
+  final UserModel? user;
+  const MotivationCard({super.key, this.user});
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +31,7 @@ class MotivationCard extends StatelessWidget {
           const SizedBox(width: 18),
           Expanded(
             child: Text(
-              '${user?.name?.isNotEmpty == true ? user!.name : "מתאמן"} – זה הזמן לקחת צעד קדימה ולהתחיל את השבוע באנרגיה חיובית!',
+              '${user?.name.isNotEmpty == true ? user!.name : "מתאמן"} – זה הזמן לקחת צעד קדימה ולהתחיל את השבוע באנרגיה חיובית!',
               style: GoogleFonts.assistant(
                 color: colors.headline,
                 fontWeight: FontWeight.w600,

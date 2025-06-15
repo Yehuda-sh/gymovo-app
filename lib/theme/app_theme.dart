@@ -75,194 +75,234 @@ class AppColors {
 class AppTheme {
   static final AppColors colors = AppColors.premium;
 
-  static ThemeData get darkTheme {
-    final textTheme = GoogleFonts.assistantTextTheme(
-      ThemeData.dark().textTheme,
-    ).apply(
-      bodyColor: colors.text,
-      displayColor: colors.text,
-    );
+  // Cache all commonly used styles
+  static late final TextTheme _cachedTextTheme = GoogleFonts.assistantTextTheme(
+    ThemeData.dark().textTheme,
+  ).apply(
+    bodyColor: colors.text,
+    displayColor: colors.text,
+  );
 
-    return ThemeData(
-      useMaterial3: true,
+  // Pre-calculate and cache commonly used styles
+  static late final TextStyle _displayLargeStyle =
+      _cachedTextTheme.displayLarge?.copyWith(
+            fontSize: 40,
+            fontWeight: FontWeight.bold,
+          ) ??
+          const TextStyle();
+
+  static late final TextStyle _headlineLargeStyle =
+      _cachedTextTheme.headlineLarge?.copyWith(
+            fontWeight: FontWeight.bold,
+            fontSize: 32,
+          ) ??
+          const TextStyle();
+
+  static late final TextStyle _headlineSmallStyle =
+      _cachedTextTheme.headlineSmall?.copyWith(
+            fontSize: 22,
+            fontWeight: FontWeight.w700,
+          ) ??
+          const TextStyle();
+
+  static late final TextStyle _titleLargeStyle =
+      _cachedTextTheme.titleLarge?.copyWith(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ) ??
+          const TextStyle();
+
+  static late final TextStyle _titleMediumStyle =
+      _cachedTextTheme.titleMedium?.copyWith(
+            fontSize: 18,
+            color: Colors.white70,
+          ) ??
+          const TextStyle();
+
+  static late final TextStyle _labelLargeStyle =
+      _cachedTextTheme.labelLarge?.copyWith(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ) ??
+          const TextStyle();
+
+  static late final TextStyle _bodyLargeStyle =
+      _cachedTextTheme.bodyLarge?.copyWith(
+            fontSize: 18,
+          ) ??
+          const TextStyle();
+
+  static late final TextStyle _bodyMediumStyle =
+      _cachedTextTheme.bodyMedium?.copyWith(
+            fontSize: 16,
+          ) ??
+          const TextStyle();
+
+  static late final TextStyle _bodySmallStyle =
+      _cachedTextTheme.bodySmall?.copyWith(
+            fontSize: 13,
+            color: Colors.white60,
+          ) ??
+          const TextStyle();
+
+  // Cache the entire theme
+  static late final ThemeData _darkTheme = ThemeData(
+    useMaterial3: true,
+    brightness: Brightness.dark,
+    fontFamily: GoogleFonts.assistant().fontFamily,
+    primaryColor: colors.primary,
+    scaffoldBackgroundColor: colors.background,
+    colorScheme: ColorScheme.dark(
+      primary: colors.primary,
+      secondary: colors.secondary,
+      surface: colors.surface,
+      error: colors.error,
+      outline: colors.outline,
+      onPrimary: Colors.white,
+      onSecondary: Colors.black,
+      onSurface: Colors.white,
+      onError: Colors.black,
       brightness: Brightness.dark,
-      fontFamily: GoogleFonts.assistant().fontFamily,
-      primaryColor: colors.primary,
-      scaffoldBackgroundColor: colors.background,
-      colorScheme: ColorScheme.dark(
-        primary: colors.primary,
-        secondary: colors.secondary,
-        surface: colors.surface,
-        error: colors.error,
-        outline: colors.outline,
-        onPrimary: Colors.white,
-        onSecondary: Colors.black,
-        onSurface: Colors.white,
-        onError: Colors.black,
-        brightness: Brightness.dark,
+    ),
+    textTheme: _cachedTextTheme.copyWith(
+      displayLarge: _displayLargeStyle,
+      headlineLarge: _headlineLargeStyle,
+      headlineSmall: _headlineSmallStyle,
+      titleLarge: _titleLargeStyle,
+      titleMedium: _titleMediumStyle,
+      labelLarge: _labelLargeStyle,
+      bodyLarge: _bodyLargeStyle,
+      bodyMedium: _bodyMediumStyle,
+      bodySmall: _bodySmallStyle,
+    ),
+    tabBarTheme: TabBarThemeData(
+      indicatorColor: colors.accent,
+      indicatorSize: TabBarIndicatorSize.label,
+      labelColor: colors.accent,
+      unselectedLabelColor: Colors.white60,
+      labelStyle: _labelLargeStyle.copyWith(
+        fontWeight: FontWeight.bold,
+        fontSize: 17,
+        color: colors.accent,
       ),
-      textTheme: textTheme.copyWith(
-        displayLarge: textTheme.displayLarge?.copyWith(
-          fontSize: 40,
-          fontWeight: FontWeight.bold,
-        ),
-        headlineLarge: textTheme.headlineLarge?.copyWith(
-          fontWeight: FontWeight.bold,
-          fontSize: 32,
-        ),
-        headlineSmall: textTheme.headlineSmall?.copyWith(
-          fontSize: 22,
-          fontWeight: FontWeight.w700,
-        ),
-        titleLarge: textTheme.titleLarge?.copyWith(
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-        ),
-        titleMedium: textTheme.titleMedium?.copyWith(
-          fontSize: 18,
-          color: Colors.white70,
-        ),
-        labelLarge: textTheme.labelLarge?.copyWith(
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-        ),
-        bodyLarge: textTheme.bodyLarge?.copyWith(
-          fontSize: 18,
-        ),
-        bodyMedium: textTheme.bodyMedium?.copyWith(
-          fontSize: 16,
-        ),
-        bodySmall: textTheme.bodySmall?.copyWith(
-          fontSize: 13,
-          color: Colors.white60,
-        ),
+      unselectedLabelStyle: _labelLargeStyle.copyWith(
+        fontWeight: FontWeight.w500,
+        fontSize: 16,
+        color: Colors.white60,
       ),
-      tabBarTheme: TabBarThemeData(
-        indicatorColor: colors.accent,
-        indicatorSize: TabBarIndicatorSize.label,
-        labelColor: colors.accent,
-        unselectedLabelColor: Colors.white60,
-        labelStyle: textTheme.labelLarge?.copyWith(
-          fontWeight: FontWeight.bold,
-          fontSize: 17,
+      overlayColor: const WidgetStatePropertyAll(Colors.transparent),
+      indicator: UnderlineTabIndicator(
+        borderSide: BorderSide(
           color: colors.accent,
-        ),
-        unselectedLabelStyle: textTheme.labelLarge?.copyWith(
-          fontWeight: FontWeight.w500,
-          fontSize: 16,
-          color: Colors.white60,
-        ),
-        overlayColor: const WidgetStatePropertyAll(Colors.transparent),
-        indicator: UnderlineTabIndicator(
-          borderSide: BorderSide(
-            color: colors.accent,
-            width: 3,
-          ),
+          width: 3,
         ),
       ),
-      appBarTheme: AppBarTheme(
-        backgroundColor: colors.primary,
-        centerTitle: true,
-        elevation: 0,
-        titleTextStyle: textTheme.titleLarge,
-        iconTheme: const IconThemeData(color: Colors.white),
+    ),
+    appBarTheme: AppBarTheme(
+      backgroundColor: colors.primary,
+      centerTitle: true,
+      elevation: 0,
+      titleTextStyle: _titleLargeStyle,
+      iconTheme: const IconThemeData(color: Colors.white),
+    ),
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: colors.surface,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide.none,
       ),
-      inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: colors.surface,
-        border: OutlineInputBorder(
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(
+          color: colors.outline.withOpacity(0.5),
+        ),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(
+          color: colors.primary,
+          width: 2,
+        ),
+      ),
+      labelStyle: TextStyle(color: colors.text.withOpacity(0.7)),
+      hintStyle: TextStyle(color: colors.text.withOpacity(0.5)),
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ButtonStyle(
+        backgroundColor: WidgetStateProperty.resolveWith<Color>((states) {
+          if (states.contains(WidgetState.pressed)) {
+            return colors.primary.withOpacity(0.8);
+          }
+          return colors.primary;
+        }),
+        foregroundColor: const WidgetStatePropertyAll(Colors.white),
+        padding: const WidgetStatePropertyAll(
+            EdgeInsets.symmetric(horizontal: 24, vertical: 12)),
+        shape: WidgetStatePropertyAll(RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
-            color: colors.outline.withOpacity(0.5),
-          ),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
-            color: colors.primary,
-            width: 2,
-          ),
-        ),
-        labelStyle: TextStyle(color: colors.text.withOpacity(0.7)),
-        hintStyle: TextStyle(color: colors.text.withOpacity(0.5)),
+        )),
+        textStyle: WidgetStatePropertyAll(_labelLargeStyle),
+        shadowColor: WidgetStatePropertyAll(colors.shadow),
+        elevation: const WidgetStatePropertyAll(4),
       ),
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ButtonStyle(
-          backgroundColor: MaterialStateProperty.resolveWith<Color>((states) {
-            if (states.contains(MaterialState.pressed)) {
-              return colors.primary.withOpacity(0.8);
-            }
-            return colors.primary;
-          }),
-          foregroundColor: const MaterialStatePropertyAll(Colors.white),
-          padding: const MaterialStatePropertyAll(
-              EdgeInsets.symmetric(horizontal: 24, vertical: 12)),
-          shape: MaterialStatePropertyAll(RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          )),
-          textStyle: MaterialStatePropertyAll(textTheme.labelLarge),
-          shadowColor: MaterialStatePropertyAll(colors.shadow),
-          elevation: const MaterialStatePropertyAll(4),
-        ),
+    ),
+    cardTheme: CardThemeData(
+      color: colors.surface,
+      elevation: 4,
+      margin: const EdgeInsets.all(8),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
       ),
-      cardTheme: CardThemeData(
-        color: colors.surface,
-        elevation: 4,
-        margin: const EdgeInsets.all(8),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        shadowColor: colors.shadow,
+      shadowColor: colors.shadow,
+    ),
+    iconTheme: IconThemeData(
+      color: colors.headline,
+      size: 28,
+    ),
+    dividerColor: colors.divider,
+    snackBarTheme: SnackBarThemeData(
+      backgroundColor: colors.primary,
+      contentTextStyle: _labelLargeStyle.copyWith(
+        fontWeight: FontWeight.bold,
+        color: Colors.white,
       ),
-      iconTheme: IconThemeData(
-        color: colors.headline,
-        size: 28,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
       ),
-      dividerColor: colors.divider,
-      snackBarTheme: SnackBarThemeData(
-        backgroundColor: colors.primary,
-        contentTextStyle: textTheme.labelLarge?.copyWith(
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
-        ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-        behavior: SnackBarBehavior.floating,
+      behavior: SnackBarBehavior.floating,
+    ),
+    bottomNavigationBarTheme: BottomNavigationBarThemeData(
+      backgroundColor: colors.surface,
+      selectedItemColor: colors.accent,
+      unselectedItemColor: Colors.white60,
+      type: BottomNavigationBarType.fixed,
+      elevation: 8,
+    ),
+    floatingActionButtonTheme: FloatingActionButtonThemeData(
+      backgroundColor: colors.primary,
+      foregroundColor: Colors.white,
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
       ),
-      bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        backgroundColor: colors.surface,
-        selectedItemColor: colors.accent,
-        unselectedItemColor: Colors.white60,
-        type: BottomNavigationBarType.fixed,
-        elevation: 8,
+    ),
+    drawerTheme: DrawerThemeData(
+      backgroundColor: colors.surface,
+      elevation: 16,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
       ),
-      floatingActionButtonTheme: FloatingActionButtonThemeData(
-        backgroundColor: colors.primary,
-        foregroundColor: Colors.white,
-        elevation: 4,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+    ),
+    popupMenuTheme: PopupMenuThemeData(
+      color: colors.surface,
+      elevation: 8,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
       ),
-      drawerTheme: DrawerThemeData(
-        backgroundColor: colors.surface,
-        elevation: 16,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-      ),
-      popupMenuTheme: PopupMenuThemeData(
-        color: colors.surface,
-        elevation: 8,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-      ),
-    );
-  }
+    ),
+  );
+
+  // Return the cached theme
+  static ThemeData get darkTheme => _darkTheme;
 }

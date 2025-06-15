@@ -1,6 +1,5 @@
-// --------------------------------------------------
-// שדה טקסט לכניסת סיסמה
-// --------------------------------------------------
+// features/auth/widgets/login_form_field.dart
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -14,6 +13,7 @@ class LoginFormField extends StatelessWidget {
   final VoidCallback onTogglePasswordVisibility;
   final TextInputType keyboardType;
   final String? Function(String?)? validator;
+  final List<String>? autofillHints; // חדש! תמיכה באוטופיל
 
   const LoginFormField({
     super.key,
@@ -26,6 +26,7 @@ class LoginFormField extends StatelessWidget {
     required this.onTogglePasswordVisibility,
     this.keyboardType = TextInputType.text,
     this.validator,
+    this.autofillHints, // חדש! חובה להעביר ב־login_form.dart
   });
 
   @override
@@ -42,6 +43,7 @@ class LoginFormField extends StatelessWidget {
         fontSize: 16,
         color: colors.onSurface,
       ),
+      autofillHints: autofillHints, // השורה שמאפשרת אוטופיל!
       decoration: InputDecoration(
         labelText: label,
         labelStyle: GoogleFonts.assistant(

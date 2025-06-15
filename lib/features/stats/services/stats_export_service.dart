@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:cross_file/cross_file.dart';
 import '../models/achievement.dart';
 
 class StatsExportService {
@@ -12,64 +11,71 @@ class StatsExportService {
 
     // יצירת נתונים לייצוא
     final stats = {
-      'תאריך יצוא': DateTime.now().toIso8601String(),
-      'סטטיסטיקות כללית': {
-        'מספר אימונים': completedWorkouts.length,
-        'זמן אימון כולל': completedWorkouts.fold<int>(
+      'export_date': DateTime.now().toIso8601String(),
+      'general_stats': {
+        'workouts_count': completedWorkouts.length,
+        'total_duration': completedWorkouts.fold<int>(
           0,
           (sum, workout) => sum + (workout['duration'] as int? ?? 0),
         ),
-        'מספר תרגילים': completedWorkouts.fold<int>(
+        'exercises_count': completedWorkouts.fold<int>(
           0,
           (sum, workout) => sum + (workout['exercises'] as List).length,
         ),
       },
-      'הישגים': AchievementService.getAchievements(completedWorkouts)
+      'achievements': AchievementService.getAchievements(completedWorkouts)
           .map((a) => a.toMap())
           .toList(),
-      'סטטיסטיקות תרגילים': _getExerciseStats(completedWorkouts),
-      'היסטוריית אימונים': completedWorkouts
+      'exercise_stats': _getExerciseStats(completedWorkouts),
+      'workout_history': completedWorkouts
           .map((w) => {
-                'תאריך': w['completed_at'],
-                'שם': w['title'],
-                'משך': w['duration'],
-                'תרגילים': (w['exercises'] as List).length,
-                'דירוג': w['rating'],
-                'משוב': w['feedback'],
+                'date': w['completed_at'],
+                'title': w['title'],
+                'duration': w['duration'],
+                'exercises': (w['exercises'] as List).length,
+                'rating': w['rating'],
+                'feedback': w['feedback'],
               })
           .toList(),
     };
 
-    // שמירת הקובץ
-    final directory = await getApplicationDocumentsDirectory();
-    final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final file = File('${directory.path}/workout_stats_$timestamp.json');
-    await file.writeAsString(jsonEncode(stats), encoding: utf8);
+    try {
+      final directory = await getApplicationDocumentsDirectory();
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final file = File('${directory.path}/workout_stats_$timestamp.json');
+      await file.writeAsString(jsonEncode(stats), encoding: utf8);
 
-    // שיתוף הקובץ
-    await Share.shareXFiles(
-      [XFile(file.path)],
-      text: 'סטטיסטיקות אימונים שלי מ־Gymovo',
-    );
+      await Share.shareXFiles(
+        [XFile(file.path)],
+        text: 'Gymovo - סטטיסטיקות אימונים שלי',
+      );
+    } catch (e) {
+      // אפשר להוסיף כאן callback להודעת שגיאה ב־UI
+      print('שגיאה בייצוא הנתונים: $e');
+    }
   }
 
-  static Map<String, dynamic> _getExerciseStats(
+  static List<Map<String, dynamic>> _getExerciseStats(
       List<Map<String, dynamic>> workouts) {
     final exerciseStats = <String, int>{};
 
-    // חישוב סטטיסטיקות תרגילים
     for (final workout in workouts) {
       for (final exercise in workout['exercises'] as List) {
-        exerciseStats[exercise['name'] as String] =
-            (exerciseStats[exercise['name'] as String] ?? 0) +
-                (exercise['sets'] as List).length;
+        final name = exercise['name'] as String;
+        exerciseStats[name] =
+            (exerciseStats[name] ?? 0) + (exercise['sets'] as List).length;
       }
     }
 
-    // מיון תרגילים לפי כמות סטים
-    final sortedExercises = exerciseStats.entries.toList()
+    final sorted = exerciseStats.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
 
-    return exerciseStats;
+    // החזר כמבנה נוח לתצוגה/ייצוא
+    return sorted
+        .map((e) => {
+              'name': e.key,
+              'sets': e.value,
+            })
+        .toList();
   }
 }

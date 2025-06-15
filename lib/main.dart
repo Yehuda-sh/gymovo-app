@@ -19,20 +19,55 @@ import 'providers/exercise_history_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Pre-initialize only the essential AuthProvider
+  final authProvider = AuthProvider();
+  await authProvider.loadCurrentUser();
+
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => AuthProvider()),
-        ChangeNotifierProvider(create: (_) => WorkoutsProvider()),
-        ChangeNotifierProvider(create: (_) => WeekPlanProvider()),
-        ChangeNotifierProvider(create: (_) => ExerciseHistoryProvider()),
+        // Only essential providers at app level
+        ChangeNotifierProvider.value(value: authProvider),
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
-        ChangeNotifierProvider(create: (_) => ExerciseProvider()),
+
+        // Other providers will be initialized in their respective screens
+        // using ChangeNotifierProvider or ProxyProvider as needed
       ],
       child: const MyApp(),
     ),
   );
 }
+
+// Example of how to use providers in specific screens:
+// In home_screen.dart:
+/*
+class HomeScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => WeekPlanProvider()),
+        ChangeNotifierProvider(create: (_) => WorkoutsProvider()),
+      ],
+      child: HomeScreenContent(),
+    );
+  }
+}
+*/
+
+// In workout_details_screen.dart:
+/*
+class WorkoutDetailsScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (_) => ExerciseHistoryProvider(),
+      child: WorkoutDetailsContent(),
+    );
+  }
+}
+*/
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

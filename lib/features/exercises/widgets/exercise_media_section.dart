@@ -5,38 +5,20 @@ class ExerciseMediaSection extends StatefulWidget {
   final Exercise exercise;
 
   const ExerciseMediaSection({
-    Key? key,
+    super.key,
     required this.exercise,
-  }) : super(key: key);
+  });
 
   @override
   State<ExerciseMediaSection> createState() => _ExerciseMediaSectionState();
 }
 
 class _ExerciseMediaSectionState extends State<ExerciseMediaSection> {
+  bool _isImageLoading = true;
+
   @override
   Widget build(BuildContext context) {
-    if (widget.exercise.imageUrl?.isNotEmpty == true) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(8),
-        child: Image.network(
-          widget.exercise.imageUrl!,
-          height: 200,
-          width: double.infinity,
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) {
-            return Container(
-              height: 200,
-              color: Colors.grey[300],
-              child: const Center(
-                child: Icon(Icons.image_not_supported),
-              ),
-            );
-          },
-        ),
-      );
-    }
-
+    // וידאו קודם לתמונה (אם תטמיע בעתיד נגן)
     if (widget.exercise.videoUrl?.isNotEmpty == true) {
       return Container(
         height: 200,
@@ -56,6 +38,50 @@ class _ExerciseMediaSectionState extends State<ExerciseMediaSection> {
       );
     }
 
+    if (widget.exercise.imageUrl?.isNotEmpty == true) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: Stack(
+          children: [
+            Image.network(
+              widget.exercise.imageUrl!,
+              height: 200,
+              width: double.infinity,
+              fit: BoxFit.cover,
+              loadingBuilder: (context, child, progress) {
+                if (progress == null) {
+                  if (_isImageLoading) {
+                    setState(() => _isImageLoading = false);
+                  }
+                  return child;
+                } else {
+                  return Container(
+                    height: 200,
+                    color: Colors.grey[300],
+                    child: const Center(child: CircularProgressIndicator()),
+                  );
+                }
+              },
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  height: 200,
+                  color: Colors.grey[300],
+                  child: const Center(
+                    child: Icon(Icons.image_not_supported),
+                  ),
+                );
+              },
+            ),
+            // Overlay semanitcs for accessibility
+            Semantics(
+              label: 'תמונה של תרגיל: ${widget.exercise.name}',
+            ),
+          ],
+        ),
+      );
+    }
+
+    // אם אין כלום
     return const SizedBox.shrink();
   }
 }

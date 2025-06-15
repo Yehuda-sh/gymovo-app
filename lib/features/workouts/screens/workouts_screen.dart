@@ -7,6 +7,7 @@ import '../providers/workouts_provider.dart';
 import 'new_workout_screen.dart';
 import 'workout_details_screen.dart';
 import 'workout_mode/workout_mode_screen.dart';
+import '../../../providers/exercise_provider.dart';
 
 class WorkoutsScreen extends StatelessWidget {
   const WorkoutsScreen({super.key});
@@ -222,7 +223,8 @@ class _WorkoutCard extends StatelessWidget {
       MaterialPageRoute(
         builder: (_) => WorkoutModeScreen(
           workout: workout,
-          exerciseDetailsMap: exerciseDetails,
+          exerciseDetailsMap:
+              context.read<ExerciseProvider>().exerciseDetailsMap,
         ),
       ),
     );

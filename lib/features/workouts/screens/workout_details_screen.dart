@@ -235,7 +235,7 @@ class WorkoutDetailsScreen extends StatelessWidget {
                   set.restTime != null ? '${set.restTime} שניות' : '-'),
             ],
           );
-        }).toList(),
+        }),
       ],
     );
   }
@@ -294,7 +294,7 @@ class WorkoutDetailsScreen extends StatelessWidget {
               MaterialPageRoute(
                 builder: (_) => WorkoutModeScreen(
                   workout: workout,
-                  exerciseDetailsMap: exerciseDetails,
+                  exerciseDetailsMap: const {}, // TODO: Get actual exercise details
                 ),
               ),
             );

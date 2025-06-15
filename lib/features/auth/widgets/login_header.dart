@@ -31,7 +31,7 @@ class LoginHeader extends StatelessWidget {
               style: GoogleFonts.assistant(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: colors.onBackground,
+                color: colors.onSurface,
               ),
               textAlign: TextAlign.center,
             ),
@@ -40,7 +40,7 @@ class LoginHeader extends StatelessWidget {
               'התחברו כדי להתחיל להתאמן',
               style: GoogleFonts.assistant(
                 fontSize: 16,
-                color: colors.onBackground.withOpacity(0.7),
+                color: colors.onSurface.withOpacity(0.7),
               ),
               textAlign: TextAlign.center,
             ),

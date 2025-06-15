@@ -18,7 +18,7 @@ import 'dart:math';
 class HomeTab extends StatelessWidget {
   final void Function(int) onTabChange;
 
-  const HomeTab({Key? key, required this.onTabChange}) : super(key: key);
+  const HomeTab({super.key, required this.onTabChange});
 
   // קבועים פרטיים לקלאס
   static const List<String> _demoEmails = [

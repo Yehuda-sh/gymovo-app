@@ -15,9 +15,9 @@ class ExerciseDetailsScreen extends StatefulWidget {
   final Exercise exercise;
 
   const ExerciseDetailsScreen({
-    Key? key,
+    super.key,
     required this.exercise,
-  }) : super(key: key);
+  });
 
   @override
   State<ExerciseDetailsScreen> createState() => _ExerciseDetailsScreenState();
@@ -629,13 +629,13 @@ class _ExerciseDetailsScreenState extends State<ExerciseDetailsScreen>
               ),
               const SizedBox(height: 16),
             ],
-            if (widget.exercise.instructions?.isNotEmpty ?? false) ...[
+            if (widget.exercise.instructions.isNotEmpty ?? false) ...[
               _buildSectionCard(
                 title: 'הוראות ביצוע',
                 icon: Icons.list_alt,
                 color: AppTheme.colors.accent,
                 child: Column(
-                  children: widget.exercise.instructions!
+                  children: widget.exercise.instructions
                       .asMap()
                       .entries
                       .map((entry) =>

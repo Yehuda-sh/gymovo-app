@@ -22,6 +22,7 @@ class LocalDataStore {
   static const String _defaultAvatar = 'assets/avatars/default_avatar.png';
   static const String _exerciseHistoriesKey = 'exercise_histories';
   static const String _questionnaireCompletedKey = 'questionnaireCompleted';
+  static const String _lastDemoUserIdKey = 'last_demo_user_id';
 
   // === יצירת guest_id ייחודי ושמירה
   static Future<String> createOrGetGuestId() async {
@@ -330,11 +331,29 @@ class LocalDataStore {
     }
   }
 
-  // === קבלת משתמש דמו רנדומלי
+  // === איפוס last_demo_user_id בהתנתקות
+  static Future<void> resetLastDemoUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_lastDemoUserIdKey);
+    debugPrint('last_demo_user_id RESET');
+  }
+
+  // === קבלת משתמש דמו רנדומלי (לא חוזר על האחרון)
   static Future<UserModel?> getRandomDemoUser() async {
     final users = await loadDemoUsers();
     if (users.isEmpty) return null;
-    return users[Random().nextInt(users.length)];
+    final prefs = await SharedPreferences.getInstance();
+    final lastId = prefs.getString(_lastDemoUserIdKey);
+    debugPrint('last_demo_user_id before pick: $lastId');
+    // סנן את המשתמש האחרון אם יש יותר ממשתמש אחד
+    final filtered = (lastId != null && users.length > 1)
+        ? users.where((u) => u.id != lastId).toList()
+        : users;
+    final chosen = filtered[Random().nextInt(filtered.length)];
+    debugPrint('Picked demo user: ${chosen.id} (${chosen.name})');
+    await prefs.setString(_lastDemoUserIdKey, chosen.id);
+    debugPrint('last_demo_user_id after pick: ${chosen.id}');
+    return chosen;
   }
 
   // === שמירת מצב דמו

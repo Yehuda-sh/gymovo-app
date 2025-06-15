@@ -13,13 +13,13 @@ class ExerciseSetList extends StatefulWidget {
   final bool groupByDate;
 
   const ExerciseSetList({
-    Key? key,
+    super.key,
     required this.sets,
     required this.onEdit,
     required this.onDelete,
     this.showDate = true,
     this.groupByDate = false,
-  }) : super(key: key);
+  });
 
   @override
   State<ExerciseSetList> createState() => _ExerciseSetListState();
@@ -260,7 +260,7 @@ class _ExerciseSetListState extends State<ExerciseSetList> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '${set.weight?.toInt() ?? 0} ק"ג × ${set.reps ?? 0} חזרות',
+                '${set.weight.toInt() ?? 0} ק"ג × ${set.reps ?? 0} חזרות',
                 style: GoogleFonts.assistant(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -306,7 +306,7 @@ class _ExerciseSetListState extends State<ExerciseSetList> {
       children: [
         _buildDetailChip(
           Icons.fitness_center,
-          '${set.weight?.toInt() ?? 0} ק"ג',
+          '${set.weight.toInt() ?? 0} ק"ג',
           Colors.blue,
         ),
         const SizedBox(width: 8),
@@ -478,7 +478,7 @@ class _ExerciseSetListState extends State<ExerciseSetList> {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      '${set.weight?.toInt() ?? 0} ק"ג × ${set.reps ?? 0} חזרות',
+                      '${set.weight.toInt() ?? 0} ק"ג × ${set.reps ?? 0} חזרות',
                       style: GoogleFonts.assistant(
                         fontWeight: FontWeight.w600,
                         color: AppTheme.colors.primary,

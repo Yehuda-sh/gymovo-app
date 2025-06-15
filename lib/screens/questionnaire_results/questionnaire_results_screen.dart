@@ -224,8 +224,8 @@ class QuestionnaireResultsScreen extends StatelessWidget {
                         radius: 50,
                         backgroundColor: colors.primary,
                         child: Text(
-                          user.name != null && user.name!.isNotEmpty
-                              ? user.name!.substring(0, 1).toUpperCase()
+                          user.name.isNotEmpty
+                              ? user.name.substring(0, 1).toUpperCase()
                               : '?',
                           style: GoogleFonts.assistant(
                             fontSize: 36,

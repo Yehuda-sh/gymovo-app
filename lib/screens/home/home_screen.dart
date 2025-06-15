@@ -6,15 +6,15 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
-import '../../providers/week_plan_provider.dart';
-import '../../widgets/greeting_header.dart';
 import '../../theme/app_theme.dart';
-import '../../models/user_model.dart';
 import '../splash/splash_screen.dart';
 import '../profile/profile_screen.dart';
 import '../settings/settings_screen.dart';
 import '../../features/home/screens/home_tab.dart';
 import '../../features/workouts/screens/workouts_screen.dart';
+import '../../providers/week_plan_provider.dart';
+import '../../providers/workouts_provider.dart';
+import '../../providers/exercise_history_provider.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -130,14 +130,21 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final colors = AppTheme.colors;
 
-    return Scaffold(
-      backgroundColor: colors.background,
-      appBar: _buildAppBar(colors),
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: _screens,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => WeekPlanProvider()),
+        ChangeNotifierProvider(create: (_) => WorkoutsProvider()),
+        ChangeNotifierProvider(create: (_) => ExerciseHistoryProvider()),
+      ],
+      child: Scaffold(
+        backgroundColor: colors.background,
+        appBar: _buildAppBar(colors),
+        body: IndexedStack(
+          index: _selectedIndex,
+          children: _screens,
+        ),
+        bottomNavigationBar: _buildBottomNavigationBar(colors),
       ),
-      bottomNavigationBar: _buildBottomNavigationBar(colors),
     );
   }
 

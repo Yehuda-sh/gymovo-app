@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
-import 'package:google_fonts/google_fonts.dart';
 import '../../models/exercise.dart';
 import 'package:flutter/material.dart';
 
@@ -11,8 +10,7 @@ import 'package:flutter/material.dart';
 
 class SelectExercisesScreen extends StatefulWidget {
   final List<Exercise> initiallySelected;
-  const SelectExercisesScreen({Key? key, this.initiallySelected = const []})
-      : super(key: key);
+  const SelectExercisesScreen({super.key, this.initiallySelected = const []});
 
   @override
   State<SelectExercisesScreen> createState() => _SelectExercisesScreenState();
@@ -93,12 +91,15 @@ class _SelectExercisesScreenState extends State<SelectExercisesScreen> {
     // Check main muscles
     if (exercise.mainMuscles != null &&
         exercise.mainMuscles!
-            .any((muscle) => muscle.toLowerCase().contains(lowerFilter)))
+            .any((muscle) => muscle.toLowerCase().contains(lowerFilter))) {
       return true;
+    }
 
     // Check equipment
     if (exercise.equipment != null &&
-        exercise.equipment!.toLowerCase().contains(lowerFilter)) return true;
+        exercise.equipment!.toLowerCase().contains(lowerFilter)) {
+      return true;
+    }
 
     return false;
   }

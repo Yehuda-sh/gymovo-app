@@ -3,9 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
-import '../../data/local_data_store.dart';
 import '../home/home_screen.dart';
-import '../questionnaire/questionnaire_screen.dart';
 import '../welcome/welcome_screen.dart';
 import '../questionnaire/questionnaire_intro_screen.dart';
 

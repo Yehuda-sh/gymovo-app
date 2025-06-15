@@ -82,7 +82,7 @@ class ExerciseCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  if (secondary != null && secondary.isNotEmpty) ...[
+                  if (secondary.isNotEmpty) ...[
                     const SizedBox(height: 4),
                     Row(
                       children: [

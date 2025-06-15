@@ -412,11 +412,11 @@ class _ProfileScreenState extends State<ProfileScreen>
   }
 
   Widget _buildStatsSection(UserModel user, AppColors colors) {
-    final workouts = user.totalWorkouts?.toString() ?? '0';
+    final workouts = user.totalWorkouts.toString() ?? '0';
     final totalHours = user.workoutHistory
-            ?.fold<num>(0, (prev, e) => prev + (e.rating ?? 0)) ??
+            .fold<num>(0, (prev, e) => prev + (e.rating ?? 0)) ??
         0;
-    final achievements = user.workoutHistory?.length.toString() ?? '0';
+    final achievements = user.workoutHistory.length.toString() ?? '0';
 
     return Container(
       padding: const EdgeInsets.all(20),

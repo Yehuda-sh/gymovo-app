@@ -1,5 +1,4 @@
 // lib/models/exercise_history.dart
-import 'package:uuid/uuid.dart';
 import 'dart:convert';
 
 enum SetType {

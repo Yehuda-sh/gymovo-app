@@ -1,16 +1,58 @@
-# gymovo
+# Gymovo - אפליקציית כושר חכמה
 
-A new Flutter project.
+ברוכים הבאים ל-Gymovo! אפליקציית כושר מתקדמת לניהול אימונים, מעקב התקדמות, ותוכניות מותאמות אישית - הכל בעברית ובחוויית משתמש מודרנית.
 
-## Getting Started
+---
 
-This project is a starting point for a Flutter application.
+## 🚀 מה האפליקציה יודעת לעשות?
 
-A few resources to get you started if this is your first Flutter project:
+- **ניהול אימונים אישי:** יצירת אימונים, תיעוד סטים, חזרות, משקלים והערות.
+- **תוכניות חכמות:** בניית תוכניות מותאמות אישית לפי מטרות, רמה, ציוד, והעדפות.
+- **שאלון התאמה:** התאמת תוכנית ראשונית לפי שאלון קצר (מטרה, ניסיון, פציעות, זמן פנוי ועוד).
+- **היסטוריית אימונים:** מעקב אחר כל האימונים שביצעת, כולל סטטיסטיקות, שיאים והישגים.
+- **הישגים ומוטיבציה:** מערכת הישגים, ניקוד, והודעות מוטיבציה מותאמות.
+- **ניהול פרופיל:** עדכון פרטים, תמונת פרופיל, כינויים, והשלמת פרופיל.
+- **התראות:** קבלת תזכורות לאימונים והודעות מוטיבציה.
+- **תמיכה מלאה בעברית ו-RTL**
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+---
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## 📲 התקנה והרצה
+
+1. ודא ש־Flutter מותקן במחשב שלך (גרסה 3.0 ומעלה):
+   ```bash
+   flutter --version
+   ```
+2. שכפל את הריפוזיטורי:
+   ```bash
+   git clone <repository-url>
+   cd gymovo-app
+   ```
+3. התקן את התלויות:
+   ```bash
+   flutter pub get
+   ```
+4. הרץ את האפליקציה:
+   ```bash
+   flutter run
+   ```
+
+---
+
+## 🏆 תרומה וקרדיטים
+
+- פותח על ידי יהודה וצוות Gymovo
+- עיצוב, פיתוח ותוכן: קוד פתוח - נשמח לכל תרומה, פידבק או הצעה!
+- ליצירת קשר: [gymovo.com](https://gymovo.com)
+
+---
+
+## 💡 הערות
+
+- כל המידע נשמר מקומית על המכשיר (אין סנכרון ענן)
+- תמיכה מלאה בעברית, RTL, ונגישות
+- קוד פתוח - מוזמנים להציע פיצ'רים, תיקונים ושיפורים
+
+---
+
+בהצלחה באימונים! 💪

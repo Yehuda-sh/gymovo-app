@@ -34,7 +34,7 @@ class ProfileAvatar extends StatelessWidget {
   String _initials() {
     final displayName = useNickname ? (user.nickname ?? user.name) : user.name;
     if ((displayName ?? '').isEmpty) return '';
-    final parts = displayName!.trim().split(' ');
+    final parts = displayName.trim().split(' ');
     if (parts.length == 1) return parts.first.characters.first.toUpperCase();
     return (parts.first.characters.first + parts.last.characters.first)
         .toUpperCase();
@@ -42,7 +42,7 @@ class ProfileAvatar extends StatelessWidget {
 
   Color _getBackgroundColor() {
     final displayName = useNickname ? (user.nickname ?? user.name) : user.name;
-    if (displayName == null || displayName.isEmpty) {
+    if (displayName.isEmpty) {
       return Colors.grey.shade200;
     }
     return Colors

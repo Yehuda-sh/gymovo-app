@@ -12,11 +12,11 @@ class ExerciseSetForm extends StatefulWidget {
   final String exerciseId;
 
   const ExerciseSetForm({
-    Key? key,
+    super.key,
     required this.onSave,
     required this.exerciseId,
     this.existingSet,
-  }) : super(key: key);
+  });
 
   @override
   State<ExerciseSetForm> createState() => _ExerciseSetFormState();
@@ -49,10 +49,10 @@ class _ExerciseSetFormState extends State<ExerciseSetForm> {
 
   void _initializeControllers() {
     _weightController = TextEditingController(
-      text: widget.existingSet?.weight?.toString() ?? '',
+      text: widget.existingSet?.weight.toString() ?? '',
     );
     _repsController = TextEditingController(
-      text: widget.existingSet?.reps?.toString() ?? '',
+      text: widget.existingSet?.reps.toString() ?? '',
     );
     _notesController = TextEditingController(
       text: widget.existingSet?.notes ?? '',
@@ -129,8 +129,8 @@ class _ExerciseSetFormState extends State<ExerciseSetForm> {
 
     if (history != null && history.sets.isNotEmpty) {
       final lastSet = history.sets.last;
-      _weightController.text = lastSet.weight?.toString() ?? '';
-      _repsController.text = lastSet.reps?.toString() ?? '';
+      _weightController.text = lastSet.weight.toString() ?? '';
+      _repsController.text = lastSet.reps.toString() ?? '';
       _restTimeController.text =
           (lastSet.restTime ?? _defaultRestTime).toString();
 

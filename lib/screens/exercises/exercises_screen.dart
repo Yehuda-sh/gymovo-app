@@ -6,15 +6,13 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../models/exercise.dart';
-import '../../theme/app_theme.dart';
 import '../../widgets/exercise_card.dart';
 import '../../features/exercises/screens/exercise_details_screen.dart';
 // TODO: import 'exercise_details_screen.dart'; - קובץ זה לא נמצא, צריך ליצור או להחליף
 
 class ExercisesScreen extends StatefulWidget {
-  const ExercisesScreen({Key? key}) : super(key: key);
+  const ExercisesScreen({super.key});
 
   @override
   State<ExercisesScreen> createState() => _ExercisesScreenState();
@@ -79,7 +77,7 @@ class _ExercisesScreenState extends State<ExercisesScreen> {
             tooltip: 'רענן רשימה',
           ),
         ],
-        backgroundColor: colorScheme.background,
+        backgroundColor: colorScheme.surface,
       ),
       body: _buildBody(),
     );

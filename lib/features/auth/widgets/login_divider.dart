@@ -17,7 +17,7 @@ class LoginDivider extends StatelessWidget {
       children: [
         Expanded(
           child: Divider(
-            color: colors.onBackground.withOpacity(0.2),
+            color: colors.onSurface.withOpacity(0.2),
           ),
         ),
         Padding(
@@ -25,13 +25,13 @@ class LoginDivider extends StatelessWidget {
           child: Text(
             text,
             style: GoogleFonts.assistant(
-              color: colors.onBackground.withOpacity(0.7),
+              color: colors.onSurface.withOpacity(0.7),
             ),
           ),
         ),
         Expanded(
           child: Divider(
-            color: colors.onBackground.withOpacity(0.2),
+            color: colors.onSurface.withOpacity(0.2),
           ),
         ),
       ],

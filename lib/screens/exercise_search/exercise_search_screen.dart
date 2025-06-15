@@ -9,7 +9,7 @@ import '../../providers/exercise_provider.dart';
 import '../../models/exercise.dart';
 
 class ExerciseSearchScreen extends StatefulWidget {
-  const ExerciseSearchScreen({Key? key}) : super(key: key);
+  const ExerciseSearchScreen({super.key});
 
   @override
   State<ExerciseSearchScreen> createState() => _ExerciseSearchScreenState();

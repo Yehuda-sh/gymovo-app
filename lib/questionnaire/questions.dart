@@ -35,8 +35,9 @@ final List<Question> allQuestions = [
       inputType: 'number',
       feedback: (answer) {
         if (answer != null && answer < 16) return 'האפליקציה מיועדת לגילאי 16+';
-        if (answer != null && answer > 90)
+        if (answer != null && answer > 90) {
           return 'מומלץ להתייעץ עם רופא לפני תחילת אימונים';
+        }
         return null;
       }),
 

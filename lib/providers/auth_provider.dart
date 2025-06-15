@@ -24,10 +24,7 @@ class AuthProvider with ChangeNotifier {
 
     try {
       _currentUser = await LocalDataStore.getCurrentUser();
-      if (_currentUser == null) {
-        // אם אין משתמש נוכחי, יוצר משתמש אורח
-        _currentUser = await LocalDataStore.createGuestUser();
-      }
+      _currentUser ??= await LocalDataStore.createGuestUser();
     } catch (e) {
       _error = 'שגיאה בטעינת המשתמש: $e';
     } finally {
@@ -136,6 +133,9 @@ class AuthProvider with ChangeNotifier {
         // אם המשתמש הוא אורח, מוחק את כל הנתונים שלו
         await LocalDataStore.clearGuestData();
       }
+
+      // איפוס מזהה משתמש דמו אחרון
+      await LocalDataStore.resetLastDemoUserId();
 
       // מחיקת המשתמש הנוכחי
       _currentUser = null;

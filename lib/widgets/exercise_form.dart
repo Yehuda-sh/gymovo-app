@@ -9,10 +9,10 @@ class ExerciseForm extends StatefulWidget {
   final ExerciseModel? initialExercise;
 
   const ExerciseForm({
-    Key? key,
+    super.key,
     required this.onSave,
     this.initialExercise,
-  }) : super(key: key);
+  });
 
   @override
   State<ExerciseForm> createState() => _ExerciseFormState();
