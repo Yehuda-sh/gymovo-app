@@ -246,6 +246,29 @@ class LocalDataStore {
     );
   }
 
+  // === שמירת ניתוח השאלון למשתמש
+  static Future<void> saveUserAnalysis(
+      String userId, Map<String, dynamic> analysis) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(
+      'user_analysis_$userId',
+      json.encode(analysis),
+    );
+  }
+
+  // === טעינת ניתוח השאלון למשתמש
+  static Future<Map<String, dynamic>?> getUserAnalysis(String userId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final analysisJson = prefs.getString('user_analysis_$userId');
+    if (analysisJson == null) return null;
+    try {
+      return Map<String, dynamic>.from(json.decode(analysisJson));
+    } catch (e) {
+      debugPrint('Error loading user analysis: $e');
+      return null;
+    }
+  }
+
   // === טעינת תוכנית אימונים למשתמש
   static Future<WeekPlanModel?> getUserPlan(String userId) async {
     final prefs = await SharedPreferences.getInstance();
@@ -480,6 +503,32 @@ class LocalDataStore {
     return prefs.getBool(prefsKey) ?? false;
   }
 
+  static const String _questionnaireProgressKey = 'questionnaire_progress';
+
+  static Future<Map<String, dynamic>?> getQuestionnaireProgress() async {
+    final prefs = await SharedPreferences.getInstance();
+    final jsonString = prefs.getString(_questionnaireProgressKey);
+    if (jsonString == null) return null;
+    try {
+      return Map<String, dynamic>.from(jsonDecode(jsonString));
+    } catch (e) {
+      debugPrint('Error parsing questionnaire progress: $e');
+      return null;
+    }
+  }
+
+  static Future<void> saveQuestionnaireProgress(
+      Map<String, dynamic> answers) async {
+    final prefs = await SharedPreferences.getInstance();
+    final jsonString = jsonEncode(answers);
+    await prefs.setString(_questionnaireProgressKey, jsonString);
+  }
+
+  static Future<void> clearQuestionnaireProgress() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_questionnaireProgressKey);
+  }
+
   // === שמירת סטטוס השלמת השאלון
   static Future<void> setQuestionnaireCompleted(
       String userId, bool completed) async {
@@ -511,27 +560,5 @@ class LocalDataStore {
     await deleteUserPlan(userId);
     await prefs.remove('${_workoutHistoryKey}_$userId');
     await clearQuestionnaireStatus(userId);
-  }
-
-  // === טעינת תוכנית דמו למשתמש
-  static Future<WeekPlanModel?> getDemoPlanForUser(String userId) async {
-    try {
-      final String jsonString =
-          await rootBundle.loadString('assets/data/demo_plans.json');
-      final Map<String, dynamic> jsonData = json.decode(jsonString);
-      final List<dynamic> plansJson = jsonData['plans'] as List<dynamic>;
-
-      // מציאת התוכנית המתאימה למשתמש
-      final planJson = plansJson.firstWhere(
-        (p) => p['user_id'] == userId,
-        orElse: () => null,
-      );
-
-      if (planJson == null) return null;
-      return WeekPlanModel.fromMap(planJson);
-    } catch (e) {
-      debugPrint('Error loading demo plan: $e');
-      return null;
-    }
   }
 }

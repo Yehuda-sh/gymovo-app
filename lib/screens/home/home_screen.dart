@@ -10,7 +10,7 @@ import '../../theme/app_theme.dart';
 import '../splash/splash_screen.dart';
 import '../profile/profile_screen.dart';
 import '../settings/settings_screen.dart';
-import '../../features/home/screens/home_tab.dart';
+import 'home_tab.dart';
 import '../../features/workouts/screens/workouts_screen.dart';
 import '../../providers/week_plan_provider.dart';
 import '../../providers/workouts_provider.dart';

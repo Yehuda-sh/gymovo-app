@@ -49,7 +49,6 @@ flutter:
     - assets/images/avatar_male.png
     - assets/images/avatar_neutral.png
     - assets/data/demo_users.json
-    - assets/data/demo_plans.json
 
     - assets/data/workout_exercises.json
     - assets/avatars/

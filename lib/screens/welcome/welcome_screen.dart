@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../theme/app_theme.dart';
-import '../../features/auth/screens/login_screen.dart';
+import '../../screens/login/login_screen.dart';
 import '../../screens/register/register_screen.dart';
 
 class WelcomeScreen extends StatelessWidget {

@@ -1,17 +1,28 @@
 // lib/screens/profile/profile_screen.dart
 // --------------------------------------------------
-// מסך פרופיל משתמש ראשי - גרסה משופרת
+// מסך פרופיל משתמש משופר עם רכיבים נפרדים
 // --------------------------------------------------
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../providers/auth_provider.dart';
-import '../../widgets/profile_avatar.dart';
 import '../../models/user_model.dart';
 import '../../theme/app_theme.dart';
-import '../questionnaire/questionnaire_screen.dart';
+import 'widgets/profile_header.dart';
+import 'widgets/user_stats_card.dart';
+import 'widgets/quick_actions_card.dart';
+import 'widgets/settings_section.dart';
+import 'widgets/account_section.dart';
 
+/// מסך פרופיל משתמש ראשי
+///
+/// תכונות:
+/// - תצוגת פרופיל עם אנימציות
+/// - סטטיסטיקות משתמש
+/// - הגדרות ופעולות מהירות
+/// - ניהול חשבון ותמיכה
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -26,26 +37,36 @@ class _ProfileScreenState extends State<ProfileScreen>
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
 
+  // מצבי הגדרות
   bool _notificationsEnabled = true;
   String _selectedLanguage = 'עברית';
+  String _selectedTheme = 'בהיר';
   bool _isLoading = false;
 
-  // קבועים פרטיים
+  // קבועים
   static const Duration _animationDuration = Duration(milliseconds: 300);
   static const List<String> _availableLanguages = [
     'עברית',
     'English',
     'العربية'
   ];
-  static const double _avatarSize = 100.0;
-  static const double _cardBorderRadius = 20.0;
+  static const List<String> _availableThemes = ['בהיר', 'כהה', 'אוטומטי'];
 
   @override
   void initState() {
     super.initState();
     _setupAnimations();
+    _loadUserPreferences();
   }
 
+  @override
+  void dispose() {
+    _fadeAnimationController.dispose();
+    _scaleAnimationController.dispose();
+    super.dispose();
+  }
+
+  /// מגדיר את האנימציות
   void _setupAnimations() {
     _fadeAnimationController = AnimationController(
       duration: _animationDuration,
@@ -78,35 +99,100 @@ class _ProfileScreenState extends State<ProfileScreen>
     _scaleAnimationController.forward();
   }
 
-  @override
-  void dispose() {
-    _fadeAnimationController.dispose();
-    _scaleAnimationController.dispose();
-    super.dispose();
+  /// טוען העדפות משתמש מ-SharedPreferences
+  Future<void> _loadUserPreferences() async {
+    try {
+      // TODO: טען העדפות אמיתיות מ-SharedPreferences
+      // final prefs = await SharedPreferences.getInstance();
+      // setState(() {
+      //   _notificationsEnabled = prefs.getBool('notifications') ?? true;
+      //   _selectedLanguage = prefs.getString('language') ?? 'עברית';
+      //   _selectedTheme = prefs.getString('theme') ?? 'בהיר';
+      // });
+    } catch (e) {
+      debugPrint('שגיאה בטעינת העדפות משתמש: $e');
+    }
   }
 
+  /// שומר העדפת התראות
+  Future<void> _saveNotificationPreference(bool enabled) async {
+    try {
+      setState(() => _notificationsEnabled = enabled);
+      // TODO: שמור ב-SharedPreferences
+      // final prefs = await SharedPreferences.getInstance();
+      // await prefs.setBool('notifications', enabled);
+
+      HapticFeedback.selectionClick();
+      _showSuccessSnackBar(enabled ? 'התראות הופעלו' : 'התראות כובו');
+    } catch (e) {
+      _showErrorSnackBar('שגיאה בשמירת הגדרות התראות');
+    }
+  }
+
+  /// שומר בחירת שפה
+  Future<void> _saveLanguagePreference(String language) async {
+    try {
+      setState(() => _selectedLanguage = language);
+      // TODO: שמור ב-SharedPreferences ויישם שינוי שפה
+      // final prefs = await SharedPreferences.getInstance();
+      // await prefs.setString('language', language);
+
+      if (language != 'עברית') {
+        _showComingSoonSnackBar('תמיכה ב$language');
+      } else {
+        _showSuccessSnackBar('השפה שונתה לעברית');
+      }
+    } catch (e) {
+      _showErrorSnackBar('שגיאה בשמירת בחירת שפה');
+    }
+  }
+
+  /// שומר בחירת נושא
+  Future<void> _saveThemePreference(String theme) async {
+    try {
+      setState(() => _selectedTheme = theme);
+      // TODO: שמור ב-SharedPreferences ויישם שינוי נושא
+      // final prefs = await SharedPreferences.getInstance();
+      // await prefs.setString('theme', theme);
+
+      if (theme != 'בהיר') {
+        _showComingSoonSnackBar('נושא $theme');
+      } else {
+        _showSuccessSnackBar('הנושא שונה לבהיר');
+      }
+    } catch (e) {
+      _showErrorSnackBar('שגיאה בשמירת בחירת נושא');
+    }
+  }
+
+  /// מטפל בהתנתקות עם אישור
   Future<void> _handleLogout() async {
     final confirmed = await _showLogoutConfirmation();
-    if (confirmed == true) {
-      setState(() => _isLoading = true);
+    if (confirmed != true) return;
 
-      try {
-        await context.read<AuthProvider>().logout();
-        if (mounted) {
-          _showSuccessSnackBar('התנתקת בהצלחה');
-        }
-      } catch (e) {
-        if (mounted) {
-          _showErrorSnackBar('שגיאה בהתנתקות: ${e.toString()}');
-        }
-      } finally {
-        if (mounted) {
-          setState(() => _isLoading = false);
-        }
+    setState(() => _isLoading = true);
+
+    try {
+      final authProvider = context.read<AuthProvider>();
+      await authProvider.logout();
+
+      if (mounted) {
+        _showSuccessSnackBar('התנתקת בהצלחה');
+        // ניווט למסך כניסה אם צריך
+        // Navigator.of(context).pushReplacementNamed('/login');
+      }
+    } catch (e) {
+      if (mounted) {
+        _showErrorSnackBar('שגיאה בהתנתקות: ${e.toString()}');
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
       }
     }
   }
 
+  /// מציג דיאלוג אישור התנתקות
   Future<bool?> _showLogoutConfirmation() async {
     return showDialog<bool>(
       context: context,
@@ -115,17 +201,28 @@ class _ProfileScreenState extends State<ProfileScreen>
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
-        title: Text(
-          'התנתקות',
-          style: GoogleFonts.assistant(
-            fontWeight: FontWeight.bold,
-            color: AppTheme.colors.headline,
-          ),
+        title: Row(
+          children: [
+            Icon(
+              Icons.logout,
+              color: AppTheme.colors.error,
+              size: 24,
+            ),
+            const SizedBox(width: 12),
+            Text(
+              'התנתקות',
+              style: GoogleFonts.assistant(
+                fontWeight: FontWeight.bold,
+                color: AppTheme.colors.headline,
+              ),
+            ),
+          ],
         ),
         content: Text(
-          'האם אתה בטוח שברצונך להתנתק?',
+          'האם אתה בטוח שברצונך להתנתק מהחשבון?',
           style: GoogleFonts.assistant(
             color: AppTheme.colors.text,
+            fontSize: 16,
           ),
         ),
         actions: [
@@ -160,651 +257,7 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
   }
 
-  void _showSuccessSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message, style: GoogleFonts.assistant()),
-        backgroundColor: Colors.green,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      ),
-    );
-  }
-
-  void _showErrorSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message, style: GoogleFonts.assistant()),
-        backgroundColor: AppTheme.colors.error,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      ),
-    );
-  }
-
-  void _showComingSoonSnackBar(String feature) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          '$feature יפותח בקרוב',
-          style: GoogleFonts.assistant(),
-        ),
-        backgroundColor: AppTheme.colors.secondary,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final authProvider = context.watch<AuthProvider>();
-    final user = authProvider.currentUser ?? UserModel.empty();
-    final colors = AppTheme.colors;
-
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Scaffold(
-        backgroundColor: colors.background,
-        body: FadeTransition(
-          opacity: _fadeAnimation,
-          child: CustomScrollView(
-            slivers: [
-              _buildSliverAppBar(user, colors),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    children: [
-                      _buildUserInfo(user, colors),
-                      const SizedBox(height: 24),
-                      _buildStatsSection(user, colors),
-                      const SizedBox(height: 20),
-                      _buildQuickActions(colors),
-                      const SizedBox(height: 20),
-                      _buildSettingsSection(colors),
-                      const SizedBox(height: 20),
-                      _buildAccountSection(colors),
-                      const SizedBox(height: 20),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSliverAppBar(UserModel user, AppColors colors) {
-    return SliverAppBar(
-      expandedHeight: 200,
-      floating: false,
-      pinned: true,
-      backgroundColor: colors.primary,
-      flexibleSpace: FlexibleSpaceBar(
-        background: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                colors.primary,
-                colors.primary.withOpacity(0.8),
-              ],
-            ),
-          ),
-          child: SafeArea(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const SizedBox(height: 40),
-                ScaleTransition(
-                  scale: _scaleAnimation,
-                  child: _buildProfileAvatar(user, colors),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.edit_outlined, color: Colors.white),
-          onPressed: () => _showComingSoonSnackBar('עריכת פרופיל'),
-          tooltip: 'ערוך פרופיל',
-        ),
-      ],
-    );
-  }
-
-  Widget _buildProfileAvatar(UserModel user, AppColors colors) {
-    return Stack(
-      alignment: Alignment.bottomRight,
-      children: [
-        Container(
-          width: _avatarSize,
-          height: _avatarSize,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(color: Colors.white, width: 4),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.2),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: ProfileAvatar(
-            user: user,
-            onTap: () => _showComingSoonSnackBar('העלאת תמונה'),
-          ),
-        ),
-        Positioned(
-          bottom: 4,
-          right: 4,
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Material(
-              shape: const CircleBorder(),
-              color: colors.secondary,
-              child: InkWell(
-                customBorder: const CircleBorder(),
-                onTap: () {
-                  HapticFeedback.lightImpact();
-                  _showComingSoonSnackBar('העלאת תמונה');
-                },
-                child: const Padding(
-                  padding: EdgeInsets.all(8),
-                  child: Icon(
-                    Icons.camera_alt,
-                    size: 18,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildUserInfo(UserModel user, AppColors colors) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: colors.surface,
-        borderRadius: BorderRadius.circular(_cardBorderRadius),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Text(
-            user.name.isNotEmpty ? user.name : 'משתמש דמו',
-            style: GoogleFonts.assistant(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: colors.headline,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            user.email.isNotEmpty ? user.email : 'demo@gymovo.com',
-            style: GoogleFonts.assistant(
-              fontSize: 16,
-              color: colors.text.withOpacity(0.7),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  colors.primary.withOpacity(0.1),
-                  colors.secondary.withOpacity(0.1),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: colors.primary.withOpacity(0.3)),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.fitness_center,
-                  size: 16,
-                  color: colors.primary,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  'מתאמן פעיל',
-                  style: GoogleFonts.assistant(
-                    fontWeight: FontWeight.w600,
-                    color: colors.primary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatsSection(UserModel user, AppColors colors) {
-    final workouts = user.totalWorkouts.toString() ?? '0';
-    final totalHours = user.workoutHistory
-            .fold<num>(0, (prev, e) => prev + (e.rating ?? 0)) ??
-        0;
-    final achievements = user.workoutHistory.length.toString() ?? '0';
-
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: colors.surface,
-        borderRadius: BorderRadius.circular(_cardBorderRadius),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                Icons.analytics_outlined,
-                color: colors.primary,
-                size: 24,
-              ),
-              const SizedBox(width: 12),
-              Text(
-                'הסטטיסטיקות שלי',
-                style: GoogleFonts.assistant(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: colors.headline,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              Expanded(
-                child: _buildStatCard(
-                  'אימונים',
-                  workouts,
-                  Icons.fitness_center,
-                  colors.primary,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildStatCard(
-                  'שעות',
-                  totalHours.toString(),
-                  Icons.schedule,
-                  Colors.orange,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildStatCard(
-                  'הישגים',
-                  achievements,
-                  Icons.emoji_events,
-                  Colors.amber,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatCard(
-      String label, String value, IconData icon, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: color, size: 28),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: GoogleFonts.assistant(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: AppTheme.colors.headline,
-            ),
-          ),
-          Text(
-            label,
-            style: GoogleFonts.assistant(
-              fontSize: 12,
-              color: AppTheme.colors.text.withOpacity(0.7),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildQuickActions(AppColors colors) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: colors.surface,
-        borderRadius: BorderRadius.circular(_cardBorderRadius),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                Icons.flash_on,
-                color: colors.secondary,
-                size: 24,
-              ),
-              const SizedBox(width: 12),
-              Text(
-                'פעולות מהירות',
-                style: GoogleFonts.assistant(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: colors.headline,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: _buildQuickActionButton(
-                  'שאלון מחדש',
-                  Icons.assignment_outlined,
-                  colors.primary,
-                  () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const QuestionnaireScreen(),
-                      ),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildQuickActionButton(
-                  'שתף אפליקציה',
-                  Icons.share_outlined,
-                  colors.secondary,
-                  () => _showComingSoonSnackBar('שיתוף'),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildQuickActionButton(
-    String label,
-    IconData icon,
-    Color color,
-    VoidCallback onTap,
-  ) {
-    return Material(
-      color: color.withOpacity(0.1),
-      borderRadius: BorderRadius.circular(12),
-      child: InkWell(
-        onTap: () {
-          HapticFeedback.lightImpact();
-          onTap();
-        },
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              Icon(icon, color: color, size: 28),
-              const SizedBox(height: 8),
-              Text(
-                label,
-                style: GoogleFonts.assistant(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: color,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSettingsSection(AppColors colors) {
-    return _buildInfoCard(
-      colors,
-      title: 'הגדרות',
-      icon: Icons.settings_outlined,
-      children: [
-        _buildSettingTile(
-          'התראות',
-          'קבל התראות על אימונים ועדכונים',
-          Icons.notifications_outlined,
-          trailing: Switch(
-            value: _notificationsEnabled,
-            onChanged: (value) {
-              setState(() => _notificationsEnabled = value);
-              HapticFeedback.selectionClick();
-            },
-            activeColor: colors.primary,
-          ),
-        ),
-        _buildDivider(),
-        _buildSettingTile(
-          'שפה',
-          _selectedLanguage,
-          Icons.language_outlined,
-          onTap: () => _showLanguageDialog(),
-        ),
-        _buildDivider(),
-        _buildSettingTile(
-          'נושא',
-          'בהיר',
-          Icons.palette_outlined,
-          onTap: () => _showComingSoonSnackBar('שינוי נושא'),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAccountSection(AppColors colors) {
-    return _buildInfoCard(
-      colors,
-      title: 'חשבון',
-      icon: Icons.account_circle_outlined,
-      children: [
-        _buildSettingTile(
-          'פרטיות ואבטחה',
-          'נהל את הפרטיות שלך',
-          Icons.security_outlined,
-          onTap: () => _showComingSoonSnackBar('הגדרות פרטיות'),
-        ),
-        _buildDivider(),
-        _buildSettingTile(
-          'עזרה ותמיכה',
-          'קבל עזרה ותמיכה טכנית',
-          Icons.help_outline,
-          onTap: () => _showComingSoonSnackBar('מרכז עזרה'),
-        ),
-        _buildDivider(),
-        _buildSettingTile(
-          'אודות האפליקציה',
-          'מידע על הגרסה ופיתוח',
-          Icons.info_outline,
-          onTap: () => _showAboutDialog(),
-        ),
-        _buildDivider(),
-        _buildSettingTile(
-          'התנתק',
-          'התנתק מהחשבון שלך',
-          Icons.logout,
-          onTap: _handleLogout,
-          textColor: colors.error,
-          iconColor: colors.error,
-          showLoading: _isLoading,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildInfoCard(
-    AppColors colors, {
-    required String title,
-    required IconData icon,
-    required List<Widget> children,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: colors.surface,
-        borderRadius: BorderRadius.circular(_cardBorderRadius),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Row(
-              children: [
-                Icon(icon, color: colors.primary, size: 24),
-                const SizedBox(width: 12),
-                Text(
-                  title,
-                  style: GoogleFonts.assistant(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: colors.headline,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          ...children,
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSettingTile(
-    String title,
-    String subtitle,
-    IconData icon, {
-    VoidCallback? onTap,
-    Widget? trailing,
-    Color? textColor,
-    Color? iconColor,
-    bool showLoading = false,
-  }) {
-    final colors = AppTheme.colors;
-
-    return ListTile(
-      leading: showLoading
-          ? SizedBox(
-              width: 24,
-              height: 24,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(colors.primary),
-              ),
-            )
-          : Icon(
-              icon,
-              color: iconColor ?? colors.text.withOpacity(0.7),
-            ),
-      title: Text(
-        title,
-        style: GoogleFonts.assistant(
-          fontWeight: FontWeight.w600,
-          color: textColor ?? colors.headline,
-        ),
-      ),
-      subtitle: Text(
-        subtitle,
-        style: GoogleFonts.assistant(
-          color: colors.text.withOpacity(0.6),
-          fontSize: 13,
-        ),
-      ),
-      trailing: trailing ??
-          Icon(
-            Icons.chevron_left,
-            color: colors.text.withOpacity(0.5),
-          ),
-      onTap: showLoading ? null : onTap,
-    );
-  }
-
-  Widget _buildDivider() {
-    return Divider(
-      height: 1,
-      thickness: 0.5,
-      color: AppTheme.colors.text.withOpacity(0.1),
-      indent: 56,
-    );
-  }
-
+  /// מציג דיאלוג בחירת שפה
   void _showLanguageDialog() {
     showDialog(
       context: context,
@@ -813,12 +266,22 @@ class _ProfileScreenState extends State<ProfileScreen>
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
-        title: Text(
-          'בחר שפה',
-          style: GoogleFonts.assistant(
-            fontWeight: FontWeight.bold,
-            color: AppTheme.colors.headline,
-          ),
+        title: Row(
+          children: [
+            Icon(
+              Icons.language,
+              color: AppTheme.colors.primary,
+              size: 24,
+            ),
+            const SizedBox(width: 12),
+            Text(
+              'בחר שפה',
+              style: GoogleFonts.assistant(
+                fontWeight: FontWeight.bold,
+                color: AppTheme.colors.headline,
+              ),
+            ),
+          ],
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -834,11 +297,8 @@ class _ProfileScreenState extends State<ProfileScreen>
               groupValue: _selectedLanguage,
               onChanged: (value) {
                 if (value != null) {
-                  setState(() => _selectedLanguage = value);
                   Navigator.pop(context);
-                  if (value != 'עברית') {
-                    _showComingSoonSnackBar('תמיכה ב$value');
-                  }
+                  _saveLanguagePreference(value);
                 }
               },
               activeColor: AppTheme.colors.primary,
@@ -849,6 +309,77 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
   }
 
+  /// מציג דיאלוג בחירת נושא
+  void _showThemeDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppTheme.colors.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: Row(
+          children: [
+            Icon(
+              Icons.palette,
+              color: AppTheme.colors.primary,
+              size: 24,
+            ),
+            const SizedBox(width: 12),
+            Text(
+              'בחר נושא',
+              style: GoogleFonts.assistant(
+                fontWeight: FontWeight.bold,
+                color: AppTheme.colors.headline,
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: _availableThemes.map((theme) {
+            IconData themeIcon;
+            switch (theme) {
+              case 'בהיר':
+                themeIcon = Icons.light_mode;
+                break;
+              case 'כהה':
+                themeIcon = Icons.dark_mode;
+                break;
+              default:
+                themeIcon = Icons.brightness_auto;
+            }
+
+            return RadioListTile<String>(
+              title: Row(
+                children: [
+                  Icon(themeIcon, size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    theme,
+                    style: GoogleFonts.assistant(
+                      color: AppTheme.colors.text,
+                    ),
+                  ),
+                ],
+              ),
+              value: theme,
+              groupValue: _selectedTheme,
+              onChanged: (value) {
+                if (value != null) {
+                  Navigator.pop(context);
+                  _saveThemePreference(value);
+                }
+              },
+              activeColor: AppTheme.colors.primary,
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+
+  /// מציג דיאלוג אודות
   void _showAboutDialog() {
     showAboutDialog(
       context: context,
@@ -870,16 +401,167 @@ class _ProfileScreenState extends State<ProfileScreen>
       children: [
         Text(
           'אפליקציית כושר מתקדמת לניהול אימונים ומעקב התקדמות.',
-          style: GoogleFonts.assistant(),
+          style: GoogleFonts.assistant(fontSize: 16),
         ),
         const SizedBox(height: 16),
         Text(
           'פותח עם ❤️ עבור אוהבי הכושר',
           style: GoogleFonts.assistant(
             fontStyle: FontStyle.italic,
+            color: AppTheme.colors.primary,
+          ),
+        ),
+        const SizedBox(height: 16),
+        Text(
+          '© 2024 Gymovo. כל הזכויות שמורות.',
+          style: GoogleFonts.assistant(
+            fontSize: 12,
+            color: AppTheme.colors.text.withOpacity(0.7),
           ),
         ),
       ],
+    );
+  }
+
+  // פונקציות הודעות
+  void _showSuccessSnackBar(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.check_circle, color: Colors.white, size: 20),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(message, style: GoogleFonts.assistant()),
+            ),
+          ],
+        ),
+        backgroundColor: Colors.green,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
+  }
+
+  void _showErrorSnackBar(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.error_outline, color: Colors.white, size: 20),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(message, style: GoogleFonts.assistant()),
+            ),
+          ],
+        ),
+        backgroundColor: AppTheme.colors.error,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
+  }
+
+  void _showComingSoonSnackBar(String feature) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.info_outline, color: Colors.white, size: 20),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                '$feature יפותח בקרוב',
+                style: GoogleFonts.assistant(),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: AppTheme.colors.secondary,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = AppTheme.colors;
+
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Scaffold(
+        backgroundColor: colors.background,
+        body: Consumer<AuthProvider>(
+          builder: (context, authProvider, child) {
+            final user = authProvider.currentUser ?? UserModel.empty();
+
+            return FadeTransition(
+              opacity: _fadeAnimation,
+              child: CustomScrollView(
+                slivers: [
+                  // כותרת עם פרופיל
+                  ProfileHeader(
+                    user: user,
+                    scaleAnimation: _scaleAnimation,
+                    onEditProfile: () =>
+                        _showComingSoonSnackBar('עריכת פרופיל'),
+                    onAvatarTap: () => _showComingSoonSnackBar('העלאת תמונה'),
+                  ),
+
+                  // תוכן הדף
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        children: [
+                          // סטטיסטיקות משתמש
+                          UserStatsCard(user: user),
+                          const SizedBox(height: 20),
+
+                          // פעולות מהירות
+                          QuickActionsCard(
+                            onQuestionnaireRestart: () =>
+                                _showComingSoonSnackBar('שאלון'),
+                            onShareApp: () => _showComingSoonSnackBar('שיתוף'),
+                          ),
+                          const SizedBox(height: 20),
+
+                          // הגדרות
+                          SettingsSection(
+                            notificationsEnabled: _notificationsEnabled,
+                            selectedLanguage: _selectedLanguage,
+                            selectedTheme: _selectedTheme,
+                            onNotificationChanged: _saveNotificationPreference,
+                            onLanguageTap: _showLanguageDialog,
+                            onThemeTap: _showThemeDialog,
+                          ),
+                          const SizedBox(height: 20),
+
+                          // ניהול חשבון
+                          AccountSection(
+                            isLoading: _isLoading,
+                            onPrivacyTap: () =>
+                                _showComingSoonSnackBar('הגדרות פרטיות'),
+                            onHelpTap: () =>
+                                _showComingSoonSnackBar('מרכז עזרה'),
+                            onAboutTap: _showAboutDialog,
+                            onLogout: _handleLogout,
+                          ),
+                          const SizedBox(height: 20),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      ),
     );
   }
 }

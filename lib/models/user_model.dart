@@ -263,8 +263,8 @@ class UserModel {
           : map['profileLastUpdated'] != null
               ? DateTime.parse(map['profileLastUpdated'].toString())
               : null,
-      nicknameSuggestions: (map['nickname_suggestions'] ??
-                  map['nicknameSuggestions'] as List?)
+      nicknameSuggestions:
+          (map['nickname_suggestions'] ?? map['nicknameSuggestions'] as List?)
               ?.map((n) => NicknameSuggestion.fromMap(
                   n is Map<String, dynamic> ? n : json.decode(n.toString())))
               .toList(),
