@@ -3,9 +3,27 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../theme/app_theme.dart';
 import '../../screens/login/login_screen.dart';
 import '../../screens/register/register_screen.dart';
+import '../../data/local_data_store.dart';
+import 'dart:math';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
+
+  // פונקציה לקבלת אימייל רנדומלי ממשתמשי הדמו
+  Future<String> _getRandomDemoEmail() async {
+    try {
+      final users = await LocalDataStore.loadDemoUsers();
+      if (users.isNotEmpty) {
+        final random = Random();
+        final randomUser = users[random.nextInt(users.length)];
+        return randomUser.email;
+      }
+    } catch (e) {
+      debugPrint('Error loading demo users: $e');
+    }
+    // ברירת מחדל אם לא הצליח לטעון משתמשים
+    return 'demo@gymovo.com';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,6 +62,40 @@ class WelcomeScreen extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 48),
+
+              // כפתור התחברות עם אימייל רנדומלי
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: colors.secondary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: () async {
+                    final randomEmail = await _getRandomDemoEmail();
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            LoginScreen(prefilledEmail: randomEmail),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.shuffle),
+                  label: Text(
+                    'התחבר עם משתמש דמו',
+                    style: GoogleFonts.assistant(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
 
               // התחבר
               SizedBox(

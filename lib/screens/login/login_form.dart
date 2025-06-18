@@ -2,9 +2,14 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import '../../providers/auth_provider.dart';
+import '../home/home_screen.dart';
 
 class LoginForm extends StatefulWidget {
-  const LoginForm({super.key});
+  final String? prefilledEmail;
+
+  const LoginForm({super.key, this.prefilledEmail});
 
   @override
   State<LoginForm> createState() => _LoginFormState();
@@ -17,6 +22,18 @@ class _LoginFormState extends State<LoginForm> {
   String? _emailError;
   String? _passwordError;
   bool _isPasswordVisible = false;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // אם יש אימייל מוכן מראש, הכנס אותו
+    if (widget.prefilledEmail != null) {
+      _emailController.text = widget.prefilledEmail!;
+      // הכנס גם סיסמה ברירת מחדל למשתמשי דמו
+      _passwordController.text = 'demo123';
+    }
+  }
 
   @override
   void dispose() {
@@ -54,6 +71,66 @@ class _LoginFormState extends State<LoginForm> {
     setState(() {
       _passwordError = error;
     });
+  }
+
+  Future<void> _login() async {
+    if (!(_formKey.currentState?.validate() ?? false)) {
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _emailError = null;
+      _passwordError = null;
+    });
+
+    try {
+      final authProvider = context.read<AuthProvider>();
+
+      // בדיקה אם זה משתמש דמו
+      if (_emailController.text.contains('@example.com') ||
+          _emailController.text.contains('@gymovo.com') ||
+          _passwordController.text == 'demo123') {
+        // התחברות כמשתמש דמו
+        await authProvider.loginAsDemoUser();
+      } else {
+        // כאן תוכל להוסיף לוגיקה להתחברות רגילה
+        // כרגע נשתמש בדמו גם כן
+        await authProvider.loginAsDemoUser();
+      }
+
+      if (mounted) {
+        if (authProvider.error != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(authProvider.error!),
+              backgroundColor: Colors.red,
+            ),
+          );
+        } else {
+          // ניווט למסך הבית
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => const HomeScreen()),
+            (route) => false,
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('שגיאה בהתחברות: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -137,19 +214,33 @@ class _LoginFormState extends State<LoginForm> {
             textDirection: TextDirection.ltr,
           ),
           const SizedBox(height: 32),
-          // כפתור התחברות (כדוגמה בלבד)
+          // כפתור התחברות
           ElevatedButton(
-            onPressed: () {
-              _validateEmail();
-              _validatePassword();
-              if (_formKey.currentState?.validate() ?? false) {
-                // כאן תכניס את הלוגיקה שלך
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('מתחבר...')),
-                );
-              }
-            },
-            child: const Text('התחבר'),
+            onPressed: _isLoading ? null : _login,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: colors.primary,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: _isLoading
+                ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  )
+                : Text(
+                    'התחבר',
+                    style: GoogleFonts.assistant(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
           ),
         ],
       ),

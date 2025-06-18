@@ -5,7 +5,9 @@ import 'login_header.dart';
 import 'login_form.dart';
 
 class LoginScreen extends StatelessWidget {
-  const LoginScreen({super.key});
+  final String? prefilledEmail;
+
+  const LoginScreen({super.key, this.prefilledEmail});
 
   @override
   Widget build(BuildContext context) {
@@ -16,11 +18,11 @@ class LoginScreen extends StatelessWidget {
             padding: const EdgeInsets.all(24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: const [
-                SizedBox(height: 40),
-                LoginHeader(),
-                SizedBox(height: 40),
-                LoginForm(),
+              children: [
+                const SizedBox(height: 40),
+                const LoginHeader(),
+                const SizedBox(height: 40),
+                LoginForm(prefilledEmail: prefilledEmail),
               ],
             ),
           ),
