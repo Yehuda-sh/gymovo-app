@@ -42,7 +42,8 @@ class AccountSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = AppTheme.colors;
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
 
     return Container(
       decoration: BoxDecoration(
@@ -82,7 +83,7 @@ class AccountSection extends StatelessWidget {
                   style: GoogleFonts.assistant(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: colors.headline,
+                    color: theme.colorScheme.onSurface,
                   ),
                 ),
               ],
@@ -98,10 +99,11 @@ class AccountSection extends StatelessWidget {
               HapticFeedback.lightImpact();
               onPrivacyTap();
             },
-            colors: colors,
+            colors: AppTheme.colors,
+            theme: theme,
           ),
 
-          _buildDivider(colors),
+          _buildDivider(AppTheme.colors, theme),
 
           // עזרה ותמיכה
           _buildAccountTile(
@@ -112,10 +114,11 @@ class AccountSection extends StatelessWidget {
               HapticFeedback.lightImpact();
               onHelpTap();
             },
-            colors: colors,
+            colors: AppTheme.colors,
+            theme: theme,
           ),
 
-          _buildDivider(colors),
+          _buildDivider(AppTheme.colors, theme),
 
           // אודות האפליקציה
           _buildAccountTile(
@@ -126,10 +129,11 @@ class AccountSection extends StatelessWidget {
               HapticFeedback.lightImpact();
               onAboutTap();
             },
-            colors: colors,
+            colors: AppTheme.colors,
+            theme: theme,
           ),
 
-          _buildDivider(colors),
+          _buildDivider(AppTheme.colors, theme),
 
           // התנתקות
           _buildAccountTile(
@@ -145,7 +149,8 @@ class AccountSection extends StatelessWidget {
             iconColor: colors.error,
             textColor: colors.error,
             showLoading: isLoading,
-            colors: colors,
+            colors: AppTheme.colors,
+            theme: theme,
           ),
         ],
       ),
@@ -162,9 +167,10 @@ class AccountSection extends StatelessWidget {
     Color? textColor,
     bool showLoading = false,
     required AppColors colors,
+    required ThemeData theme,
   }) {
-    final effectiveIconColor = iconColor ?? colors.primary;
-    final effectiveTextColor = textColor ?? colors.headline;
+    final effectiveIconColor = iconColor ?? theme.colorScheme.onSurface;
+    final effectiveTextColor = textColor ?? theme.colorScheme.onSurface;
 
     return Semantics(
       button: onTap != null,
@@ -189,7 +195,7 @@ class AccountSection extends StatelessWidget {
             : Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: effectiveIconColor.withOpacity(0.1),
+                  color: effectiveIconColor.withOpacity(0.08),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
@@ -211,7 +217,7 @@ class AccountSection extends StatelessWidget {
           style: GoogleFonts.assistant(
             color: showLoading
                 ? colors.error.withOpacity(0.8)
-                : colors.text.withOpacity(0.6),
+                : theme.colorScheme.onSurface.withOpacity(0.7),
             fontSize: 13,
           ),
         ),
@@ -219,7 +225,7 @@ class AccountSection extends StatelessWidget {
             ? null
             : Icon(
                 Icons.chevron_left,
-                color: colors.text.withOpacity(0.5),
+                color: theme.colorScheme.onSurface.withOpacity(0.5),
               ),
         onTap: onTap,
         contentPadding: const EdgeInsets.symmetric(horizontal: 20),
@@ -229,11 +235,11 @@ class AccountSection extends StatelessWidget {
   }
 
   /// בונה קו מפריד
-  Widget _buildDivider(AppColors colors) {
+  Widget _buildDivider(AppColors colors, ThemeData theme) {
     return Divider(
       height: 1,
       thickness: 0.5,
-      color: colors.text.withOpacity(0.1),
+      color: theme.colorScheme.onSurface.withOpacity(0.13),
       indent: 68,
       endIndent: 20,
     );

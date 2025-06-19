@@ -230,22 +230,20 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
-    final colors = AppTheme.colors;
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: colors.background,
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
             colors: [
-              colors.background,
-              colors.primary.withValues(alpha: 0.05),
-              colors.background,
+              Color(0xFF1a1a2e),
+              Color(0xFF16213e),
+              Color(0xFF0f3460),
             ],
           ),
         ),
@@ -262,22 +260,66 @@ class _SplashScreenState extends State<SplashScreen>
                     child: Transform.scale(
                       scale: _logoScale.value,
                       child: Container(
-                        width: 160,
-                        height: 160,
+                        width: 180,
+                        height: 180,
                         decoration: BoxDecoration(
-                          shape: BoxShape.circle,
+                          borderRadius: BorderRadius.circular(32),
+                          gradient: const LinearGradient(
+                            colors: [
+                              Color(0xFF667eea),
+                              Color(0xFF764ba2),
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
                           boxShadow: [
                             BoxShadow(
-                              color: colors.primary.withValues(alpha: 0.3),
-                              blurRadius: 30,
-                              spreadRadius: 5,
+                              color: const Color(0xFF667eea).withOpacity(0.5),
+                              blurRadius: 40,
+                              spreadRadius: 10,
+                              offset: const Offset(0, 15),
+                            ),
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.3),
+                              blurRadius: 20,
+                              spreadRadius: 0,
+                              offset: const Offset(0, 8),
                             ),
                           ],
                         ),
-                        child: Image.asset(
-                          'assets/images/gymovo_logo.png',
-                          width: 160,
-                          height: 160,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(32),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.2),
+                              width: 1,
+                            ),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(24),
+                            child: Container(
+                              padding: const EdgeInsets.all(20),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(24),
+                                border: Border.all(
+                                  color: Colors.white.withOpacity(0.3),
+                                  width: 1,
+                                ),
+                              ),
+                              child: Image.asset(
+                                'assets/images/gymovo_logo.png',
+                                width: 80,
+                                height: 80,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    const Icon(
+                                  Icons.fitness_center,
+                                  size: 80,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -297,28 +339,28 @@ class _SplashScreenState extends State<SplashScreen>
                       position: _textSlide,
                       child: Column(
                         children: [
-                          Text(
+                          const Text(
                             'Gymovo',
-                            style: GoogleFonts.poppins(
-                              fontSize: 42,
+                            style: TextStyle(
+                              fontSize: 48,
                               fontWeight: FontWeight.bold,
-                              color: colors.primary,
+                              color: Colors.white,
                               letterSpacing: 3,
                               shadows: [
                                 Shadow(
-                                  color: colors.primary.withValues(alpha: 0.3),
+                                  color: Colors.black,
                                   blurRadius: 10,
-                                  offset: const Offset(0, 2),
+                                  offset: Offset(0, 2),
                                 ),
                               ],
                             ),
                           ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'חווית הכושר שלך מתחילה כאן',
-                            style: GoogleFonts.assistant(
+                          const SizedBox(height: 12),
+                          const Text(
+                            'המקום שלך לכושר מושלם 💪',
+                            style: TextStyle(
                               fontSize: 20,
-                              color: colors.headline,
+                              color: Colors.white,
                               fontWeight: FontWeight.w600,
                               letterSpacing: 0.5,
                             ),
@@ -341,14 +383,24 @@ class _SplashScreenState extends State<SplashScreen>
                     child: Column(
                       children: [
                         if (_isLoading) ...[
-                          SizedBox(
-                            width: 40,
-                            height: 40,
-                            child: CircularProgressIndicator(
-                              color: colors.primary,
-                              strokeWidth: 3,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                colors.primary,
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.2),
+                                width: 1,
+                              ),
+                            ),
+                            child: SizedBox(
+                              width: 40,
+                              height: 40,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 3,
+                                valueColor: const AlwaysStoppedAnimation<Color>(
+                                    Colors.white),
                               ),
                             ),
                           ),
@@ -356,24 +408,49 @@ class _SplashScreenState extends State<SplashScreen>
                           Text(
                             _loadingMessage,
                             style: GoogleFonts.assistant(
-                              fontSize: 14,
-                              color: colors.text.withValues(alpha: 0.6),
+                              fontSize: 16,
+                              color: Colors.white.withOpacity(0.8),
                               fontWeight: FontWeight.w500,
+                              letterSpacing: 0.3,
                             ),
                           ),
                         ] else ...[
-                          Icon(
-                            Icons.check_circle,
-                            color: colors.primary,
-                            size: 40,
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(20),
+                              gradient: const LinearGradient(
+                                colors: [
+                                  Color(0xFF43e97b),
+                                  Color(0xFF38f9d7),
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color:
+                                      const Color(0xFF43e97b).withOpacity(0.4),
+                                  blurRadius: 20,
+                                  offset: const Offset(0, 8),
+                                  spreadRadius: 0,
+                                ),
+                              ],
+                            ),
+                            child: const Icon(
+                              Icons.check_circle,
+                              color: Colors.white,
+                              size: 40,
+                            ),
                           ),
                           const SizedBox(height: 16),
-                          Text(
-                            'מוכן!',
-                            style: GoogleFonts.assistant(
-                              fontSize: 16,
-                              color: colors.primary,
+                          const Text(
+                            'מוכן! 🔥',
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: Colors.white,
                               fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
                             ),
                           ),
                         ],
@@ -387,17 +464,28 @@ class _SplashScreenState extends State<SplashScreen>
               const Spacer(),
               FadeTransition(
                 opacity: _textOpacity,
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 20),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.2),
+                      width: 1,
+                    ),
+                  ),
                   child: Text(
                     'גרסה 1.0.0',
                     style: GoogleFonts.assistant(
                       fontSize: 12,
-                      color: colors.text.withValues(alpha: 0.4),
+                      color: Colors.white.withOpacity(0.6),
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ),
               ),
+              const SizedBox(height: 20),
             ],
           ),
         ),

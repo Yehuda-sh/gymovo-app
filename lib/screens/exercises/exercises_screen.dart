@@ -779,9 +779,42 @@ class _ExercisesScreenState extends State<ExercisesScreen>
                 return AnimatedContainer(
                   duration: Duration(milliseconds: 100 + (index * 50)),
                   curve: Curves.easeOutCubic,
-                  child: ExerciseCard(
-                    exercise: exercise,
-                    onTap: () => _navigateToExerciseDetails(exercise),
+                  child: Card(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: Theme.of(context)
+                            .colorScheme
+                            .primary
+                            .withOpacity(0.1),
+                        child: Icon(
+                          Icons.fitness_center,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                      title: Text(
+                        exercise.nameHe,
+                        style:
+                            GoogleFonts.assistant(fontWeight: FontWeight.w600),
+                      ),
+                      subtitle: Text(
+                        exercise.descriptionHe ?? exercise.description ?? '',
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.assistant(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      trailing: Icon(
+                        Icons.chevron_left,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                      onTap: () => _navigateToExerciseDetails(exercise),
+                    ),
                   ),
                 );
               },

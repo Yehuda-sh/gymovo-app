@@ -67,7 +67,8 @@ class WorkoutDetailsScreen extends StatelessWidget {
               color: colors.headline,
             ),
           ),
-          if (workout.description != null) ...[
+          if (workout.description != null &&
+              workout.description!.isNotEmpty) ...[
             const SizedBox(height: 8),
             Text(
               workout.description!,
@@ -158,7 +159,8 @@ class WorkoutDetailsScreen extends StatelessWidget {
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
-                    if (exercise.notes != null) ...[
+                    if (exercise.notes != null &&
+                        exercise.notes!.isNotEmpty) ...[
                       Text(
                         exercise.notes!,
                         style: GoogleFonts.assistant(
@@ -199,13 +201,12 @@ class WorkoutDetailsScreen extends StatelessWidget {
 
     return Table(
       columnWidths: const {
-        0: FlexColumnWidth(1), // Set number
-        1: FlexColumnWidth(2), // Reps
-        2: FlexColumnWidth(2), // Weight
-        3: FlexColumnWidth(2), // Rest
+        0: FlexColumnWidth(1),
+        1: FlexColumnWidth(2),
+        2: FlexColumnWidth(2),
+        3: FlexColumnWidth(2),
       },
       children: [
-        // Header row
         TableRow(
           decoration: BoxDecoration(
             border: Border(
@@ -222,7 +223,6 @@ class WorkoutDetailsScreen extends StatelessWidget {
             _buildTableHeader('מנוחה'),
           ],
         ),
-        // Data rows
         ...exercise.sets.map((set) {
           return TableRow(
             children: [
@@ -294,7 +294,7 @@ class WorkoutDetailsScreen extends StatelessWidget {
               MaterialPageRoute(
                 builder: (_) => WorkoutModeScreen(
                   workout: workout,
-                  exerciseDetailsMap: const {}, // TODO: Get actual exercise details
+                  exerciseDetailsMap: exerciseDetails,
                 ),
               ),
             );

@@ -1,3 +1,5 @@
+// lib/features/workouts/screens/new_workout_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import '../../../models/workout_model.dart';
@@ -114,10 +116,12 @@ class _NewWorkoutScreenState extends State<NewWorkoutScreen> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('אימון חדש'),
         backgroundColor: colorScheme.surface,
+        elevation: 1,
       ),
       body: Form(
         key: _formKey,
@@ -126,7 +130,11 @@ class _NewWorkoutScreenState extends State<NewWorkoutScreen> {
           children: [
             TextFormField(
               controller: _nameController,
-              decoration: const InputDecoration(labelText: 'שם האימון'),
+              decoration: const InputDecoration(
+                labelText: 'שם האימון',
+                prefixIcon: Icon(Icons.fitness_center),
+                border: OutlineInputBorder(),
+              ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'נא להזין שם לאימון';
@@ -137,7 +145,11 @@ class _NewWorkoutScreenState extends State<NewWorkoutScreen> {
             const SizedBox(height: 16),
             TextFormField(
               controller: _descriptionController,
-              decoration: const InputDecoration(labelText: 'תיאור'),
+              decoration: const InputDecoration(
+                labelText: 'תיאור',
+                prefixIcon: Icon(Icons.short_text),
+                border: OutlineInputBorder(),
+              ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'נא להזין תיאור';
@@ -148,7 +160,11 @@ class _NewWorkoutScreenState extends State<NewWorkoutScreen> {
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
               value: _selectedDifficulty,
-              decoration: const InputDecoration(labelText: 'רמת קושי'),
+              decoration: const InputDecoration(
+                labelText: 'רמת קושי',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.trending_up),
+              ),
               items: ['מתחילים', 'בינוני', 'מתקדם']
                   .map((difficulty) => DropdownMenuItem(
                         value: difficulty,
@@ -166,7 +182,11 @@ class _NewWorkoutScreenState extends State<NewWorkoutScreen> {
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
               value: _selectedGoal,
-              decoration: const InputDecoration(labelText: 'מטרה'),
+              decoration: const InputDecoration(
+                labelText: 'מטרה',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.flag),
+              ),
               items: ['כוח', 'סיבולת', 'פיסול', 'מסה']
                   .map((goal) => DropdownMenuItem(
                         value: goal,
@@ -184,7 +204,11 @@ class _NewWorkoutScreenState extends State<NewWorkoutScreen> {
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
               value: _selectedEquipment,
-              decoration: const InputDecoration(labelText: 'ציוד'),
+              decoration: const InputDecoration(
+                labelText: 'ציוד',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.sports_gymnastics),
+              ),
               items: ['משקולות', 'מכונות', 'גוף', 'אופניים']
                   .map((equipment) => DropdownMenuItem(
                         value: equipment,
@@ -219,6 +243,7 @@ class _NewWorkoutScreenState extends State<NewWorkoutScreen> {
               final index = entry.key;
               final exercise = entry.value;
               return Card(
+                margin: const EdgeInsets.symmetric(vertical: 4),
                 child: ListTile(
                   leading:
                       exercise.videoUrl != null && exercise.videoUrl!.isNotEmpty
@@ -226,7 +251,7 @@ class _NewWorkoutScreenState extends State<NewWorkoutScreen> {
                           : const Icon(Icons.fitness_center),
                   title: Text(exercise.name),
                   subtitle: Text(
-                    '${exercise.sets.length} סטים, ${exercise.sets.firstOrNull?.reps ?? 0} חזרות',
+                    '${exercise.sets.length} סטים, ${exercise.sets.isNotEmpty ? exercise.sets.first.reps : 0} חזרות',
                   ),
                   trailing: IconButton(
                     icon: const Icon(Icons.delete),

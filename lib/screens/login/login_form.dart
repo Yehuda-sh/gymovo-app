@@ -135,114 +135,296 @@ class _LoginFormState extends State<LoginForm> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    return Form(
-      key: _formKey,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // שדה אימייל
-          TextFormField(
-            controller: _emailController,
-            style: GoogleFonts.assistant(),
-            decoration: InputDecoration(
-              labelText: 'אימייל',
-              labelStyle: GoogleFonts.assistant(),
-              prefixIcon: Icon(Icons.email, color: colors.secondary),
-              errorText: _emailError,
-              errorStyle: GoogleFonts.assistant(color: colors.error),
-              helperText: 'יש להקליד כתובת תקינה (רק באנגלית)',
-              helperStyle: GoogleFonts.assistant(
-                fontSize: 12,
-                color: colors.onSurface.withOpacity(0.6),
-              ),
-            ),
-            keyboardType: TextInputType.emailAddress,
-            textInputAction: TextInputAction.next,
-            textDirection: TextDirection.ltr,
-            onChanged: (value) => setState(() => _emailError = null),
-            onFieldSubmitted: (_) {
-              _validateEmail();
-              FocusScope.of(context).nextFocus();
-            },
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'אנא הכנס אימייל';
-              }
-              if (!isValidEmail(value)) {
-                return 'נא להזין אימייל תקין (למשל: name@email.com)';
-              }
-              return null;
-            },
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        gradient: const LinearGradient(
+          colors: [
+            Color(0xFF4facfe),
+            Color(0xFF00f2fe),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF4facfe).withOpacity(0.3),
+            blurRadius: 25,
+            offset: const Offset(0, 10),
+            spreadRadius: 0,
           ),
-          const SizedBox(height: 20),
-          // שדה סיסמה
-          TextFormField(
-            controller: _passwordController,
-            style: GoogleFonts.assistant(),
-            decoration: InputDecoration(
-              labelText: 'סיסמה',
-              labelStyle: GoogleFonts.assistant(),
-              prefixIcon: Icon(Icons.lock, color: colors.secondary),
-              suffixIcon: IconButton(
-                icon: Icon(
-                  _isPasswordVisible ? Icons.visibility_off : Icons.visibility,
-                  color: colors.secondary,
-                ),
-                onPressed: () {
-                  setState(() {
-                    _isPasswordVisible = !_isPasswordVisible;
-                  });
-                },
-              ),
-              errorText: _passwordError,
-              errorStyle: GoogleFonts.assistant(color: colors.error),
-            ),
-            obscureText: !_isPasswordVisible,
-            textInputAction: TextInputAction.done,
-            onFieldSubmitted: (_) => _validatePassword(),
-            onChanged: (value) => setState(() => _passwordError = null),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'אנא הכנס סיסמה';
-              }
-              if (value.length < 6) {
-                return 'הסיסמה חייבת להכיל לפחות 6 תווים';
-              }
-              return null;
-            },
-            textDirection: TextDirection.ltr,
-          ),
-          const SizedBox(height: 32),
-          // כפתור התחברות
-          ElevatedButton(
-            onPressed: _isLoading ? null : _login,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: colors.primary,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: _isLoading
-                ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                    ),
-                  )
-                : Text(
-                    'התחבר',
-                    style: GoogleFonts.assistant(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+            spreadRadius: 0,
           ),
         ],
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: Colors.white.withOpacity(0.2),
+            width: 1,
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(28),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // כותרת
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.3),
+                          width: 1,
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.login,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    const Text(
+                      'התחברות',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 28),
+
+                // שדה אימייל
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    color: Colors.white.withOpacity(0.1),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.2),
+                      width: 1,
+                    ),
+                  ),
+                  child: TextFormField(
+                    controller: _emailController,
+                    style: GoogleFonts.assistant(
+                      color: Colors.white,
+                      fontSize: 16,
+                    ),
+                    decoration: InputDecoration(
+                      labelText: 'אימייל',
+                      labelStyle: GoogleFonts.assistant(
+                        color: Colors.white.withOpacity(0.8),
+                        fontSize: 16,
+                      ),
+                      prefixIcon: Icon(
+                        Icons.email,
+                        color: Colors.white.withOpacity(0.8),
+                      ),
+                      errorText: _emailError,
+                      errorStyle: GoogleFonts.assistant(
+                        color: Colors.red[200],
+                        fontSize: 12,
+                      ),
+                      helperText: 'יש להקליד כתובת תקינה (רק באנגלית)',
+                      helperStyle: GoogleFonts.assistant(
+                        fontSize: 12,
+                        color: Colors.white.withOpacity(0.6),
+                      ),
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 16,
+                      ),
+                    ),
+                    keyboardType: TextInputType.emailAddress,
+                    textInputAction: TextInputAction.next,
+                    textDirection: TextDirection.ltr,
+                    onChanged: (value) => setState(() => _emailError = null),
+                    onFieldSubmitted: (_) {
+                      _validateEmail();
+                      FocusScope.of(context).nextFocus();
+                    },
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'אנא הכנס אימייל';
+                      }
+                      if (!isValidEmail(value)) {
+                        return 'נא להזין אימייל תקין (למשל: name@email.com)';
+                      }
+                      return null;
+                    },
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // שדה סיסמה
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    color: Colors.white.withOpacity(0.1),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.2),
+                      width: 1,
+                    ),
+                  ),
+                  child: TextFormField(
+                    controller: _passwordController,
+                    style: GoogleFonts.assistant(
+                      color: Colors.white,
+                      fontSize: 16,
+                    ),
+                    decoration: InputDecoration(
+                      labelText: 'סיסמה',
+                      labelStyle: GoogleFonts.assistant(
+                        color: Colors.white.withOpacity(0.8),
+                        fontSize: 16,
+                      ),
+                      prefixIcon: Icon(
+                        Icons.lock,
+                        color: Colors.white.withOpacity(0.8),
+                      ),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _isPasswordVisible
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                          color: Colors.white.withOpacity(0.8),
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _isPasswordVisible = !_isPasswordVisible;
+                          });
+                        },
+                      ),
+                      errorText: _passwordError,
+                      errorStyle: GoogleFonts.assistant(
+                        color: Colors.red[200],
+                        fontSize: 12,
+                      ),
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 16,
+                      ),
+                    ),
+                    obscureText: !_isPasswordVisible,
+                    textInputAction: TextInputAction.done,
+                    onFieldSubmitted: (_) => _validatePassword(),
+                    onChanged: (value) => setState(() => _passwordError = null),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'אנא הכנס סיסמה';
+                      }
+                      if (value.length < 6) {
+                        return 'הסיסמה חייבת להכיל לפחות 6 תווים';
+                      }
+                      return null;
+                    },
+                    textDirection: TextDirection.ltr,
+                  ),
+                ),
+                const SizedBox(height: 32),
+
+                // כפתור התחברות
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    gradient: const LinearGradient(
+                      colors: [
+                        Colors.white,
+                        Color(0xFFf8f9fa),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        blurRadius: 15,
+                        offset: const Offset(0, 6),
+                        spreadRadius: 0,
+                      ),
+                    ],
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(20),
+                      onTap: _isLoading ? null : _login,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 20, horizontal: 24),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            if (_isLoading)
+                              const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                      Color(0xFF4facfe)),
+                                ),
+                              )
+                            else ...[
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [
+                                      Color(0xFF4facfe),
+                                      Color(0xFF00f2fe),
+                                    ],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: const Icon(
+                                  Icons.login,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                            ],
+                            Text(
+                              _isLoading ? 'מתחבר...' : 'התחבר',
+                              style: GoogleFonts.assistant(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: _isLoading
+                                    ? const Color(0xFF4facfe)
+                                    : const Color(0xFF2d3748),
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

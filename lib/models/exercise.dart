@@ -224,37 +224,41 @@ class Exercise {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'name': name,
-      'nameHe': nameHe,
+      'name_en': name,
+      'name_he': nameHe,
       'description': description,
-      'descriptionHe': descriptionHe,
-      'instructions': instructions,
-      'instructionsHe': instructionsHe,
-      'imageUrl': imageUrl,
-      'videoUrl': videoUrl,
-      'category': category,
+      'description_he': descriptionHe,
+      'instructions_en': instructions.join('\n'),
+      'instructions_he': instructionsHe.join('\n'),
+      'image_url': imageUrl,
+      'video_url': videoUrl,
       'equipment': equipment,
       'difficulty': difficulty,
-      'metadata': metadata,
+      'main_muscles': mainMuscles,
+      'secondary_muscles': secondaryMuscles,
+      'type': type,
     };
   }
 
-  // Create exercise from JSON
+  // Factory constructor to create Exercise from JSON
   factory Exercise.fromJson(Map<String, dynamic> json) {
     return Exercise(
-      id: json['id'] as String,
-      name: json['name'] as String? ?? 'תרגיל ללא שם',
-      nameHe: json['nameHe'] as String? ?? 'תרגיל ללא שם',
-      description: json['description'] as String? ?? 'תרגיל ללא תיאור',
-      descriptionHe: json['descriptionHe'] as String? ?? 'תרגיל ללא תיאור',
-      instructions: (json['instructions'] as List?)?.cast<String>() ?? [],
-      instructionsHe: (json['instructionsHe'] as List?)?.cast<String>() ?? [],
-      imageUrl: json['imageUrl'] as String?,
-      videoUrl: json['videoUrl'] as String?,
-      category: json['category'] as String?,
-      equipment: json['equipment'] as String?,
-      difficulty: json['difficulty'] as String?,
-      metadata: json['metadata'] as Map<String, dynamic>?,
+      id: json['id'] ?? '',
+      name: json['name_en'] ?? '',
+      nameHe: json['name_he'] ?? '',
+      description: json['description'],
+      descriptionHe: json['description_he'],
+      instructions: json['instructions_en']?.toString().split('\n') ?? [],
+      instructionsHe: json['instructions_he']?.toString().split('\n') ?? [],
+      imageUrl: json['image_url'],
+      videoUrl: json['video_url'],
+      equipment: json['equipment'],
+      difficulty: json['difficulty'],
+      metadata: {
+        'mainMuscles': json['main_muscles'] ?? [],
+        'secondaryMuscles': json['secondary_muscles'] ?? [],
+        'type': json['type'],
+      },
     );
   }
 

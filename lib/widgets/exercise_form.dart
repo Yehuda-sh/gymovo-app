@@ -25,7 +25,6 @@ class _ExerciseFormState extends State<ExerciseForm> {
   late TextEditingController _repsController;
   late TextEditingController _notesController;
 
-  // Focus nodes for field navigation
   final _nameFocus = FocusNode();
   final _setsFocus = FocusNode();
   final _repsFocus = FocusNode();
@@ -78,7 +77,6 @@ class _ExerciseFormState extends State<ExerciseForm> {
         );
         widget.onSave(exercise);
 
-        // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -90,7 +88,6 @@ class _ExerciseFormState extends State<ExerciseForm> {
             behavior: SnackBarBehavior.floating,
           ),
         );
-        // ניקוי שדות אם זה תרגיל חדש
         if (widget.initialExercise == null) {
           _nameController.clear();
           _setsController.text = '1';
@@ -98,7 +95,6 @@ class _ExerciseFormState extends State<ExerciseForm> {
           _notesController.clear();
         }
       } catch (e) {
-        // Show error message
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('שגיאה: $e'),
@@ -112,12 +108,18 @@ class _ExerciseFormState extends State<ExerciseForm> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
     return Card(
-      elevation: 3,
-      margin: const EdgeInsets.all(10),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      elevation: 8,
+      margin: const EdgeInsets.all(14),
+      color: colors.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(22),
+        side: BorderSide(color: colors.primary.withOpacity(0.08)),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(18.0),
+        padding: const EdgeInsets.all(22.0),
         child: Form(
           key: _formKey,
           autovalidateMode: AutovalidateMode.onUserInteraction,
@@ -126,9 +128,14 @@ class _ExerciseFormState extends State<ExerciseForm> {
               TextFormField(
                 controller: _nameController,
                 focusNode: _nameFocus,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'שם התרגיל',
-                  prefixIcon: Icon(Icons.fitness_center),
+                  prefixIcon: Icon(Icons.fitness_center, color: colors.primary),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  filled: true,
+                  fillColor: colors.surfaceVariant,
                 ),
                 textInputAction: TextInputAction.next,
                 onFieldSubmitted: (_) =>
@@ -140,16 +147,21 @@ class _ExerciseFormState extends State<ExerciseForm> {
                   return null;
                 },
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 14),
               Row(
                 children: [
                   Expanded(
                     child: TextFormField(
                       controller: _setsController,
                       focusNode: _setsFocus,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: 'מספר סטים',
-                        prefixIcon: Icon(Icons.repeat),
+                        prefixIcon: Icon(Icons.repeat, color: colors.secondary),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        filled: true,
+                        fillColor: colors.surfaceVariant,
                       ),
                       keyboardType: TextInputType.number,
                       textInputAction: TextInputAction.next,
@@ -172,9 +184,15 @@ class _ExerciseFormState extends State<ExerciseForm> {
                     child: TextFormField(
                       controller: _repsController,
                       focusNode: _repsFocus,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: 'מספר חזרות',
-                        prefixIcon: Icon(Icons.repeat_one),
+                        prefixIcon:
+                            Icon(Icons.repeat_one, color: colors.secondary),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        filled: true,
+                        fillColor: colors.surfaceVariant,
                       ),
                       keyboardType: TextInputType.number,
                       textInputAction: TextInputAction.next,
@@ -194,32 +212,46 @@ class _ExerciseFormState extends State<ExerciseForm> {
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 14),
               TextFormField(
                 controller: _notesController,
                 focusNode: _notesFocus,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'הערות',
-                  prefixIcon: Icon(Icons.note),
+                  prefixIcon: Icon(Icons.note, color: colors.primary),
                   alignLabelWithHint: true,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  filled: true,
+                  fillColor: colors.surfaceVariant,
                 ),
                 maxLines: 3,
                 textInputAction: TextInputAction.done,
                 onFieldSubmitted: (_) => _saveExercise(),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 28),
               ElevatedButton.icon(
                 onPressed: _saveExercise,
                 icon: Icon(
                   widget.initialExercise == null
                       ? Icons.add_circle_outline
                       : Icons.save_outlined,
+                  color: Colors.white,
                 ),
                 label: Text(
                   widget.initialExercise == null ? 'הוסף תרגיל' : 'עדכן תרגיל',
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 17),
                 ),
                 style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 48),
+                  backgroundColor: colors.primary,
+                  foregroundColor: Colors.white,
+                  minimumSize: const Size(double.infinity, 54),
+                  elevation: 4,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                 ),
               ),
             ],

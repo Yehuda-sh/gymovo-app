@@ -1,7 +1,4 @@
 // lib/screens/home/home_screen.dart
-// --------------------------------------------------
-// מסך הבית הראשי של האפליקציה - גרסה משופרת
-// --------------------------------------------------
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';

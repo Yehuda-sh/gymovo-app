@@ -49,9 +49,9 @@ flutter:
     - assets/images/avatar_male.png
     - assets/images/avatar_neutral.png
     - assets/data/demo_users.json
-
     - assets/data/workout_exercises.json
     - assets/avatars/
+    - assets/images/
 
     # הערות: תמונות גוף יוגדרו בהמשך
     # - assets/images/male_body.png

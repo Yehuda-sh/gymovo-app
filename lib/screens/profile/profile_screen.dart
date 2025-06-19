@@ -489,77 +489,187 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   @override
   Widget build(BuildContext context) {
-    final colors = AppTheme.colors;
+    final user = context.watch<AuthProvider>().currentUser;
 
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Scaffold(
-        backgroundColor: colors.background,
-        body: Consumer<AuthProvider>(
-          builder: (context, authProvider, child) {
-            final user = authProvider.currentUser ?? UserModel.empty();
-
-            return FadeTransition(
-              opacity: _fadeAnimation,
-              child: CustomScrollView(
-                slivers: [
-                  // כותרת עם פרופיל
-                  ProfileHeader(
-                    user: user,
-                    scaleAnimation: _scaleAnimation,
-                    onEditProfile: () =>
-                        _showComingSoonSnackBar('עריכת פרופיל'),
-                    onAvatarTap: () => _showComingSoonSnackBar('העלאת תמונה'),
-                  ),
-
-                  // תוכן הדף
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        children: [
-                          // סטטיסטיקות משתמש
-                          UserStatsCard(user: user),
-                          const SizedBox(height: 20),
-
-                          // פעולות מהירות
-                          QuickActionsCard(
-                            onQuestionnaireRestart: () =>
-                                _showComingSoonSnackBar('שאלון'),
-                            onShareApp: () => _showComingSoonSnackBar('שיתוף'),
+    return Scaffold(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Color(0xFF1a1a2e),
+              Color(0xFF16213e),
+              Color(0xFF0f3460),
+            ],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: SafeArea(
+          child: AnimatedBuilder(
+            animation: _fadeAnimation,
+            builder: (context, child) {
+              return FadeTransition(
+                opacity: _fadeAnimation,
+                child: AnimatedBuilder(
+                  animation: _scaleAnimation,
+                  builder: (context, child) {
+                    return Transform.scale(
+                      scale: _scaleAnimation.value,
+                      child: CustomScrollView(
+                        physics: const BouncingScrollPhysics(),
+                        slivers: [
+                          // כותרת מעוצבת
+                          SliverToBoxAdapter(
+                            child: Container(
+                              margin: const EdgeInsets.all(20),
+                              padding: const EdgeInsets.all(24),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(24),
+                                gradient: const LinearGradient(
+                                  colors: [
+                                    Color(0xFF667eea),
+                                    Color(0xFF764ba2),
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFF667eea)
+                                        .withOpacity(0.4),
+                                    blurRadius: 25,
+                                    offset: const Offset(0, 10),
+                                    spreadRadius: 0,
+                                  ),
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.15),
+                                    blurRadius: 15,
+                                    offset: const Offset(0, 5),
+                                    spreadRadius: 0,
+                                  ),
+                                ],
+                              ),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(24),
+                                  border: Border.all(
+                                    color: Colors.white.withOpacity(0.2),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(20),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(12),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white.withOpacity(0.2),
+                                          borderRadius:
+                                              BorderRadius.circular(20),
+                                          border: Border.all(
+                                            color:
+                                                Colors.white.withOpacity(0.3),
+                                            width: 1,
+                                          ),
+                                        ),
+                                        child: const Icon(
+                                          Icons.person,
+                                          color: Colors.white,
+                                          size: 28,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 16),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              'פרופיל',
+                                              style: GoogleFonts.assistant(
+                                                fontSize: 24,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.white,
+                                                letterSpacing: 0.5,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              'נהל את החשבון וההגדרות שלך',
+                                              style: GoogleFonts.assistant(
+                                                fontSize: 14,
+                                                color: Colors.white
+                                                    .withOpacity(0.8),
+                                                letterSpacing: 0.3,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
                           ),
-                          const SizedBox(height: 20),
 
-                          // הגדרות
-                          SettingsSection(
-                            notificationsEnabled: _notificationsEnabled,
-                            selectedLanguage: _selectedLanguage,
-                            selectedTheme: _selectedTheme,
-                            onNotificationChanged: _saveNotificationPreference,
-                            onLanguageTap: _showLanguageDialog,
-                            onThemeTap: _showThemeDialog,
-                          ),
-                          const SizedBox(height: 20),
+                          // תוכן הפרופיל
+                          SliverToBoxAdapter(
+                            child: Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 20),
+                              child: Column(
+                                children: [
+                                  // כרטיס סטטיסטיקות משתמש
+                                  UserStatsCard(
+                                      user: user ?? UserModel.empty()),
+                                  const SizedBox(height: 20),
 
-                          // ניהול חשבון
-                          AccountSection(
-                            isLoading: _isLoading,
-                            onPrivacyTap: () =>
-                                _showComingSoonSnackBar('הגדרות פרטיות'),
-                            onHelpTap: () =>
-                                _showComingSoonSnackBar('מרכז עזרה'),
-                            onAboutTap: _showAboutDialog,
-                            onLogout: _handleLogout,
+                                  // כרטיס פעולות מהירות
+                                  QuickActionsCard(
+                                    onQuestionnaireRestart: () =>
+                                        _showComingSoonSnackBar('שאלון'),
+                                    onShareApp: () =>
+                                        _showComingSoonSnackBar('שיתוף'),
+                                  ),
+                                  const SizedBox(height: 20),
+
+                                  // כרטיס הגדרות
+                                  SettingsSection(
+                                    notificationsEnabled: _notificationsEnabled,
+                                    selectedLanguage: _selectedLanguage,
+                                    selectedTheme: _selectedTheme,
+                                    onNotificationChanged:
+                                        _saveNotificationPreference,
+                                    onLanguageTap: _showLanguageDialog,
+                                    onThemeTap: _showThemeDialog,
+                                  ),
+                                  const SizedBox(height: 20),
+
+                                  // כרטיס חשבון
+                                  AccountSection(
+                                    isLoading: _isLoading,
+                                    onPrivacyTap: () => _showComingSoonSnackBar(
+                                        'הגדרות פרטיות'),
+                                    onHelpTap: () =>
+                                        _showComingSoonSnackBar('מרכז עזרה'),
+                                    onAboutTap: _showAboutDialog,
+                                    onLogout: _handleLogout,
+                                  ),
+                                  const SizedBox(height: 40),
+                                ],
+                              ),
+                            ),
                           ),
-                          const SizedBox(height: 20),
                         ],
                       ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
+                    );
+                  },
+                ),
+              );
+            },
+          ),
         ),
       ),
     );
