@@ -1,3 +1,4 @@
+// lib/features/workouts/screens/workout_mode/widgets/set_row.dart
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../../theme/app_theme.dart';
@@ -47,51 +48,66 @@ class SetRow extends StatelessWidget {
         border: Border.all(color: borderColor, width: 1.5),
       ),
       child: ListTile(
-        leading: GestureDetector(
-          onTap: onToggleDone,
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 350),
-            child: isDone
-                ? Icon(Icons.check_circle,
-                    color: Colors.green, key: const ValueKey('done'))
-                : isResting
-                    ? Icon(Icons.timer,
-                        color: Colors.orange, key: const ValueKey('resting'))
-                    : Icon(Icons.radio_button_unchecked,
-                        color: colors.primary, key: const ValueKey('notdone')),
+        leading: Semantics(
+          label: isDone
+              ? 'סט מסומן כהושלם'
+              : isResting
+                  ? 'סט בזמן מנוחה'
+                  : 'סט לא הושלם',
+          button: true,
+          child: InkWell(
+            onTap: onToggleDone,
+            customBorder: const CircleBorder(),
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 350),
+              child: isDone
+                  ? Icon(Icons.check_circle,
+                      color: Colors.green, key: const ValueKey('done'))
+                  : isResting
+                      ? Icon(Icons.timer,
+                          color: Colors.orange, key: const ValueKey('resting'))
+                      : Icon(Icons.radio_button_unchecked,
+                          color: colors.primary,
+                          key: const ValueKey('notdone')),
+            ),
           ),
         ),
-        title: GestureDetector(
-          onTap: onEdit,
-          child: Row(
-            children: [
-              Text(
-                'סט ${setIdx + 1}',
-                style: GoogleFonts.assistant(
-                  fontWeight: FontWeight.bold,
-                  color: isDone
-                      ? Colors.green[600]
-                      : isResting
-                          ? Colors.orange
-                          : Colors.white,
+        title: Semantics(
+          button: true,
+          label: 'עריכת סט ${setIdx + 1}',
+          child: InkWell(
+            onTap: onEdit,
+            borderRadius: BorderRadius.circular(6),
+            child: Row(
+              children: [
+                Text(
+                  'סט ${setIdx + 1}',
+                  style: GoogleFonts.assistant(
+                    fontWeight: FontWeight.bold,
+                    color: isDone
+                        ? Colors.green[600]
+                        : isResting
+                            ? Colors.orange
+                            : colors.text,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 10),
-              Text(
-                '${set.reps} חזרות',
-                style: GoogleFonts.assistant(
-                  color: colors.headline,
-                  fontWeight: FontWeight.w600,
+                const SizedBox(width: 12),
+                Text(
+                  '${set.reps} חזרות',
+                  style: GoogleFonts.assistant(
+                    color: colors.headline,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 14),
-              Text(
-                '${set.weight?.toInt() ?? 0} ק"ג',
-                style: GoogleFonts.assistant(
-                  color: colors.headline,
+                const SizedBox(width: 16),
+                Text(
+                  '${set.weight?.toInt() ?? 0} ק"ג',
+                  style: GoogleFonts.assistant(
+                    color: colors.headline,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
         trailing: isResting
@@ -106,7 +122,7 @@ class SetRow extends StatelessWidget {
                       fontSize: 17,
                     ),
                   ),
-                  const SizedBox(width: 3),
+                  const SizedBox(width: 4),
                   const Icon(Icons.timer_outlined,
                       color: Colors.orange, size: 22),
                 ],

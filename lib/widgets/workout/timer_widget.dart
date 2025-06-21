@@ -1,5 +1,4 @@
-// lib/widgets/timer_widget.dart
-
+// lib/widgets/workout/timer_widget.dart
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -25,6 +24,7 @@ class _TimerWidgetState extends State<TimerWidget> {
   Timer? _timer;
   late int _remainingSeconds;
   bool _isPaused = false;
+  bool _finished = false; // להימנע מקריאה כפולה
 
   @override
   void initState() {
@@ -51,9 +51,19 @@ class _TimerWidgetState extends State<TimerWidget> {
         if (!_isPaused && _remainingSeconds > 0) {
           _remainingSeconds--;
         }
-        if (_remainingSeconds == 0) {
+        if (_remainingSeconds == 0 && !_finished) {
           timer.cancel();
+          _finished = true;
           widget.onComplete();
+          // SnackBar חיווי סיום (לא חובה)
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('הטיימר הסתיים!'),
+                backgroundColor: Colors.orange,
+              ),
+            );
+          }
         }
       });
     });
@@ -80,56 +90,70 @@ class _TimerWidgetState extends State<TimerWidget> {
   Widget build(BuildContext context) {
     final colors = AppTheme.colors;
 
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: colors.surface.withOpacity(0.97),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: colors.primary.withAlpha(46),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
+    return Semantics(
+      label: 'טיימר מנוחה',
+      value: _formatTime(_remainingSeconds),
+      child: Container(
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: colors.surface.withOpacity(0.97),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: colors.primary.withAlpha(46),
           ),
-        ],
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            'זמן מנוחה',
-            style: GoogleFonts.assistant(
-              fontSize: 17,
-              color: colors.primary.withOpacity(0.93),
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            _formatTime(_remainingSeconds),
-            style: GoogleFonts.assistant(
-              fontSize: 34,
-              fontWeight: FontWeight.bold,
-              color: colors.headline,
-              letterSpacing: 1.5,
-            ),
-          ),
-          if (widget.isActive) ...[
-            const SizedBox(height: 14),
-            IconButton(
-              tooltip: _isPaused ? 'הפעל טיימר' : 'השהה טיימר',
-              onPressed: _togglePause,
-              icon: Icon(
-                _isPaused ? Icons.play_arrow_rounded : Icons.pause_rounded,
-                color: colors.primary,
-                size: 36,
-              ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
             ),
           ],
-        ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'זמן מנוחה',
+              style: GoogleFonts.assistant(
+                fontSize: 17,
+                color: colors.primary.withOpacity(0.93),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            // אנימציה מעבר חלקה בין שניות
+            TweenAnimationBuilder<double>(
+              tween: Tween<double>(
+                begin: (_remainingSeconds + 1).toDouble(),
+                end: _remainingSeconds.toDouble(),
+              ),
+              duration: const Duration(milliseconds: 280),
+              builder: (context, value, child) {
+                return Text(
+                  _formatTime(value.toInt()),
+                  style: GoogleFonts.assistant(
+                    fontSize: 34,
+                    fontWeight: FontWeight.bold,
+                    color: colors.headline,
+                    letterSpacing: 1.5,
+                  ),
+                );
+              },
+            ),
+            if (widget.isActive) ...[
+              const SizedBox(height: 14),
+              IconButton(
+                tooltip: _isPaused ? 'הפעל טיימר' : 'השהה טיימר',
+                onPressed: _togglePause,
+                icon: Icon(
+                  _isPaused ? Icons.play_arrow_rounded : Icons.pause_rounded,
+                  color: colors.primary,
+                  size: 36,
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }

@@ -1,3 +1,5 @@
+// lib/providers/week_plan_provider.dart
+// lib/providers/week_plan_provider.dart
 import 'package:flutter/foundation.dart';
 import '../models/week_plan_model.dart';
 import '../models/workout_model.dart'
@@ -5,6 +7,7 @@ import '../models/workout_model.dart'
 import '../models/user_model.dart' hide ExerciseSet;
 import '../data/local_data_store.dart';
 import '../services/plan_builder_service.dart';
+import '../models/unified_models.dart' as unified;
 
 enum PlanType { demoMale, demoFemale, aiGenerated, custom }
 
@@ -30,6 +33,7 @@ class WeekPlanProvider with ChangeNotifier {
 
   Future<void> init() async {
     try {
+      _error = null;
       final user = await LocalDataStore.getCurrentUser();
       if (user != null) {
         _currentUserId = user.id;
@@ -50,6 +54,7 @@ class WeekPlanProvider with ChangeNotifier {
       return;
     }
 
+    _error = null;
     final plan = await LocalDataStore.getUserPlan(_currentUserId!);
     if (plan != null) {
       _weekPlan = plan.workouts;
@@ -59,15 +64,11 @@ class WeekPlanProvider with ChangeNotifier {
     }
 
     final history = await LocalDataStore.getUserWorkoutHistory(_currentUserId!);
-    if (history.isNotEmpty) {
-      history.sort((a, b) {
-        if (a.date == null && b.date == null) return 0;
-        if (a.date == null) return 1;
-        if (b.date == null) return -1;
-        return b.date!.compareTo(a.date!);
-      });
-      _lastWorkoutDate = history.first.date;
-    }
+    final filteredHistory = history.where((h) => h.date != null).toList();
+    filteredHistory.sort((a, b) => b.date!.compareTo(a.date!));
+    _lastWorkoutDate =
+        filteredHistory.isNotEmpty ? filteredHistory.first.date : null;
+
     notifyListeners();
   }
 
@@ -104,15 +105,24 @@ class WeekPlanProvider with ChangeNotifier {
           .toList(),
     );
 
-    await LocalDataStore.saveUserWorkoutHistory(_currentUserId!, [workout]);
+    final history = await LocalDataStore.getUserWorkoutHistory(_currentUserId!);
+    final updatedHistory = [
+      ...history,
+      unified.WorkoutModel.fromMap(workout.toMap())
+    ];
+
+    await LocalDataStore.saveUserWorkoutHistory(
+        _currentUserId!, updatedHistory);
     _lastWorkoutDate = DateTime.now();
     notifyListeners();
   }
 
   Future<void> buildPlanFromAnswers(Map<String, dynamic> answers) async {
+    if (_isLoading) return;
     if (_currentUserId == null || _user == null) return;
 
     _isLoading = true;
+    _error = null;
     notifyListeners();
 
     try {
@@ -130,6 +140,8 @@ class WeekPlanProvider with ChangeNotifier {
   }
 
   Future<void> refreshPlan() async {
+    if (_isLoading) return;
+
     if (_currentUserId != null) {
       await _loadUserPlan();
     } else {
@@ -138,8 +150,10 @@ class WeekPlanProvider with ChangeNotifier {
   }
 
   Future<void> loadPlan(PlanType type) async {
+    if (_isLoading) return;
     _currentPlanType = type;
     _isLoading = true;
+    _error = null;
     notifyListeners();
 
     try {

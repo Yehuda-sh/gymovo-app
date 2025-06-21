@@ -56,6 +56,29 @@ class QuestionWidgetFactory {
           focusNode: focusNode,
           onChanged: (value) => onAnswerChanged(question.id, value),
         );
+      case QuestionType.dropdown:
+        // For now, treat dropdown as single choice
+        return SingleChoiceQuestionWidget(
+          question: question,
+          selectedValue: answers[question.id],
+          onChanged: (value) => onAnswerChanged(question.id, value),
+        );
+      case QuestionType.date:
+        // For now, treat date as text input
+        return TextInputQuestionWidget(
+          question: question,
+          controller: controller,
+          focusNode: focusNode,
+          onChanged: (value) => onAnswerChanged(question.id, value),
+        );
+      default:
+        // Handle any other question types as text input for now
+        return TextInputQuestionWidget(
+          question: question,
+          controller: controller,
+          focusNode: focusNode,
+          onChanged: (value) => onAnswerChanged(question.id, value),
+        );
     }
     throw UnimplementedError('Unknown question type: ${question.type}');
   }

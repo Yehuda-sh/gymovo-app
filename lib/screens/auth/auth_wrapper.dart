@@ -5,9 +5,8 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../home/home_screen.dart';
 import '../welcome/welcome_screen.dart';
-import '../questionnaire/questionnaire_intro_screen.dart';
-import '../../../models/question_model.dart' as qm;
-import '../../questionnaire/questions.dart';
+import '../questionnaire/questionnaire_screen.dart';
+import '../../models/user_model.dart';
 
 class AuthWrapper extends StatefulWidget {
   const AuthWrapper({super.key});
@@ -31,19 +30,19 @@ class _AuthWrapperState extends State<AuthWrapper> {
     }
   }
 
-  Future<void> _checkUserStatus(user) async {
-    if (user != null && !user.isGuest) {
-      // אם יש שאלון תשובות
-      final hasAnswers = user.questionnaireAnswers != null &&
-          user.questionnaireAnswers!.isNotEmpty;
+  Future<void> _checkUserStatus(UserModel? user) async {
+    if (!mounted) return;
+
+    final hasAnswers = user != null &&
+        !user.isGuest &&
+        user.questionnaireAnswers != null &&
+        user.questionnaireAnswers!.isNotEmpty;
+
+    if (_hasQuestionnaireAnswers != hasAnswers ||
+        _lastCheckedUserId != user?.id ||
+        _isLoading) {
       setState(() {
         _hasQuestionnaireAnswers = hasAnswers;
-        _isLoading = false;
-        _lastCheckedUserId = user.id;
-      });
-    } else {
-      setState(() {
-        _hasQuestionnaireAnswers = false;
         _isLoading = false;
         _lastCheckedUserId = user?.id;
       });

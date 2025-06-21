@@ -1,3 +1,4 @@
+// lib/screens/select_exercises/exercise_image_picker_screen.dart
 import 'package:flutter/material.dart';
 import '../../services/exercise_image_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -38,43 +39,34 @@ class _ExerciseImagePickerScreenState extends State<ExerciseImagePickerScreen> {
   }
 
   Future<void> _loadImages() async {
-    // טען תמונות מ-wger
-    setState(() => _isLoadingWger = true);
+    setState(() {
+      _isLoadingWger = true;
+      _isLoadingPexels = true;
+      _isLoadingUnsplash = true;
+    });
+
+    // Load all image sources in parallel
     try {
-      final images =
-          await ExerciseImageService.getWgerExerciseImages(widget.exerciseName);
+      final futures = await Future.wait([
+        ExerciseImageService.getWgerExerciseImages(widget.exerciseName),
+        ExerciseImageService.getPexelsExerciseImages(widget.exerciseName),
+        ExerciseImageService.getUnsplashExerciseImages(widget.exerciseName),
+      ]);
+
       setState(() {
-        _wgerImages = images;
+        _wgerImages = futures[0];
+        _pexelsImages = futures[1];
+        _unsplashImages = futures[2];
+      });
+    } catch (e) {
+      // אפשר להראות שגיאה פה או להתעלם
+      debugPrint('Error loading images: $e');
+    } finally {
+      setState(() {
         _isLoadingWger = false;
-      });
-    } catch (e) {
-      setState(() => _isLoadingWger = false);
-    }
-
-    // טען תמונות מ-Pexels
-    setState(() => _isLoadingPexels = true);
-    try {
-      final images = await ExerciseImageService.getPexelsExerciseImages(
-          widget.exerciseName);
-      setState(() {
-        _pexelsImages = images;
         _isLoadingPexels = false;
-      });
-    } catch (e) {
-      setState(() => _isLoadingPexels = false);
-    }
-
-    // טען תמונות מ-Unsplash
-    setState(() => _isLoadingUnsplash = true);
-    try {
-      final images = await ExerciseImageService.getUnsplashExerciseImages(
-          widget.exerciseName);
-      setState(() {
-        _unsplashImages = images;
         _isLoadingUnsplash = false;
       });
-    } catch (e) {
-      setState(() => _isLoadingUnsplash = false);
     }
   }
 
@@ -84,63 +76,57 @@ class _ExerciseImagePickerScreenState extends State<ExerciseImagePickerScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('בחר תמונה ל${widget.exerciseName}'),
+        title: Text('בחר תמונה ל־${widget.exerciseName}'),
         actions: [
           if (_selectedImageUrl != null)
             TextButton(
               onPressed: () => Navigator.of(context).pop(_selectedImageUrl),
-              child: const Text('בחר'),
+              child: const Text('בחר', style: TextStyle(color: Colors.white)),
             ),
         ],
       ),
-      body: Column(
+      body: ListView(
+        padding: const EdgeInsets.symmetric(vertical: 8),
         children: [
-          // תמונה נבחרת
           if (_selectedImageUrl != null)
-            Container(
-              margin: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: colorScheme.primary, width: 3),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(13),
-                child: _buildImageWidget(_selectedImageUrl!, 200, 150),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Container(
+                height: 180,
+                decoration: BoxDecoration(
+                  border: Border.all(color: colorScheme.primary, width: 3),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(13),
+                  child: _buildImageWidget(
+                      _selectedImageUrl!, double.infinity, 180),
+                ),
               ),
             ),
 
-          // תמונות מומלצות
-          _buildImageSection(
-            'תמונות מומלצות',
-            ExerciseImageService.getRecommendedImages(widget.exerciseType),
-            isLoading: false,
-          ),
-
-          // תמונות מ-WGER
           _buildImageSection(
             'תמונות מ-WGER',
             _wgerImages,
             isLoading: _isLoadingWger,
           ),
-
-          // תמונות מ-Pexels
           _buildImageSection(
             'תמונות מ-Pexels',
             _pexelsImages,
             isLoading: _isLoadingPexels,
           ),
-
-          // תמונות מ-Unsplash
           _buildImageSection(
             'תמונות מ-Unsplash',
             _unsplashImages,
             isLoading: _isLoadingUnsplash,
           ),
+          const SizedBox(height: 80), // רווח לסיום למטה
         ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _loadImages,
         child: const Icon(Icons.refresh),
+        tooltip: 'טען תמונות מחדש',
       ),
     );
   }
@@ -149,36 +135,39 @@ class _ExerciseImagePickerScreenState extends State<ExerciseImagePickerScreen> {
       {required bool isLoading}) {
     if (isLoading) {
       return Card(
-        margin: const EdgeInsets.all(8),
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: const Padding(
-          padding: EdgeInsets.all(16),
+          padding: EdgeInsets.all(24),
           child: Center(child: CircularProgressIndicator()),
         ),
       );
     }
 
     if (images.isEmpty) {
-      return const SizedBox.shrink();
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Text(
+          '$title - לא נמצאו תמונות',
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+        ),
+      );
     }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
           child: Text(
             title,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
         ),
         SizedBox(
           height: 120,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 12),
             itemCount: images.length,
             itemBuilder: (context, index) {
               final imageUrl = images[index];
@@ -187,7 +176,7 @@ class _ExerciseImagePickerScreenState extends State<ExerciseImagePickerScreen> {
               return GestureDetector(
                 onTap: () => setState(() => _selectedImageUrl = imageUrl),
                 child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  margin: const EdgeInsets.symmetric(horizontal: 6),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
@@ -196,6 +185,18 @@ class _ExerciseImagePickerScreenState extends State<ExerciseImagePickerScreen> {
                           : Colors.transparent,
                       width: 3,
                     ),
+                    boxShadow: isSelected
+                        ? [
+                            BoxShadow(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .primary
+                                  .withOpacity(0.3),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            )
+                          ]
+                        : null,
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(9),
@@ -213,7 +214,6 @@ class _ExerciseImagePickerScreenState extends State<ExerciseImagePickerScreen> {
   Widget _buildImageWidget(String imageUrl, double width, double height) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    // אם זו תמונה מקומית
     if (imageUrl.startsWith('assets/')) {
       return Image.asset(
         imageUrl,
@@ -224,16 +224,12 @@ class _ExerciseImagePickerScreenState extends State<ExerciseImagePickerScreen> {
           width: width,
           height: height,
           color: colorScheme.surfaceVariant,
-          child: Icon(
-            Icons.fitness_center,
-            color: colorScheme.onSurfaceVariant,
-            size: 32,
-          ),
+          child: Icon(Icons.fitness_center,
+              color: colorScheme.onSurfaceVariant, size: 32),
         ),
       );
     }
 
-    // אם זו תמונה מהאינטרנט
     return CachedNetworkImage(
       imageUrl: imageUrl,
       width: width,
@@ -243,19 +239,14 @@ class _ExerciseImagePickerScreenState extends State<ExerciseImagePickerScreen> {
         width: width,
         height: height,
         color: colorScheme.surfaceVariant,
-        child: const Center(
-          child: CircularProgressIndicator(),
-        ),
+        child: const Center(child: CircularProgressIndicator()),
       ),
       errorWidget: (context, url, error) => Container(
         width: width,
         height: height,
         color: colorScheme.surfaceVariant,
-        child: Icon(
-          Icons.fitness_center,
-          color: colorScheme.onSurfaceVariant,
-          size: 32,
-        ),
+        child: Icon(Icons.fitness_center,
+            color: colorScheme.onSurfaceVariant, size: 32),
       ),
     );
   }

@@ -1,3 +1,4 @@
+// lib/features/exercises/widgets/exercise_media_section.dart
 import 'package:flutter/material.dart';
 import '../../../models/exercise.dart';
 
@@ -38,13 +39,13 @@ class _ExerciseMediaSectionState extends State<ExerciseMediaSection> {
       );
     }
 
-    if (widget.exercise.imageUrl?.isNotEmpty == true) {
+    if (widget.exercise.displayImage?.isNotEmpty == true) {
       return ClipRRect(
         borderRadius: BorderRadius.circular(8),
         child: Stack(
           children: [
             Image.network(
-              widget.exercise.imageUrl!,
+              widget.exercise.displayImage!,
               height: 200,
               width: double.infinity,
               fit: BoxFit.cover,

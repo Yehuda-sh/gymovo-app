@@ -1,3 +1,4 @@
+// lib/features/workouts/screens/workout_details/widgets/workout_header.dart
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../../theme/app_theme.dart';
@@ -43,10 +44,13 @@ class WorkoutHeader extends StatelessWidget {
               color: colors.headline,
             ),
           ),
-          if (workout.description != null) ...[
+          if (workout.description != null &&
+              workout.description!.isNotEmpty) ...[
             const SizedBox(height: 8),
             Text(
               workout.description!,
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
               style: GoogleFonts.assistant(
                 fontSize: 16,
                 color: colors.headline.withOpacity(0.7),
@@ -56,17 +60,24 @@ class WorkoutHeader extends StatelessWidget {
           const SizedBox(height: 16),
           Row(
             children: [
-              WorkoutInfoChip(
-                icon: Icons.fitness_center,
-                label: '${workout.exercises.length} תרגילים',
-                color: colors.primary,
+              Tooltip(
+                message: 'מספר התרגילים באימון',
+                child: WorkoutInfoChip(
+                  icon: Icons.fitness_center,
+                  label: '${workout.exercises.length} תרגילים',
+                  color: colors.primary,
+                ),
               ),
               const SizedBox(width: 12),
-              WorkoutInfoChip(
-                icon: Icons.calendar_today,
-                label: _formatDate(workout.createdAt),
-                color: colors.accent,
+              Tooltip(
+                message: 'תאריך יצירת האימון',
+                child: WorkoutInfoChip(
+                  icon: Icons.calendar_today,
+                  label: _formatDate(workout.createdAt),
+                  color: colors.accent,
+                ),
               ),
+              const Spacer(),
             ],
           ),
         ],

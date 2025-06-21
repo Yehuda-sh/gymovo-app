@@ -8,7 +8,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user_model.dart';
 import '../models/workout_model.dart';
 import '../models/week_plan_model.dart';
-import '../models/exercise_history.dart' as exercise_history;
+import '../models/unified_models.dart';
+import '../models/unified_models.dart' as unified;
+import '../models/workout_model.dart' as legacy;
 
 class LocalDataStore {
   static const String _usersKey = 'local_users';
@@ -284,7 +286,7 @@ class LocalDataStore {
 
   // === שמירת היסטוריית אימונים למשתמש
   static Future<void> saveUserWorkoutHistory(
-      String userId, List<WorkoutModel> history) async {
+      String userId, List<unified.WorkoutModel> history) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(
       '${_workoutHistoryKey}_$userId',
@@ -293,14 +295,15 @@ class LocalDataStore {
   }
 
   // === טעינת היסטוריית אימונים למשתמש
-  static Future<List<WorkoutModel>> getUserWorkoutHistory(String userId) async {
+  static Future<List<unified.WorkoutModel>> getUserWorkoutHistory(
+      String userId) async {
     final prefs = await SharedPreferences.getInstance();
     final historyJson = prefs.getString('${_workoutHistoryKey}_$userId');
     if (historyJson == null) return [];
     try {
       final List<dynamic> historyList = json.decode(historyJson);
       return historyList
-          .map((w) => WorkoutModel.fromMap(w as Map<String, dynamic>))
+          .map((w) => unified.WorkoutModel.fromMap(w as Map<String, dynamic>))
           .toList();
     } catch (e) {
       debugPrint('Error loading workout history: $e');
@@ -455,8 +458,8 @@ class LocalDataStore {
     }
   }
 
-  static Future<List<exercise_history.ExerciseHistory>>
-      getExerciseHistories() async {
+  // 🔧 תיקון: פונקציות לעבודה עם הקובץ הישן - להתאמה
+  static Future<List<unified.ExerciseHistory>> getExerciseHistories() async {
     final prefs = await SharedPreferences.getInstance();
     final String? historiesJson = prefs.getString(_exerciseHistoriesKey);
     if (historiesJson == null) return [];
@@ -464,7 +467,7 @@ class LocalDataStore {
     try {
       final List<dynamic> decoded = json.decode(historiesJson);
       return decoded
-          .map((item) => exercise_history.ExerciseHistory.fromMap(item))
+          .map((item) => unified.ExerciseHistory.fromMap(item))
           .toList();
     } catch (e) {
       debugPrint('Error loading exercise histories: $e');
@@ -473,7 +476,7 @@ class LocalDataStore {
   }
 
   static Future<void> saveExerciseHistory(
-      exercise_history.ExerciseHistory history) async {
+      unified.ExerciseHistory history) async {
     final prefs = await SharedPreferences.getInstance();
     try {
       final histories = await getExerciseHistories();
@@ -491,6 +494,45 @@ class LocalDataStore {
     } catch (e) {
       debugPrint('Error saving exercise history: $e');
       // אפשר להוסיף כאן דיווח ל-Crashlytics בעתיד
+    }
+  }
+
+  // 🔧 תוספת: פונקציות חדשות לעבודה עם הקובץ החדש
+  static Future<List<unified.ExerciseHistory>>
+      getExerciseHistoriesUnified() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? historiesJson = prefs.getString(_exerciseHistoriesKey);
+    if (historiesJson == null) return [];
+
+    try {
+      final List<dynamic> decoded = json.decode(historiesJson);
+      return decoded
+          .map((item) => unified.ExerciseHistory.fromMap(item))
+          .toList();
+    } catch (e) {
+      debugPrint('Error loading unified exercise histories: $e');
+      return [];
+    }
+  }
+
+  static Future<void> saveExerciseHistoryUnified(
+      unified.ExerciseHistory history) async {
+    final prefs = await SharedPreferences.getInstance();
+    try {
+      final histories = await getExerciseHistoriesUnified();
+
+      final index =
+          histories.indexWhere((h) => h.exerciseId == history.exerciseId);
+      if (index >= 0) {
+        histories[index] = history;
+      } else {
+        histories.add(history);
+      }
+
+      await prefs.setString(_exerciseHistoriesKey,
+          json.encode(histories.map((h) => h.toMap()).toList()));
+    } catch (e) {
+      debugPrint('Error saving unified exercise history: $e');
     }
   }
 

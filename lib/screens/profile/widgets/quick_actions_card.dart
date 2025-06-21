@@ -1,25 +1,11 @@
 // lib/screens/profile/widgets/quick_actions_card.dart
-// --------------------------------------------------
-// כרטיס פעולות מהירות בפרופיל
-// --------------------------------------------------
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../theme/app_theme.dart';
 
-/// כרטיס פעולות מהירות בפרופיל
-///
-/// תכונות:
-/// - שאלון מחדש
-/// - שיתוף אפליקציה
-/// - עיצוב אחיד עם אנימציות
-/// - נגישות מלאה
 class QuickActionsCard extends StatelessWidget {
-  /// פונקציה לשאלון מחדש
   final VoidCallback onQuestionnaireRestart;
-
-  /// פונקציה לשיתוף אפליקציה
   final VoidCallback onShareApp;
 
   const QuickActionsCard({
@@ -76,7 +62,6 @@ class QuickActionsCard extends StatelessWidget {
               ),
             ],
           ),
-
           const SizedBox(height: 16),
 
           // כפתורי פעולה
@@ -88,7 +73,6 @@ class QuickActionsCard extends StatelessWidget {
     );
   }
 
-  /// בונה פעולות אופקיות (מסכים רגילים)
   Widget _buildHorizontalActions(AppColors colors) {
     return Row(
       children: [
@@ -115,7 +99,6 @@ class QuickActionsCard extends StatelessWidget {
     );
   }
 
-  /// בונה פעולות אנכיות (מסכים קטנים)
   Widget _buildVerticalActions(AppColors colors) {
     return Column(
       children: [
@@ -144,7 +127,6 @@ class QuickActionsCard extends StatelessWidget {
     );
   }
 
-  /// בונה כפתור פעולה מהירה
   Widget _buildQuickActionButton({
     required String label,
     required String description,
@@ -173,54 +155,50 @@ class QuickActionsCard extends StatelessWidget {
                 width: 1,
               ),
             ),
-            child: Column(
+            child: Row(
               children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: color.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(8),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    icon,
+                    color: color,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        label,
+                        style: GoogleFonts.assistant(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: color,
+                        ),
                       ),
-                      child: Icon(
-                        icon,
-                        color: color,
-                        size: 24,
+                      const SizedBox(height: 2),
+                      Text(
+                        description,
+                        style: GoogleFonts.assistant(
+                          fontSize: 12,
+                          color: AppTheme.colors.text.withOpacity(0.7),
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            label,
-                            style: GoogleFonts.assistant(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: color,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            description,
-                            style: GoogleFonts.assistant(
-                              fontSize: 12,
-                              color: AppTheme.colors.text.withOpacity(0.7),
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                    ),
-                    Icon(
-                      Icons.chevron_left,
-                      color: color.withOpacity(0.7),
-                      size: 20,
-                    ),
-                  ],
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.chevron_left,
+                  color: color.withOpacity(0.7),
+                  size: 20,
                 ),
               ],
             ),

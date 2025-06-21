@@ -1,5 +1,6 @@
+// lib/features/stats/models/achievements_list.dart
 import 'package:flutter/material.dart';
-import 'achievement_card.dart';
+import '../widgets/achievement_card.dart';
 
 // דוגמה לרשימת הישגים (אפשר גם להכניס מה-Provider/DB שלך)
 final demoAchievements = [

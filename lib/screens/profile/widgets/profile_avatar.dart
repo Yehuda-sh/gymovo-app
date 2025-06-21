@@ -18,7 +18,6 @@ class ProfileAvatar extends StatelessWidget {
     super.key,
   });
 
-  /// בוחר אווטאר לפי מגדר, ניטרלי אם לא הוגדר מגדר
   String _defaultAvatarByGender(String? gender) {
     final g = (gender ?? '').toLowerCase();
     if (g == 'נקבה' || g == 'female') {
@@ -31,21 +30,21 @@ class ProfileAvatar extends StatelessWidget {
   }
 
   String _initials() {
-    final displayName = user.name;
+    final displayName = user.name.trim();
     if (displayName.isEmpty) return '';
-    final parts = displayName.trim().split(' ');
+    final parts = displayName.split(' ');
     if (parts.length == 1) return parts.first.characters.first.toUpperCase();
     return (parts.first.characters.first + parts.last.characters.first)
         .toUpperCase();
   }
 
   Color _getBackgroundColor() {
-    final displayName = user.name;
+    final displayName = user.name.trim();
     if (displayName.isEmpty) {
-      return Colors.grey.shade200;
+      return Colors.grey.shade300;
     }
     return Colors
-        .primaries[displayName.hashCode % Colors.primaries.length].shade200;
+        .primaries[displayName.hashCode % Colors.primaries.length].shade300;
   }
 
   @override
@@ -72,22 +71,21 @@ class ProfileAvatar extends StatelessWidget {
                     height: size,
                     fadeInDuration: const Duration(milliseconds: 220),
                   ),
-                  if (imageIsNetwork)
-                    Positioned.fill(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.black.withOpacity(0.1),
-                              Colors.transparent,
-                            ],
-                          ),
+                  Positioned.fill(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.black.withOpacity(0.1),
+                            Colors.transparent,
+                          ],
                         ),
                       ),
                     ),
+                  ),
                 ],
               ),
             )
@@ -104,12 +102,12 @@ class ProfileAvatar extends StatelessWidget {
                 _initials(),
                 style: TextStyle(
                   fontWeight: FontWeight.w800,
-                  fontSize: size / 2.2,
-                  color: _getBackgroundColor().withOpacity(0.8),
+                  fontSize: size / 2.5,
+                  color: Colors.white.withOpacity(0.85),
                   letterSpacing: 0.5,
-                  shadows: [
+                  shadows: const [
                     Shadow(
-                      color: Colors.black.withOpacity(0.13),
+                      color: Colors.black38,
                       blurRadius: 4,
                     ),
                   ],

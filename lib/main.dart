@@ -4,80 +4,38 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'theme/app_theme.dart';
 import 'providers/auth_provider.dart';
-import 'providers/workouts_provider.dart';
-import 'providers/week_plan_provider.dart';
 import 'providers/settings_provider.dart';
 import 'screens/splash/splash_screen.dart';
 import 'screens/welcome/welcome_screen.dart';
 import 'screens/home/home_screen.dart';
 import 'screens/questionnaire_results/questionnaire_results_screen.dart';
 
-import 'providers/exercise_provider.dart';
-
-import 'package:google_fonts/google_fonts.dart';
-import 'providers/exercise_history_provider.dart';
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Pre-initialize only the essential AuthProvider
   final authProvider = AuthProvider();
   await authProvider.loadCurrentUser();
 
   runApp(
     MultiProvider(
       providers: [
-        // Only essential providers at app level
         ChangeNotifierProvider.value(value: authProvider),
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
-
-        // Other providers will be initialized in their respective screens
-        // using ChangeNotifierProvider or ProxyProvider as needed
       ],
       child: const MyApp(),
     ),
   );
 }
 
-// Example of how to use providers in specific screens:
-// In home_screen.dart:
-/*
-class HomeScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => WeekPlanProvider()),
-        ChangeNotifierProvider(create: (_) => WorkoutsProvider()),
-      ],
-      child: HomeScreenContent(),
-    );
-  }
-}
-*/
-
-// In workout_details_screen.dart:
-/*
-class WorkoutDetailsScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => ExerciseHistoryProvider(),
-      child: WorkoutDetailsContent(),
-    );
-  }
-}
-*/
-
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'GyMovo',
       debugShowCheckedModeBanner: false,
       locale: const Locale('he', 'IL'),
+      theme: AppTheme.darkTheme, // שדרוג עיקרי!
+      themeMode: ThemeMode.dark, // מוכן לעתיד
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
@@ -85,16 +43,9 @@ class MyApp extends StatelessWidget {
       ],
       supportedLocales: const [
         Locale('he', 'IL'),
-        Locale('en', 'US'), // תמיכה באנגלית
-        Locale('ar', 'SA'), // תמיכה בערבית
+        Locale('en', 'US'),
+        Locale('ar', 'SA'),
       ],
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: AppTheme.colors.primary,
-        ),
-        textTheme: GoogleFonts.assistantTextTheme(),
-        useMaterial3: true,
-      ),
       home: const SplashScreenWrapper(),
       routes: {
         '/home': (context) => const HomeScreen(),
@@ -104,6 +55,8 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
+// SplashScreenWrapper נשאר בדיוק כמו אצלך.
 
 // ניווט אוטומטי אחרי Splash לפי סטטוס התחברות
 class SplashScreenWrapper extends StatefulWidget {

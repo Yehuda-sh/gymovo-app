@@ -1,5 +1,7 @@
+// lib/features/stats/widgets/achievement_card.dart (🔧 מיקום מתוקן)
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../theme/app_theme.dart'; // 🔧 הוספת import לתמה
 
 enum AchievementRarity { common, rare, epic, legendary }
 
@@ -39,6 +41,7 @@ class AchievementCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = getRarityColor();
+    final theme = AppTheme.colors; // 🔧 שימוש בתמה
 
     return AnimatedScale(
       scale: 1.0,
@@ -46,6 +49,7 @@ class AchievementCard extends StatelessWidget {
       curve: Curves.easeOutBack,
       child: Card(
         elevation: 3,
+        color: theme.surface, // 🔧 שימוש בצבע מהתמה
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
           side: BorderSide(color: colors.withOpacity(0.4), width: 2),
@@ -68,7 +72,16 @@ class AchievementCard extends StatelessWidget {
                             Icon(icon, size: 46, color: colors),
                       ),
                     )
-                  : Icon(icon, size: 46, color: colors),
+                  : Container(
+                      width: 52,
+                      height: 52,
+                      decoration: BoxDecoration(
+                        color: colors.withOpacity(0.1), // 🔧 רקע לאייקון
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: colors.withOpacity(0.3)),
+                      ),
+                      child: Icon(icon, size: 28, color: colors),
+                    ),
               const SizedBox(width: 16),
               // מידע על ההישג
               Expanded(
@@ -77,12 +90,16 @@ class AchievementCard extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        Text(
-                          title,
-                          style: GoogleFonts.assistant(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: colors,
+                        Flexible(
+                          // 🔧 שיפור לטקסט ארוך
+                          child: Text(
+                            title,
+                            style: GoogleFonts.assistant(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: colors,
+                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         if (rarity != AchievementRarity.common) ...[
@@ -96,43 +113,66 @@ class AchievementCard extends StatelessWidget {
                       description,
                       style: GoogleFonts.assistant(
                         fontSize: 15,
-                        color: Colors.grey[800],
+                        color: theme.text.withOpacity(0.8), // 🔧 צבע מהתמה
+                        height: 1.3, // 🔧 רווח שורות
                       ),
                     ),
                     if (tip != null && tip!.isNotEmpty) ...[
                       const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Icon(Icons.tips_and_updates, size: 16, color: colors),
-                          const SizedBox(width: 4),
-                          Flexible(
-                            child: Text(
-                              tip!,
-                              style: GoogleFonts.assistant(
-                                fontSize: 13,
-                                color: colors.withOpacity(0.75),
-                                fontStyle: FontStyle.italic,
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: colors.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: colors.withOpacity(0.2)),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.tips_and_updates,
+                                size: 16, color: colors),
+                            const SizedBox(width: 6),
+                            Flexible(
+                              child: Text(
+                                tip!,
+                                style: GoogleFonts.assistant(
+                                  fontSize: 13,
+                                  color: colors.withOpacity(0.8),
+                                  fontStyle: FontStyle.italic,
+                                  height: 1.3,
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ],
                     if (unlockedAt != null) ...[
                       const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Icon(Icons.check_circle,
-                              color: Colors.green[400], size: 16),
-                          const SizedBox(width: 4),
-                          Text(
-                            "הושג: ${_formatDate(unlockedAt!)}",
-                            style: GoogleFonts.assistant(
-                              color: Colors.grey[600],
-                              fontSize: 12,
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.green.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                          border:
+                              Border.all(color: Colors.green.withOpacity(0.3)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.check_circle,
+                                color: Colors.green[600], size: 16),
+                            const SizedBox(width: 4),
+                            Text(
+                              "הושג: ${_formatDate(unlockedAt!)}",
+                              style: GoogleFonts.assistant(
+                                color: Colors.green[700],
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ]
                   ],
@@ -172,6 +212,6 @@ class AchievementCard extends StatelessWidget {
   }
 
   String _formatDate(DateTime dt) {
-    return "${dt.day}/${dt.month}/${dt.year}";
+    return "${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')}/${dt.year}"; // 🔧 פורמט טוב יותר
   }
 }

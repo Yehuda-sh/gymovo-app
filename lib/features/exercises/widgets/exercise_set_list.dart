@@ -1,8 +1,9 @@
+// lib/features/exercises/widgets/exercise_set_list.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import '../../../models/exercise_history.dart';
+import '../../../models/unified_models.dart';
 import '../../../theme/app_theme.dart';
 
 class ExerciseSetList extends StatefulWidget {
@@ -59,16 +60,12 @@ class _ExerciseSetListState extends State<ExerciseSetList> {
 
   Widget _buildEmptyState() {
     final colors = AppTheme.colors;
-
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.fitness_center_outlined,
-            size: 80,
-            color: colors.text.withOpacity(0.3),
-          ),
+          Icon(Icons.fitness_center_outlined,
+              size: 80, color: colors.text.withOpacity(0.3)),
           const SizedBox(height: 24),
           Text(
             'אין סטים להצגה',
@@ -82,9 +79,7 @@ class _ExerciseSetListState extends State<ExerciseSetList> {
           Text(
             'התחל להוסיף סטים כדי לעקוב אחר ההתקדמות שלך',
             style: GoogleFonts.assistant(
-              fontSize: 14,
-              color: colors.text.withOpacity(0.6),
-            ),
+                fontSize: 14, color: colors.text.withOpacity(0.6)),
             textAlign: TextAlign.center,
           ),
         ],
@@ -128,11 +123,8 @@ class _ExerciseSetListState extends State<ExerciseSetList> {
       label: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            icon,
-            size: 16,
-            color: isSelected ? Colors.white : colors.primary,
-          ),
+          Icon(icon,
+              size: 16, color: isSelected ? Colors.white : colors.primary),
           const SizedBox(width: 6),
           Text(
             label,
@@ -149,9 +141,7 @@ class _ExerciseSetListState extends State<ExerciseSetList> {
       side: BorderSide(
         color: isSelected ? colors.primary : colors.primary.withOpacity(0.3),
       ),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
     );
   }
 
@@ -239,11 +229,7 @@ class _ExerciseSetListState extends State<ExerciseSetList> {
           ),
           child: Center(
             child: set.isCompleted
-                ? const Icon(
-                    Icons.check,
-                    color: Colors.white,
-                    size: 18,
-                  )
+                ? const Icon(Icons.check, color: Colors.white, size: 18)
                 : Text(
                     '${index + 1}',
                     style: GoogleFonts.assistant(
@@ -260,7 +246,7 @@ class _ExerciseSetListState extends State<ExerciseSetList> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '${set.weight.toInt() ?? 0} ק"ג × ${set.reps ?? 0} חזרות',
+                '${set.weight?.toInt() ?? 0} ק"ג × ${set.reps ?? 0} חזרות',
                 style: GoogleFonts.assistant(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -304,24 +290,21 @@ class _ExerciseSetListState extends State<ExerciseSetList> {
 
     return Row(
       children: [
-        _buildDetailChip(
-          Icons.fitness_center,
-          '${set.weight.toInt() ?? 0} ק"ג',
-          Colors.blue,
-        ),
+        _buildDetailChip(Icons.fitness_center,
+            '${set.weight?.toInt() ?? 0} ק"ג', Colors.blue),
         const SizedBox(width: 8),
-        _buildDetailChip(
-          Icons.repeat,
-          '${set.reps ?? 0} חזרות',
-          Colors.green,
-        ),
+        _buildDetailChip(Icons.repeat, '${set.reps ?? 0} חזרות', Colors.green),
         if (set.restTime != null && set.restTime! > 0) ...[
           const SizedBox(width: 8),
-          _buildDetailChip(
-            Icons.timer,
-            '${set.restTime}״',
-            Colors.orange,
-          ),
+          _buildDetailChip(Icons.timer, '${set.restTime}״', Colors.orange),
+        ],
+        if (set.setType != SetType.normal) ...[
+          const SizedBox(width: 8),
+          _buildDetailChip(Icons.star, set.setType.displayName, Colors.purple),
+        ],
+        if (set.rpe != null) ...[
+          const SizedBox(width: 8),
+          _buildDetailChip(Icons.psychology, 'RPE ${set.rpe}', Colors.orange),
         ],
         const Spacer(),
         IconButton(
@@ -349,11 +332,7 @@ class _ExerciseSetListState extends State<ExerciseSetList> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            icon,
-            size: 14,
-            color: color,
-          ),
+          Icon(icon, size: 14, color: color),
           const SizedBox(width: 4),
           Text(
             label,
@@ -370,7 +349,6 @@ class _ExerciseSetListState extends State<ExerciseSetList> {
 
   Widget _buildSetNotes(String notes) {
     final colors = AppTheme.colors;
-
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -381,11 +359,8 @@ class _ExerciseSetListState extends State<ExerciseSetList> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            Icons.note_alt_outlined,
-            size: 16,
-            color: colors.text.withOpacity(0.6),
-          ),
+          Icon(Icons.note_alt_outlined,
+              size: 16, color: colors.text.withOpacity(0.6)),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
@@ -414,11 +389,7 @@ class _ExerciseSetListState extends State<ExerciseSetList> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
-            Icons.delete_outline,
-            color: Colors.white,
-            size: 28,
-          ),
+          const Icon(Icons.delete_outline, color: Colors.white, size: 28),
           const SizedBox(height: 4),
           Text(
             'מחק',
@@ -439,26 +410,18 @@ class _ExerciseSetListState extends State<ExerciseSetList> {
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: AppTheme.colors.surface,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: Text(
-            'מחיקת סט',
-            style: GoogleFonts.assistant(
-              fontWeight: FontWeight.bold,
-              color: AppTheme.colors.headline,
-            ),
-          ),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Text('מחיקת סט',
+              style: GoogleFonts.assistant(
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.colors.headline)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'האם אתה בטוח שברצונך למחוק את הסט הזה?',
-                style: GoogleFonts.assistant(
-                  color: AppTheme.colors.text,
-                ),
-              ),
+              Text('האם אתה בטוח שברצונך למחוק את הסט הזה?',
+                  style: GoogleFonts.assistant(color: AppTheme.colors.text)),
               const SizedBox(height: 12),
               Container(
                 padding: const EdgeInsets.all(12),
@@ -466,23 +429,18 @@ class _ExerciseSetListState extends State<ExerciseSetList> {
                   color: AppTheme.colors.primary.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: AppTheme.colors.primary.withOpacity(0.3),
-                  ),
+                      color: AppTheme.colors.primary.withOpacity(0.3)),
                 ),
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.fitness_center,
-                      size: 16,
-                      color: AppTheme.colors.primary,
-                    ),
+                    Icon(Icons.fitness_center,
+                        size: 16, color: AppTheme.colors.primary),
                     const SizedBox(width: 8),
                     Text(
-                      '${set.weight.toInt() ?? 0} ק"ג × ${set.reps ?? 0} חזרות',
+                      '${set.weight?.toInt() ?? 0} ק"ג × ${set.reps ?? 0} חזרות',
                       style: GoogleFonts.assistant(
-                        fontWeight: FontWeight.w600,
-                        color: AppTheme.colors.primary,
-                      ),
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.colors.primary),
                     ),
                   ],
                 ),
@@ -501,13 +459,10 @@ class _ExerciseSetListState extends State<ExerciseSetList> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: Text(
-                'ביטול',
-                style: GoogleFonts.assistant(
-                  color: AppTheme.colors.text.withOpacity(0.7),
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              child: Text('ביטול',
+                  style: GoogleFonts.assistant(
+                      color: AppTheme.colors.text.withOpacity(0.7),
+                      fontWeight: FontWeight.w600)),
             ),
             ElevatedButton(
               onPressed: () => Navigator.of(context).pop(true),
@@ -515,15 +470,10 @@ class _ExerciseSetListState extends State<ExerciseSetList> {
                 backgroundColor: Colors.red,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
+                    borderRadius: BorderRadius.circular(8)),
               ),
-              child: Text(
-                'מחק',
-                style: GoogleFonts.assistant(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              child: Text('מחק',
+                  style: GoogleFonts.assistant(fontWeight: FontWeight.bold)),
             ),
           ],
         );

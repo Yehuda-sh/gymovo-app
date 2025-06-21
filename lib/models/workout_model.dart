@@ -1,3 +1,4 @@
+// lib/models/workout_model.dart
 import 'package:flutter/foundation.dart';
 
 class WorkoutModel {

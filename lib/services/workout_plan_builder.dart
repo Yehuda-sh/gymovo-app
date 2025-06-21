@@ -1,4 +1,4 @@
-//../lib/services/workout_plan_builder.dart
+// lib/services/workout_plan_builder.dart
 
 import '../models/exercise.dart';
 
@@ -29,9 +29,11 @@ class WorkoutPlanBuilder {
     'שישי',
     'שבת'
   ];
+
   static const int _defaultExercisesPerDay = 5;
   static const int _defaultDaysPerWeek = 3;
 
+  /// בונה תוכנית אימון מותאמת אישית על פי תשובות ושאלון
   static WorkoutPlan buildCustomPlan(
     Map<String, dynamic> answers,
     List<Exercise> allExercises,
@@ -44,43 +46,40 @@ class WorkoutPlanBuilder {
     final difficulty = answers['experience_level'] ?? 'מתחיל';
     final goal = answers['goal'] ?? 'כללי';
 
-    final preferredMuscles = List<String>.from(
-      answers['main_muscles_focus'] ?? [],
-    );
-    final equipment = List<String>.from(
-      answers['equipment_types'] ?? [],
-    );
-    final avoid = List<String>.from(
-      answers['avoid_exercises'] ?? [],
-    );
-    final pain = List<String>.from(
-      answers['pain_or_limitations'] ?? [],
-    );
+    final preferredMuscles =
+        List<String>.from(answers['main_muscles_focus'] ?? []);
+    final equipment = List<String>.from(answers['equipment_types'] ?? []);
+    final avoid = List<String>.from(answers['avoid_exercises'] ?? []);
+    final pain = List<String>.from(answers['pain_or_limitations'] ?? []);
 
-    final filtered = allExercises.where((e) {
+    // סינון תרגילים לפי ציוד, הימנעות מפציעות ותרגילים לא רצויים
+    final filtered = allExercises.where((exercise) {
       final matchesEquipment = equipment.isEmpty ||
-          (e.equipment != null &&
-              e.equipment!.isNotEmpty &&
-              equipment.any((eq) =>
-                  e.equipment!.toLowerCase().contains(eq.toLowerCase())));
+          (exercise.equipment != null &&
+              exercise.equipment.name.isNotEmpty &&
+              equipment.any((eq) => exercise.equipment.name
+                  .toLowerCase()
+                  .contains(eq.toLowerCase())));
 
-      final safeFromPain = pain.every((p) => !e.nameHe.contains(p));
-      final notAvoided = avoid.every((a) => !e.nameHe.contains(a));
+      final safeFromPain = pain.every((p) => !exercise.nameHe.contains(p));
+      final notAvoided = avoid.every((a) => !exercise.nameHe.contains(a));
 
       return matchesEquipment && safeFromPain && notAvoided;
     }).toList();
 
+    // העדפת תרגילים לפי קבוצות השרירים המועדפות
     final prioritized = preferredMuscles.isEmpty
         ? filtered
-        : filtered.where((e) {
-            return e.muscleGroups != null &&
-                e.muscleGroups!
-                    .any((muscle) => preferredMuscles.contains(muscle));
+        : filtered.where((exercise) {
+            return exercise.primaryMuscles
+                .any((muscle) => preferredMuscles.contains(muscle.hebrewName));
           }).toList();
 
     final usableExercises = prioritized.isNotEmpty ? prioritized : filtered;
+
     usableExercises.shuffle();
 
+    // חלוקה לימים על פי כמות האימונים בשבוע
     final Map<String, List<Exercise>> days = {};
     int index = 0;
 
@@ -99,6 +98,7 @@ class WorkoutPlanBuilder {
     );
   }
 
+  /// ממפה תדירות אימונים למספר ימים בשבוע
   static int _mapFrequencyToDays(String freq) {
     switch (freq) {
       case 'פעם-פעמיים':

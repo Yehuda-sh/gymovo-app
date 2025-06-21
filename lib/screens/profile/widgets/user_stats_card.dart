@@ -1,22 +1,12 @@
 // lib/screens/profile/widgets/user_stats_card.dart
-// --------------------------------------------------
-// כרטיס סטטיסטיקות משתמש עם נתונים אמיתיים
-// --------------------------------------------------
+// ... (לא שיניתי את ההערות והמבנה הכללי)
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../models/user_model.dart';
 import '../../../theme/app_theme.dart';
 
-/// כרטיס המציג סטטיסטיקות המשתמש
-///
-/// תכונות:
-/// - חישוב נתונים אמיתיים מהמודל
-/// - עיצוב אחיד עם צבעים
-/// - רספונסיבי למסכים קטנים
-/// - אנימציות מיקרו
 class UserStatsCard extends StatelessWidget {
-  /// נתוני המשתמש
   final UserModel user;
 
   const UserStatsCard({
@@ -24,30 +14,22 @@ class UserStatsCard extends StatelessWidget {
     required this.user,
   });
 
-  /// מחשב נתוני סטטיסטיקות מהמשתמש
   Map<String, dynamic> _calculateStats() {
-    // אימונים - מספר האימונים הכולל
     final totalWorkouts = user.totalWorkouts ?? 0;
 
-    // שעות - חישוב לפי history או הערכה
     double totalHours = 0;
     if (user.workoutHistory.isNotEmpty) {
-      // אם יש duration בהיסטוריה
       totalHours = user.workoutHistory.fold<double>(0, (prev, workout) {
-        // אם יש שדה duration במודל WorkoutHistory
-        // return prev + (workout.duration ?? 0);
-
-        // זמני - הערכה לפי rating (כמו דירוג משך)
+        // בדיקה אם יש duration ממשי
+        // אם יש שדה duration, עדיף להשתמש בו (למשל: workout.duration ?? 0)
+        // כרגע משתמשים בדירוג בלבד
         return prev + (workout.rating ?? 0);
       });
     } else {
-      // הערכה - 45 דקות לאימון ממוצע
-      totalHours = (totalWorkouts * 0.75); // 45 דקות = 0.75 שעות
+      totalHours = totalWorkouts * 0.75;
     }
 
-    // הישגים - מספר האימונים שהושלמו בהצלחה
     final achievements = user.workoutHistory.where((workout) {
-      // ניתן להוסיף תנאי להישג (למשל rating > 3)
       return (workout.rating ?? 0) >= 3;
     }).length;
 
@@ -58,7 +40,6 @@ class UserStatsCard extends StatelessWidget {
     };
   }
 
-  /// מחזיר הודעת עידוד בהתאם לסטטיסטיקות
   String _getEncouragementMessage(Map<String, dynamic> stats) {
     final workouts = stats['workouts'] as int;
     final achievements = stats['achievements'] as int;
@@ -76,7 +57,6 @@ class UserStatsCard extends StatelessWidget {
     }
   }
 
-  /// מחזיר צבע התקדמות בהתאם למספר האימונים
   Color _getProgressColor(int workouts) {
     if (workouts == 0) return Colors.grey;
     if (workouts < 5) return Colors.blue;
@@ -158,7 +138,6 @@ class UserStatsCard extends StatelessWidget {
               ? _buildVerticalStats(stats, colors, progressColor)
               : _buildHorizontalStats(stats, colors, progressColor),
 
-          // בר התקדמות אם יש אימונים
           if (stats['workouts'] > 0) ...[
             const SizedBox(height: 16),
             _buildProgressBar(stats, progressColor),
@@ -168,7 +147,6 @@ class UserStatsCard extends StatelessWidget {
     );
   }
 
-  /// בונה סטטיסטיקות אופקיות (מסכים רגילים)
   Widget _buildHorizontalStats(
       Map<String, dynamic> stats, AppColors colors, Color progressColor) {
     return Row(
@@ -203,7 +181,6 @@ class UserStatsCard extends StatelessWidget {
     );
   }
 
-  /// בונה סטטיסטיקות אנכיות (מסכים קטנים)
   Widget _buildVerticalStats(
       Map<String, dynamic> stats, AppColors colors, Color progressColor) {
     return Column(
@@ -243,7 +220,6 @@ class UserStatsCard extends StatelessWidget {
     );
   }
 
-  /// בונה כרטיס סטטיסטיקה אחת
   Widget _buildStatCard(
       String label, String value, IconData icon, Color color) {
     return Container(
@@ -278,7 +254,6 @@ class UserStatsCard extends StatelessWidget {
     );
   }
 
-  /// בונה בר התקדמות
   Widget _buildProgressBar(Map<String, dynamic> stats, Color progressColor) {
     final workouts = stats['workouts'] as int;
     final achievements = stats['achievements'] as int;

@@ -1,3 +1,4 @@
+// lib/screens/home/quick_actions_grid.dart
 import 'package:flutter/material.dart';
 
 class QuickActionsGrid extends StatelessWidget {
@@ -26,62 +27,68 @@ class QuickActionsGrid extends StatelessWidget {
       mainAxisSpacing: 16,
       crossAxisSpacing: 16,
       children: [
-        _buildSportCard(
-          'אימון חדש',
-          Icons.fitness_center,
-          onNewWorkout,
-          context,
-          gradientColors: [
-            const Color(0xFF667eea),
-            const Color(0xFF764ba2),
+        _SportCard(
+          label: 'אימון חדש',
+          icon: Icons.fitness_center,
+          onTap: onNewWorkout,
+          gradientColors: const [
+            Color(0xFF667eea),
+            Color(0xFF764ba2),
           ],
           iconColor: Colors.white,
         ),
-        _buildSportCard(
-          'סטטיסטיקות',
-          Icons.trending_up,
-          onStats,
-          context,
-          gradientColors: [
-            const Color(0xFFf093fb),
-            const Color(0xFFf5576c),
+        _SportCard(
+          label: 'סטטיסטיקות',
+          icon: Icons.trending_up,
+          onTap: onStats,
+          gradientColors: const [
+            Color(0xFFf093fb),
+            Color(0xFFf5576c),
           ],
           iconColor: Colors.white,
         ),
-        _buildSportCard(
-          'תוכנית שבועית',
-          Icons.calendar_today,
-          onWeekPlan,
-          context,
-          gradientColors: [
-            const Color(0xFF4facfe),
-            const Color(0xFF00f2fe),
+        _SportCard(
+          label: 'תוכנית שבועית',
+          icon: Icons.calendar_today,
+          onTap: onWeekPlan,
+          gradientColors: const [
+            Color(0xFF4facfe),
+            Color(0xFF00f2fe),
           ],
           iconColor: Colors.white,
         ),
-        _buildSportCard(
-          'פרופיל',
-          Icons.person,
-          onProfile,
-          context,
-          gradientColors: [
-            const Color(0xFF43e97b),
-            const Color(0xFF38f9d7),
+        _SportCard(
+          label: 'פרופיל',
+          icon: Icons.person,
+          onTap: onProfile,
+          gradientColors: const [
+            Color(0xFF43e97b),
+            Color(0xFF38f9d7),
           ],
           iconColor: Colors.white,
         ),
       ],
     );
   }
+}
 
-  Widget _buildSportCard(
-    String label,
-    IconData icon,
-    VoidCallback onTap,
-    BuildContext context, {
-    required List<Color> gradientColors,
-    required Color iconColor,
-  }) {
+class _SportCard extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final VoidCallback onTap;
+  final List<Color> gradientColors;
+  final Color iconColor;
+
+  const _SportCard({
+    required this.label,
+    required this.icon,
+    required this.onTap,
+    required this.gradientColors,
+    required this.iconColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
@@ -110,7 +117,7 @@ class QuickActionsGrid extends StatelessWidget {
         child: InkWell(
           borderRadius: BorderRadius.circular(20),
           onTap: onTap,
-          child: Container(
+          child: Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -125,11 +132,7 @@ class QuickActionsGrid extends StatelessWidget {
                       width: 1,
                     ),
                   ),
-                  child: Icon(
-                    icon,
-                    size: 32,
-                    color: iconColor,
-                  ),
+                  child: Icon(icon, size: 32, color: iconColor),
                 ),
                 const SizedBox(height: 16),
                 Text(

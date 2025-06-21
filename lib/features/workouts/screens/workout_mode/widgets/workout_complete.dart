@@ -10,46 +10,53 @@ class WorkoutCompleteWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = AppTheme.colors;
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.only(top: 60.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.emoji_events, color: Colors.green, size: 80),
-            const SizedBox(height: 20),
-            Text(
-              'כל הכבוד!',
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Semantics(
+            label: 'אייקון סיום אימון',
+            child: Icon(Icons.emoji_events, color: colors.success, size: 80),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'כל הכבוד!',
+            style: GoogleFonts.assistant(
+              color: colors.success,
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'סיימת את כל האימון בהצלחה',
+            style: GoogleFonts.assistant(
+              color: colors.text.withOpacity(0.7),
+              fontSize: 20,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 28),
+          ElevatedButton.icon(
+            icon: const Icon(Icons.home),
+            label: Text(
+              'חזרה לדף הבית',
               style: GoogleFonts.assistant(
-                color: Colors.green[700],
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w600,
+                fontSize: 16,
               ),
             ),
-            const SizedBox(height: 16),
-            Text(
-              'סיימת את כל האימון בהצלחה',
-              style: GoogleFonts.assistant(
-                color: Colors.white70,
-                fontSize: 20,
-              ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: colors.primary,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              minimumSize: const Size(160, 48),
             ),
-            const SizedBox(height: 28),
-            ElevatedButton.icon(
-              icon: const Icon(Icons.home),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: colors.primary,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16)),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-              ),
-              onPressed: () => Navigator.of(context)
-                  .pushNamedAndRemoveUntil('/', (route) => false),
-              label: const Text('חזרה לדף הבית'),
-            ),
-          ],
-        ),
+            onPressed: () => Navigator.of(context)
+                .pushNamedAndRemoveUntil('/', (route) => false),
+          ),
+        ],
       ),
     );
   }

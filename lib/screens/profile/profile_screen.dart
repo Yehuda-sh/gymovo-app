@@ -1,6 +1,6 @@
 // lib/screens/profile/profile_screen.dart
 // --------------------------------------------------
-// מסך פרופיל משתמש משופר עם רכיבים נפרדים
+// מסך פרופיל משתמש משופר עם רכיבים נפרדים ושילוב SettingsProvider
 // --------------------------------------------------
 
 import 'package:flutter/material.dart';
@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/settings_provider.dart';
 import '../../models/user_model.dart';
 import '../../theme/app_theme.dart';
 import 'widgets/profile_header.dart';
@@ -16,13 +17,6 @@ import 'widgets/quick_actions_card.dart';
 import 'widgets/settings_section.dart';
 import 'widgets/account_section.dart';
 
-/// מסך פרופיל משתמש ראשי
-///
-/// תכונות:
-/// - תצוגת פרופיל עם אנימציות
-/// - סטטיסטיקות משתמש
-/// - הגדרות ופעולות מהירות
-/// - ניהול חשבון ותמיכה
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -37,11 +31,7 @@ class _ProfileScreenState extends State<ProfileScreen>
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
 
-  // מצבי הגדרות
-  bool _notificationsEnabled = true;
-  String _selectedLanguage = 'עברית';
-  String _selectedTheme = 'בהיר';
-  bool _isLoading = false;
+  bool _isLoadingLogout = false;
 
   // קבועים
   static const Duration _animationDuration = Duration(milliseconds: 300);
@@ -56,7 +46,7 @@ class _ProfileScreenState extends State<ProfileScreen>
   void initState() {
     super.initState();
     _setupAnimations();
-    _loadUserPreferences();
+    // טעינת הגדרות מה-SettingsProvider תתבצע ב-build
   }
 
   @override
@@ -66,62 +56,38 @@ class _ProfileScreenState extends State<ProfileScreen>
     super.dispose();
   }
 
-  /// מגדיר את האנימציות
   void _setupAnimations() {
     _fadeAnimationController = AnimationController(
       duration: _animationDuration,
       vsync: this,
     );
-
     _scaleAnimationController = AnimationController(
       duration: _animationDuration,
       vsync: this,
     );
 
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _fadeAnimationController,
-      curve: Curves.easeInOut,
-    ));
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _fadeAnimationController,
+        curve: Curves.easeInOut,
+      ),
+    );
 
-    _scaleAnimation = Tween<double>(
-      begin: 0.8,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _scaleAnimationController,
-      curve: Curves.elasticOut,
-    ));
+    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _scaleAnimationController,
+        curve: Curves.elasticOut,
+      ),
+    );
 
-    // התחל אנימציות
     _fadeAnimationController.forward();
     _scaleAnimationController.forward();
   }
 
-  /// טוען העדפות משתמש מ-SharedPreferences
-  Future<void> _loadUserPreferences() async {
-    try {
-      // TODO: טען העדפות אמיתיות מ-SharedPreferences
-      // final prefs = await SharedPreferences.getInstance();
-      // setState(() {
-      //   _notificationsEnabled = prefs.getBool('notifications') ?? true;
-      //   _selectedLanguage = prefs.getString('language') ?? 'עברית';
-      //   _selectedTheme = prefs.getString('theme') ?? 'בהיר';
-      // });
-    } catch (e) {
-      debugPrint('שגיאה בטעינת העדפות משתמש: $e');
-    }
-  }
-
-  /// שומר העדפת התראות
   Future<void> _saveNotificationPreference(bool enabled) async {
     try {
-      setState(() => _notificationsEnabled = enabled);
-      // TODO: שמור ב-SharedPreferences
-      // final prefs = await SharedPreferences.getInstance();
-      // await prefs.setBool('notifications', enabled);
-
+      final settings = context.read<SettingsProvider>();
+      await settings.toggleNotifications();
       HapticFeedback.selectionClick();
       _showSuccessSnackBar(enabled ? 'התראות הופעלו' : 'התראות כובו');
     } catch (e) {
@@ -129,16 +95,13 @@ class _ProfileScreenState extends State<ProfileScreen>
     }
   }
 
-  /// שומר בחירת שפה
   Future<void> _saveLanguagePreference(String language) async {
     try {
-      setState(() => _selectedLanguage = language);
-      // TODO: שמור ב-SharedPreferences ויישם שינוי שפה
-      // final prefs = await SharedPreferences.getInstance();
-      // await prefs.setString('language', language);
+      final settings = context.read<SettingsProvider>();
+      await settings.setLanguage(language);
 
       if (language != 'עברית') {
-        _showComingSoonSnackBar('תמיכה ב$language');
+        _showComingSoonSnackBar('תמיכה ב-$language');
       } else {
         _showSuccessSnackBar('השפה שונתה לעברית');
       }
@@ -147,30 +110,20 @@ class _ProfileScreenState extends State<ProfileScreen>
     }
   }
 
-  /// שומר בחירת נושא
   Future<void> _saveThemePreference(String theme) async {
-    try {
-      setState(() => _selectedTheme = theme);
-      // TODO: שמור ב-SharedPreferences ויישם שינוי נושא
-      // final prefs = await SharedPreferences.getInstance();
-      // await prefs.setString('theme', theme);
-
-      if (theme != 'בהיר') {
-        _showComingSoonSnackBar('נושא $theme');
-      } else {
-        _showSuccessSnackBar('הנושא שונה לבהיר');
-      }
-    } catch (e) {
-      _showErrorSnackBar('שגיאה בשמירת בחירת נושא');
+    // כרגע שמירת נושא ב-SharedPreferences לא מיושמת, תוסיף אם תרצה
+    if (theme != 'בהיר') {
+      _showComingSoonSnackBar('נושא $theme');
+    } else {
+      _showSuccessSnackBar('הנושא שונה לבהיר');
     }
   }
 
-  /// מטפל בהתנתקות עם אישור
   Future<void> _handleLogout() async {
     final confirmed = await _showLogoutConfirmation();
     if (confirmed != true) return;
 
-    setState(() => _isLoading = true);
+    setState(() => _isLoadingLogout = true);
 
     try {
       final authProvider = context.read<AuthProvider>();
@@ -178,7 +131,7 @@ class _ProfileScreenState extends State<ProfileScreen>
 
       if (mounted) {
         _showSuccessSnackBar('התנתקת בהצלחה');
-        // ניווט למסך כניסה אם צריך
+        // ניווט למסך כניסה אם צריך:
         // Navigator.of(context).pushReplacementNamed('/login');
       }
     } catch (e) {
@@ -187,27 +140,20 @@ class _ProfileScreenState extends State<ProfileScreen>
       }
     } finally {
       if (mounted) {
-        setState(() => _isLoading = false);
+        setState(() => _isLoadingLogout = false);
       }
     }
   }
 
-  /// מציג דיאלוג אישור התנתקות
-  Future<bool?> _showLogoutConfirmation() async {
+  Future<bool?> _showLogoutConfirmation() {
     return showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppTheme.colors.surface,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
-            Icon(
-              Icons.logout,
-              color: AppTheme.colors.error,
-              size: 24,
-            ),
+            Icon(Icons.logout, color: AppTheme.colors.error, size: 24),
             const SizedBox(width: 12),
             Text(
               'התנתקות',
@@ -257,22 +203,16 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
   }
 
-  /// מציג דיאלוג בחירת שפה
   void _showLanguageDialog() {
+    final settings = context.read<SettingsProvider>();
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppTheme.colors.surface,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
-            Icon(
-              Icons.language,
-              color: AppTheme.colors.primary,
-              size: 24,
-            ),
+            Icon(Icons.language, color: AppTheme.colors.primary, size: 24),
             const SizedBox(width: 12),
             Text(
               'בחר שפה',
@@ -287,14 +227,10 @@ class _ProfileScreenState extends State<ProfileScreen>
           mainAxisSize: MainAxisSize.min,
           children: _availableLanguages.map((language) {
             return RadioListTile<String>(
-              title: Text(
-                language,
-                style: GoogleFonts.assistant(
-                  color: AppTheme.colors.text,
-                ),
-              ),
+              title: Text(language,
+                  style: GoogleFonts.assistant(color: AppTheme.colors.text)),
               value: language,
-              groupValue: _selectedLanguage,
+              groupValue: settings.languageCode,
               onChanged: (value) {
                 if (value != null) {
                   Navigator.pop(context);
@@ -309,22 +245,16 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
   }
 
-  /// מציג דיאלוג בחירת נושא
   void _showThemeDialog() {
+    final settings = context.read<SettingsProvider>();
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppTheme.colors.surface,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
-            Icon(
-              Icons.palette,
-              color: AppTheme.colors.primary,
-              size: 24,
-            ),
+            Icon(Icons.palette, color: AppTheme.colors.primary, size: 24),
             const SizedBox(width: 12),
             Text(
               'בחר נושא',
@@ -355,16 +285,13 @@ class _ProfileScreenState extends State<ProfileScreen>
                 children: [
                   Icon(themeIcon, size: 20),
                   const SizedBox(width: 8),
-                  Text(
-                    theme,
-                    style: GoogleFonts.assistant(
-                      color: AppTheme.colors.text,
-                    ),
-                  ),
+                  Text(theme,
+                      style:
+                          GoogleFonts.assistant(color: AppTheme.colors.text)),
                 ],
               ),
               value: theme,
-              groupValue: _selectedTheme,
+              groupValue: 'בהיר',
               onChanged: (value) {
                 if (value != null) {
                   Navigator.pop(context);
@@ -379,7 +306,6 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
   }
 
-  /// מציג דיאלוג אודות
   void _showAboutDialog() {
     showAboutDialog(
       context: context,
@@ -392,11 +318,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           color: AppTheme.colors.primary,
           borderRadius: BorderRadius.circular(12),
         ),
-        child: const Icon(
-          Icons.fitness_center,
-          color: Colors.white,
-          size: 30,
-        ),
+        child: const Icon(Icons.fitness_center, color: Colors.white, size: 30),
       ),
       children: [
         Text(
@@ -423,7 +345,6 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
   }
 
-  // פונקציות הודעות
   void _showSuccessSnackBar(String message) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -432,9 +353,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           children: [
             const Icon(Icons.check_circle, color: Colors.white, size: 20),
             const SizedBox(width: 8),
-            Expanded(
-              child: Text(message, style: GoogleFonts.assistant()),
-            ),
+            Expanded(child: Text(message, style: GoogleFonts.assistant())),
           ],
         ),
         backgroundColor: Colors.green,
@@ -452,9 +371,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           children: [
             const Icon(Icons.error_outline, color: Colors.white, size: 20),
             const SizedBox(width: 8),
-            Expanded(
-              child: Text(message, style: GoogleFonts.assistant()),
-            ),
+            Expanded(child: Text(message, style: GoogleFonts.assistant())),
           ],
         ),
         backgroundColor: AppTheme.colors.error,
@@ -490,6 +407,7 @@ class _ProfileScreenState extends State<ProfileScreen>
   @override
   Widget build(BuildContext context) {
     final user = context.watch<AuthProvider>().currentUser;
+    final settings = context.watch<SettingsProvider>();
 
     return Scaffold(
       body: Container(
@@ -635,11 +553,15 @@ class _ProfileScreenState extends State<ProfileScreen>
                                   ),
                                   const SizedBox(height: 20),
 
-                                  // כרטיס הגדרות
+                                  // כרטיס הגדרות עם הערכות מה-SettingsProvider
                                   SettingsSection(
-                                    notificationsEnabled: _notificationsEnabled,
-                                    selectedLanguage: _selectedLanguage,
-                                    selectedTheme: _selectedTheme,
+                                    notificationsEnabled:
+                                        settings.notificationsEnabled,
+                                    selectedLanguage: settings.languageCode,
+                                    selectedTheme: _availableThemes
+                                            .contains(settings.languageCode)
+                                        ? settings.languageCode
+                                        : 'בהיר',
                                     onNotificationChanged:
                                         _saveNotificationPreference,
                                     onLanguageTap: _showLanguageDialog,
@@ -649,7 +571,7 @@ class _ProfileScreenState extends State<ProfileScreen>
 
                                   // כרטיס חשבון
                                   AccountSection(
-                                    isLoading: _isLoading,
+                                    isLoading: _isLoadingLogout,
                                     onPrivacyTap: () => _showComingSoonSnackBar(
                                         'הגדרות פרטיות'),
                                     onHelpTap: () =>

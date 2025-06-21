@@ -1,7 +1,8 @@
+// lib/features/exercises/widgets/exercise_set_form.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../models/exercise_history.dart';
+import '../../../models/unified_models.dart';
 import '../../../providers/exercise_history_provider.dart';
 import '../../../theme/app_theme.dart';
 import 'package:provider/provider.dart';
@@ -49,10 +50,12 @@ class _ExerciseSetFormState extends State<ExerciseSetForm> {
 
   void _initializeControllers() {
     _weightController = TextEditingController(
-      text: widget.existingSet?.weight.toString() ?? '',
+      text: widget.existingSet?.weight?.toString() ??
+          '', // 🔧 תיקון: הוספת null safety
     );
     _repsController = TextEditingController(
-      text: widget.existingSet?.reps.toString() ?? '',
+      text: widget.existingSet?.reps?.toString() ??
+          '', // 🔧 תיקון: הוספת null safety
     );
     _notesController = TextEditingController(
       text: widget.existingSet?.notes ?? '',
@@ -129,8 +132,9 @@ class _ExerciseSetFormState extends State<ExerciseSetForm> {
 
     if (history != null && history.sets.isNotEmpty) {
       final lastSet = history.sets.last;
-      _weightController.text = lastSet.weight.toString() ?? '';
-      _repsController.text = lastSet.reps.toString() ?? '';
+      _weightController.text =
+          lastSet.weight?.toString() ?? ''; // 🔧 null safety
+      _repsController.text = lastSet.reps?.toString() ?? ''; // 🔧 null safety
       _restTimeController.text =
           (lastSet.restTime ?? _defaultRestTime).toString();
 

@@ -36,7 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _onItemTapped(int index) {
-    if (index < _screens.length) {
+    if (index >= 0 && index < _screens.length) {
       setState(() {
         _selectedIndex = index;
       });
@@ -50,9 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
       barrierDismissible: false,
       builder: (context) => AlertDialog(
         backgroundColor: colors.surface,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
           'התנתקות',
           style: GoogleFonts.assistant(
@@ -117,6 +115,7 @@ class _HomeScreenState extends State<HomeScreen> {
               style: GoogleFonts.assistant(),
             ),
             backgroundColor: AppTheme.colors.error,
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
@@ -190,6 +189,7 @@ class _HomeScreenState extends State<HomeScreen> {
           icon: Icon(Icons.logout_rounded, color: colors.headline),
           tooltip: 'התנתק',
           onPressed: _showLogoutDialog,
+          splashRadius: 24,
         ),
         const SizedBox(width: 8),
       ],

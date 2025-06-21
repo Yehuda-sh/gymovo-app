@@ -1,8 +1,9 @@
+// lib/features/workouts/screens/workout_mode/dialogs/edit_set_dialog.dart
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../../theme/app_theme.dart';
 
-class EditSetDialog extends StatelessWidget {
+class EditSetDialog extends StatefulWidget {
   final String exId;
   final int setIdx;
   final dynamic set;
@@ -21,24 +22,80 @@ class EditSetDialog extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    final repsController =
-        TextEditingController(text: set.reps?.toString() ?? '10');
-    final weightController =
-        TextEditingController(text: set.weight?.toString() ?? '0');
-    int reps = int.tryParse(repsController.text) ?? 10;
-    double weight = double.tryParse(weightController.text) ?? 0;
+  State<EditSetDialog> createState() => _EditSetDialogState();
+}
 
+class _EditSetDialogState extends State<EditSetDialog> {
+  late int reps;
+  late double weight;
+
+  late TextEditingController repsController;
+  late TextEditingController weightController;
+
+  @override
+  void initState() {
+    super.initState();
+    reps = widget.set.reps ?? 10;
+    weight = widget.set.weight?.toDouble() ?? 0.0;
+
+    repsController = TextEditingController(text: reps.toString());
+    weightController = TextEditingController(text: weight.toStringAsFixed(1));
+
+    repsController.addListener(() {
+      final value = int.tryParse(repsController.text);
+      if (value != null && value > 0) {
+        setState(() {
+          reps = value;
+        });
+      }
+    });
+
+    weightController.addListener(() {
+      final value = double.tryParse(weightController.text);
+      if (value != null && value >= 0) {
+        setState(() {
+          weight = value;
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    repsController.dispose();
+    weightController.dispose();
+    super.dispose();
+  }
+
+  void _changeReps(int delta) {
+    final newValue = (reps + delta).clamp(1, 9999);
+    setState(() {
+      reps = newValue;
+      repsController.text = reps.toString();
+    });
+  }
+
+  void _changeWeight(double delta) {
+    final newValue = (weight + delta).clamp(0.0, 9999.0);
+    setState(() {
+      weight = newValue;
+      weightController.text = weight.toStringAsFixed(1);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       title: Text(
-        'עריכת סט ${setIdx + 1}',
+        'עריכת סט ${widget.setIdx + 1}',
         style: GoogleFonts.assistant(fontWeight: FontWeight.bold),
       ),
-      content: StatefulBuilder(
-        builder: (context, setState) => Column(
+      content: SingleChildScrollView(
+        child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            // חזרות
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -47,24 +104,30 @@ class EditSetDialog extends StatelessWidget {
                   children: [
                     IconButton(
                       icon: Icon(Icons.add_circle_outline, color: Colors.green),
-                      onPressed: () => setState(() => reps++),
+                      onPressed: () => _changeReps(1),
                     ),
                     SizedBox(
                       width: 38,
-                      child: Text('$reps',
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.assistant(fontSize: 18)),
+                      child: TextField(
+                        controller: repsController,
+                        keyboardType: TextInputType.number,
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.assistant(fontSize: 18),
+                        decoration:
+                            const InputDecoration(border: InputBorder.none),
+                      ),
                     ),
                     IconButton(
                       icon: Icon(Icons.remove_circle_outline,
                           color: Colors.redAccent),
-                      onPressed: reps > 1 ? () => setState(() => reps--) : null,
+                      onPressed: reps > 1 ? () => _changeReps(-1) : null,
                     ),
                   ],
                 ),
               ],
             ),
             const SizedBox(height: 12),
+            // משקל
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -74,26 +137,30 @@ class EditSetDialog extends StatelessWidget {
                     IconButton(
                       icon: Icon(Icons.remove_circle_outline,
                           color: Colors.redAccent),
-                      onPressed: weight > 0
-                          ? () => setState(
-                              () => weight = (weight - 2.5).clamp(0, 1000))
-                          : null,
+                      onPressed: weight > 0 ? () => _changeWeight(-2.5) : null,
                     ),
                     SizedBox(
                       width: 48,
-                      child: Text(weight.toStringAsFixed(1),
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.assistant(fontSize: 18)),
+                      child: TextField(
+                        controller: weightController,
+                        keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true),
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.assistant(fontSize: 18),
+                        decoration:
+                            const InputDecoration(border: InputBorder.none),
+                      ),
                     ),
                     IconButton(
                       icon: Icon(Icons.add_circle_outline, color: Colors.green),
-                      onPressed: () => setState(() => weight += 2.5),
+                      onPressed: () => _changeWeight(2.5),
                     ),
                   ],
                 ),
               ],
             ),
             const SizedBox(height: 18),
+            // כפתורים למחיקה והוספה
             Row(
               children: [
                 ElevatedButton.icon(
@@ -106,7 +173,7 @@ class EditSetDialog extends StatelessWidget {
                     elevation: 0,
                   ),
                   onPressed: () {
-                    onDelete();
+                    widget.onDelete();
                     Navigator.pop(context);
                   },
                 ),
@@ -121,7 +188,7 @@ class EditSetDialog extends StatelessWidget {
                     elevation: 0,
                   ),
                   onPressed: () {
-                    onAdd();
+                    widget.onAdd();
                     Navigator.pop(context);
                   },
                 ),
@@ -145,9 +212,9 @@ class EditSetDialog extends StatelessWidget {
           child: Text('שמור',
               style: GoogleFonts.assistant(fontWeight: FontWeight.bold)),
           onPressed: () {
-            set.reps = reps;
-            set.weight = weight;
-            onSave(set);
+            widget.set.reps = reps;
+            widget.set.weight = weight;
+            widget.onSave(widget.set);
             Navigator.pop(context);
           },
         ),

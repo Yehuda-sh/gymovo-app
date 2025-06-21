@@ -1,15 +1,19 @@
+// lib/features/workouts/screens/workout_details/widgets/workout_actions.dart
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../../theme/app_theme.dart';
 import '../../../../../models/workout_model.dart';
 import '../../workout_mode/workout_mode_screen.dart';
+import '../../new_workout_screen.dart';
 
 class WorkoutActions extends StatelessWidget {
   final WorkoutModel workout;
+  final VoidCallback? onEdit; // אופציונלי, callback לעריכה
 
   const WorkoutActions({
     super.key,
     required this.workout,
+    this.onEdit,
   });
 
   @override
@@ -32,16 +36,27 @@ class WorkoutActions extends StatelessWidget {
         children: [
           Expanded(
             child: OutlinedButton.icon(
-              onPressed: () {
-                // TODO: Implement edit functionality
-              },
+              onPressed: onEdit ??
+                  () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => NewWorkoutScreen(
+                          editingWorkout: workout,
+                        ),
+                      ),
+                    );
+                  },
               icon: const Icon(Icons.edit),
               label: Text(
                 'ערוך',
-                style: GoogleFonts.assistant(),
+                style: GoogleFonts.assistant(
+                  fontWeight: FontWeight.w600,
+                  color: colors.primary,
+                ),
               ),
               style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 12),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                side: BorderSide(color: colors.primary),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -56,7 +71,7 @@ class WorkoutActions extends StatelessWidget {
                   MaterialPageRoute(
                     builder: (context) => WorkoutModeScreen(
                       workout: workout,
-                      exerciseDetailsMap: const {}, // TODO: Get actual exercise details
+                      exerciseDetailsMap: const {}, // TODO: להשלים עם פרטי תרגילים לפני ניווט
                     ),
                   ),
                 );
@@ -64,10 +79,12 @@ class WorkoutActions extends StatelessWidget {
               icon: const Icon(Icons.play_arrow),
               label: Text(
                 'התחל אימון',
-                style: GoogleFonts.assistant(),
+                style: GoogleFonts.assistant(
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 12),
+                padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),

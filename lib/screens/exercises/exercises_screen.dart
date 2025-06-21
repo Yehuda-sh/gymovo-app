@@ -8,7 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/exercise.dart';
-import '../../widgets/exercise_card.dart';
 import '../../features/exercises/screens/exercise_details_screen.dart';
 
 enum ExerciseFilter { all, strength, cardio, flexibility, balance }
@@ -121,18 +120,15 @@ class _ExercisesScreenState extends State<ExercisesScreen>
         final nameHe = exercise.nameHe.toLowerCase();
         final description = exercise.description?.toLowerCase() ?? '';
         final descriptionHe = exercise.descriptionHe?.toLowerCase() ?? '';
-        final category = exercise.category?.toLowerCase() ?? '';
-        final equipment = exercise.equipment?.toLowerCase() ?? '';
+        final equipment = exercise.equipment.name.toLowerCase();
 
-        final muscleGroupsMatch = exercise.muscleGroups
-                ?.any((muscle) => muscle.toLowerCase().contains(searchTerm)) ??
-            false;
+        final muscleGroupsMatch = exercise.primaryMuscles.any(
+            (muscle) => muscle.hebrewName.toLowerCase().contains(searchTerm));
 
         return name.contains(searchTerm) ||
             nameHe.contains(searchTerm) ||
             description.contains(searchTerm) ||
             descriptionHe.contains(searchTerm) ||
-            category.contains(searchTerm) ||
             equipment.contains(searchTerm) ||
             muscleGroupsMatch;
       }).toList();
@@ -141,7 +137,7 @@ class _ExercisesScreenState extends State<ExercisesScreen>
     // פילטר לפי סוג תרגיל
     if (_currentFilter != ExerciseFilter.all) {
       filtered = filtered.where((exercise) {
-        final exerciseType = exercise.type?.toLowerCase() ?? '';
+        final exerciseType = exercise.type.name;
         switch (_currentFilter) {
           case ExerciseFilter.strength:
             return exerciseType == 'strength' ||
@@ -168,17 +164,12 @@ class _ExercisesScreenState extends State<ExercisesScreen>
     // פילטר לפי קבוצת שרירים
     if (_selectedMuscle != null) {
       filtered = filtered.where((exercise) {
-        final muscleGroupsMatch = exercise.muscleGroups
-                ?.any((muscle) => muscle.contains(_selectedMuscle!)) ??
-            false;
-        final mainMusclesMatch = exercise.mainMuscles
-                ?.any((muscle) => muscle.contains(_selectedMuscle!)) ??
-            false;
+        final muscleGroupsMatch = exercise.primaryMuscles
+            .any((muscle) => muscle.hebrewName.contains(_selectedMuscle!));
         final secondaryMusclesMatch = exercise.secondaryMuscles
-                ?.any((muscle) => muscle.contains(_selectedMuscle!)) ??
-            false;
+            .any((muscle) => muscle.hebrewName.contains(_selectedMuscle!));
 
-        return muscleGroupsMatch || mainMusclesMatch || secondaryMusclesMatch;
+        return muscleGroupsMatch || secondaryMusclesMatch;
       }).toList();
     }
 
@@ -188,8 +179,8 @@ class _ExercisesScreenState extends State<ExercisesScreen>
         case SortOption.name:
           return a.nameHe.compareTo(b.nameHe); // מיון לפי שם עברי
         case SortOption.difficulty:
-          final aDiff = _getDifficultyValue(a.difficulty);
-          final bDiff = _getDifficultyValue(b.difficulty);
+          final aDiff = _getDifficultyValue(a.difficulty.name);
+          final bDiff = _getDifficultyValue(b.difficulty.name);
           return aDiff.compareTo(bDiff);
         case SortOption.muscle:
           final aMuscle = _getFirstMuscle(a);
@@ -204,16 +195,13 @@ class _ExercisesScreenState extends State<ExercisesScreen>
   }
 
   String _getFirstMuscle(Exercise exercise) {
-    if (exercise.muscleGroups?.isNotEmpty == true) {
-      return exercise.muscleGroups!.first;
-    }
-    if (exercise.mainMuscles?.isNotEmpty == true) {
-      return exercise.mainMuscles!.first;
+    if (exercise.primaryMuscles.isNotEmpty) {
+      return exercise.primaryMuscles.first.hebrewName;
     }
     return '';
   }
 
-  int _getDifficultyValue(String? difficulty) {
+  int _getDifficultyValue(String difficulty) {
     if (difficulty == null) return 3; // ברירת מחדל - בינוני
 
     switch (difficulty.toLowerCase()) {

@@ -6,6 +6,8 @@ import 'greeting_widget.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/week_plan_provider.dart';
 import '../../models/workout_model.dart';
+import '../../features/stats/screens/workout_stats_screen.dart';
+import '../../features/workouts/screens/week_plan_screen.dart';
 
 class HomeTab extends StatelessWidget {
   final void Function(int) onTabChange;
@@ -16,65 +18,48 @@ class HomeTab extends StatelessWidget {
     final isSmallScreen = MediaQuery.of(context).size.width < 360;
     final horizontalPadding = isSmallScreen ? 12.0 : 16.0;
 
-    void goToNewWorkout() {
-      Navigator.of(context).pushNamed('/workouts');
-    }
+    void goToNewWorkout() => Navigator.of(context).pushNamed('/workouts');
 
-    void goToStats() {
+    void showPlaceholderSnack(String message) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('מסך סטטיסטיקות בפיתוח')),
-      );
-    }
-
-    void goToWeekPlan() {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('מסך תוכנית שבועית בפיתוח')),
+        SnackBar(content: Text(message)),
       );
     }
 
     return RefreshIndicator(
-      onRefresh: () async {},
+      onRefresh: () async {
+        // TODO: הוספת רפרש אמיתי בעתיד
+      },
       color: Theme.of(context).colorScheme.primary,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        child: Padding(
-          padding: EdgeInsets.all(horizontalPadding),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // ברכת פתיחה
-              GreetingWidget(
-                user: context.read<AuthProvider>().currentUser,
+        padding: EdgeInsets.all(horizontalPadding),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            GreetingWidget(
+              user: context.read<AuthProvider>().currentUser,
+            ),
+            const SizedBox(height: 28),
+            _QuickStartCard(onNewWorkout: goToNewWorkout),
+            const SizedBox(height: 32),
+            _QuickActionsGrid(
+              onNewWorkout: goToNewWorkout,
+              onStats: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const WorkoutStatsScreen()),
               ),
-              const SizedBox(height: 28),
-
-              // התחלה מהירה - מודגש
-              _QuickStartCard(onNewWorkout: goToNewWorkout),
-
-              const SizedBox(height: 32),
-
-              // פעולות מהירות - גריד משודרג
-              _QuickActionsGrid(
-                onNewWorkout: goToNewWorkout,
-                onStats: goToStats,
-                onWeekPlan: goToWeekPlan,
-                onProfile: () => onTabChange(2),
-                isSmallScreen: isSmallScreen,
+              onWeekPlan: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const WeekPlanScreen()),
               ),
-
-              const SizedBox(height: 32),
-
-              // התקדמות שבועית - בר בולט
-              _WorkoutProgressCard(),
-
-              const SizedBox(height: 32),
-
-              // סטטיסטיקות (פשוט)
-              _StatsCard(),
-
-              const SizedBox(height: 20),
-            ],
-          ),
+              onProfile: () => onTabChange(2),
+              isSmallScreen: isSmallScreen,
+            ),
+            const SizedBox(height: 32),
+            const _WorkoutProgressCard(),
+            const SizedBox(height: 32),
+            const _StatsCard(),
+            const SizedBox(height: 20),
+          ],
         ),
       ),
     );
@@ -89,12 +74,14 @@ class _QuickStartCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Theme.of(context).colorScheme.primary.withOpacity(0.1),
-            Theme.of(context).colorScheme.primary.withOpacity(0.05),
+            colors.primary.withOpacity(0.1),
+            colors.primary.withOpacity(0.05),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -109,11 +96,14 @@ class _QuickStartCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('התחלה מהירה',
-                  style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.onSurface)),
+              Text(
+                'התחלה מהירה',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: colors.onSurface,
+                ),
+              ),
               const SizedBox(height: 18),
               ElevatedButton.icon(
                 icon: const Icon(Icons.fitness_center_rounded, size: 28),
@@ -122,15 +112,14 @@ class _QuickStartCard extends StatelessWidget {
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  backgroundColor: colors.primary,
                   foregroundColor: Colors.white,
                   minimumSize: const Size.fromHeight(54),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
                   elevation: 3,
-                  shadowColor:
-                      Theme.of(context).colorScheme.primary.withOpacity(0.15),
+                  shadowColor: colors.primary.withOpacity(0.15),
                 ),
                 onPressed: onNewWorkout,
               ),
@@ -169,56 +158,61 @@ class _QuickActionsGrid extends StatelessWidget {
       crossAxisSpacing: 16,
       children: [
         _GridActionCard(
-          'אימון חדש',
-          Icons.fitness_center,
-          onNewWorkout,
-          context,
-          gradientColors: [
-            const Color(0xFF667eea),
-            const Color(0xFF764ba2),
+          label: 'אימון חדש',
+          icon: Icons.fitness_center,
+          onTap: onNewWorkout,
+          gradientColors: const [
+            Color(0xFF667eea),
+            Color(0xFF764ba2),
           ],
         ),
         _GridActionCard(
-          'סטטיסטיקות',
-          Icons.trending_up,
-          onStats,
-          context,
-          gradientColors: [
-            const Color(0xFFf093fb),
-            const Color(0xFFf5576c),
+          label: 'סטטיסטיקות',
+          icon: Icons.trending_up,
+          onTap: onStats,
+          gradientColors: const [
+            Color(0xFFf093fb),
+            Color(0xFFf5576c),
           ],
         ),
         _GridActionCard(
-          'תוכנית שבועית',
-          Icons.calendar_today,
-          onWeekPlan,
-          context,
-          gradientColors: [
-            const Color(0xFF4facfe),
-            const Color(0xFF00f2fe),
+          label: 'תוכנית שבועית',
+          icon: Icons.calendar_today,
+          onTap: onWeekPlan,
+          gradientColors: const [
+            Color(0xFF4facfe),
+            Color(0xFF00f2fe),
           ],
         ),
         _GridActionCard(
-          'פרופיל',
-          Icons.person,
-          onProfile,
-          context,
-          gradientColors: [
-            const Color(0xFF43e97b),
-            const Color(0xFF38f9d7),
+          label: 'פרופיל',
+          icon: Icons.person,
+          onTap: onProfile,
+          gradientColors: const [
+            Color(0xFF43e97b),
+            Color(0xFF38f9d7),
           ],
         ),
       ],
     );
   }
+}
 
-  Widget _GridActionCard(
-    String label,
-    IconData icon,
-    VoidCallback onTap,
-    BuildContext context, {
-    required List<Color> gradientColors,
-  }) {
+class _GridActionCard extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final VoidCallback onTap;
+  final List<Color> gradientColors;
+
+  const _GridActionCard({
+    required this.label,
+    required this.icon,
+    required this.onTap,
+    required this.gradientColors,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
@@ -232,13 +226,11 @@ class _QuickActionsGrid extends StatelessWidget {
             color: gradientColors[0].withOpacity(0.4),
             blurRadius: 20,
             offset: const Offset(0, 8),
-            spreadRadius: 0,
           ),
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
             blurRadius: 10,
             offset: const Offset(0, 4),
-            spreadRadius: 0,
           ),
         ],
       ),
@@ -247,7 +239,7 @@ class _QuickActionsGrid extends StatelessWidget {
         child: InkWell(
           borderRadius: BorderRadius.circular(20),
           onTap: onTap,
-          child: Container(
+          child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -262,11 +254,7 @@ class _QuickActionsGrid extends StatelessWidget {
                       width: 1,
                     ),
                   ),
-                  child: Icon(
-                    icon,
-                    size: 28,
-                    color: Colors.white,
-                  ),
+                  child: Icon(icon, size: 28, color: Colors.white),
                 ),
                 const SizedBox(height: 12),
                 Text(
@@ -290,13 +278,16 @@ class _QuickActionsGrid extends StatelessWidget {
 
 // ----- כרטיס התקדמות שבועית -----
 class _WorkoutProgressCard extends StatelessWidget {
+  const _WorkoutProgressCard({super.key});
+
   @override
   Widget build(BuildContext context) {
     final weekPlanProvider = context.watch<WeekPlanProvider>();
     final workouts = weekPlanProvider.weekPlan;
     final total = workouts.length;
-    final completed = total ~/ 2; // עדיף להחליף בלוגיקה אמיתית
+    final completed = total ~/ 2; // TODO: החלף בלוגיקה אמיתית
     final percentage = total == 0 ? 0.0 : completed / total;
+    final colors = Theme.of(context).colorScheme;
 
     return Container(
       decoration: BoxDecoration(
@@ -314,116 +305,99 @@ class _WorkoutProgressCard extends StatelessWidget {
             color: const Color(0xFFf093fb).withOpacity(0.4),
             blurRadius: 25,
             offset: const Offset(0, 10),
-            spreadRadius: 0,
           ),
           BoxShadow(
             color: Colors.black.withOpacity(0.15),
             blurRadius: 15,
             offset: const Offset(0, 5),
-            spreadRadius: 0,
           ),
         ],
       ),
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(
-            color: Colors.white.withOpacity(0.2),
-            width: 1,
-          ),
+          border: Border.all(color: Colors.white.withOpacity(0.2), width: 1),
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: Colors.white.withOpacity(0.3),
-                        width: 1,
-                      ),
-                    ),
-                    child: const Icon(
-                      Icons.trending_up,
-                      color: Colors.white,
-                      size: 20,
-                    ),
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                        color: Colors.white.withOpacity(0.3), width: 1),
                   ),
-                  const SizedBox(width: 12),
-                  const Text(
-                    'התקדמות השבוע',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              Container(
-                height: 16,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  color: Colors.white.withOpacity(0.2),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.3),
-                    width: 1,
+                  child: const Icon(Icons.trending_up,
+                      color: Colors.white, size: 20),
+                ),
+                const SizedBox(width: 12),
+                const Text(
+                  'התקדמות השבוע',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    letterSpacing: 0.5,
                   ),
                 ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: LinearProgressIndicator(
-                    value: percentage,
-                    backgroundColor: Colors.transparent,
-                    valueColor:
-                        const AlwaysStoppedAnimation<Color>(Colors.white),
-                  ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            Container(
+              height: 16,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                color: Colors.white.withOpacity(0.2),
+                border:
+                    Border.all(color: Colors.white.withOpacity(0.3), width: 1),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: LinearProgressIndicator(
+                  value: percentage,
+                  backgroundColor: Colors.transparent,
+                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                 ),
               ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'הושלמו $completed מתוך $total אימונים',
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'הושלמו $completed מתוך $total אימונים',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                    fontSize: 14,
+                  ),
+                ),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                        color: Colors.white.withOpacity(0.3), width: 1),
+                  ),
+                  child: Text(
+                    '${(percentage * 100).toInt()}%',
                     style: const TextStyle(
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.bold,
                       color: Colors.white,
                       fontSize: 14,
                     ),
                   ),
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: Colors.white.withOpacity(0.3),
-                        width: 1,
-                      ),
-                    ),
-                    child: Text(
-                      '${(percentage * 100).toInt()}%',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
@@ -432,9 +406,13 @@ class _WorkoutProgressCard extends StatelessWidget {
 
 // ----- כרטיס סטטיסטיקות -----
 class _StatsCard extends StatelessWidget {
+  const _StatsCard({super.key});
+
   @override
   Widget build(BuildContext context) {
-    // אפשר להוסיף נתונים אמיתיים בעתיד
+    // TODO: להוסיף נתונים אמיתיים בעתיד
+    final colors = Theme.of(context).colorScheme;
+
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
@@ -451,130 +429,113 @@ class _StatsCard extends StatelessWidget {
             color: const Color(0xFF43e97b).withOpacity(0.4),
             blurRadius: 25,
             offset: const Offset(0, 10),
-            spreadRadius: 0,
           ),
           BoxShadow(
             color: Colors.black.withOpacity(0.15),
             blurRadius: 15,
             offset: const Offset(0, 5),
-            spreadRadius: 0,
           ),
         ],
       ),
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(
-            color: Colors.white.withOpacity(0.2),
-            width: 1,
-          ),
+          border: Border.all(color: Colors.white.withOpacity(0.2), width: 1),
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: Colors.white.withOpacity(0.3),
-                        width: 1,
-                      ),
-                    ),
-                    child: const Icon(
-                      Icons.analytics,
-                      color: Colors.white,
-                      size: 20,
-                    ),
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                        color: Colors.white.withOpacity(0.3), width: 1),
                   ),
-                  const SizedBox(width: 12),
-                  const Text(
-                    'סטטיסטיקות',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      letterSpacing: 0.5,
-                    ),
+                  child: const Icon(Icons.analytics,
+                      color: Colors.white, size: 20),
+                ),
+                const SizedBox(width: 12),
+                const Text(
+                  'סטטיסטיקות',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(16),
+                border:
+                    Border.all(color: Colors.white.withOpacity(0.3), width: 1),
+              ),
+              child: Column(
+                children: const [
+                  _StatRow(
+                    icon: Icons.fitness_center,
+                    label: 'אימונים השבוע',
+                    value: '0',
+                  ),
+                  SizedBox(height: 12),
+                  _StatRow(
+                    icon: Icons.schedule,
+                    label: 'אימון אחרון',
+                    value: '---',
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.3),
-                    width: 1,
-                  ),
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(6),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: const Icon(
-                            Icons.fitness_center,
-                            color: Colors.white,
-                            size: 16,
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        const Text(
-                          'אימונים השבוע: 0',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(6),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: const Icon(
-                            Icons.schedule,
-                            color: Colors.white,
-                            size: 16,
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        const Text(
-                          'אימון אחרון: ---',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
+    );
+  }
+}
+
+class _StatRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+
+  const _StatRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, color: Colors.white, size: 16),
+        ),
+        const SizedBox(width: 10),
+        Text(
+          '$label: $value',
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+            fontSize: 14,
+          ),
+        ),
+      ],
     );
   }
 }

@@ -1,7 +1,10 @@
+// lib/features/workouts/providers/workout_mode_provider.dart
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../../../models/workout_model.dart';
 import '../../../models/exercise.dart';
+
+enum WorkoutStatus { notStarted, active, paused, completed, stopped }
 
 class WorkoutModeProvider with ChangeNotifier {
   final WorkoutModel workout;
@@ -10,195 +13,466 @@ class WorkoutModeProvider with ChangeNotifier {
   // סטים שהושלמו, זמני מנוחה, מצב מנוחה
   final Map<String, Set<int>> _completedSets = {};
   final Map<String, int> _customRestTimes = {};
-  int? _activeRestKey;
+  String? _activeRestExerciseId;
+  int? _activeRestSetIndex;
   int _restSeconds = 0;
+  Timer? _restTimer;
 
   // --- סטופר ומצב אימון ---
   DateTime? _startTime;
-  DateTime? _pausedTime;
+  DateTime? _lastPauseTime;
   int _totalPausedSeconds = 0;
-  Duration _elapsed = Duration.zero;
-  Timer? _timer;
-  bool _isPaused = false;
-  bool _forceStopped = false;
+  Timer? _workoutTimer;
+  WorkoutStatus _status = WorkoutStatus.notStarted;
+
+  // נתונים סטטיסטיים
+  int _totalVolume = 0; // משקל כולל × חזרות
+  int _totalReps = 0;
 
   WorkoutModeProvider({
     required this.workout,
     required this.exerciseDetailsMap,
-  }) {
-    _startTime = DateTime.now();
-    startWorkout();
-  }
+  });
 
   // --- Getters ---
+  WorkoutStatus get status => _status;
+  bool get isActive => _status == WorkoutStatus.active;
+  bool get isPaused => _status == WorkoutStatus.paused;
+  bool get isCompleted => _status == WorkoutStatus.completed;
+  bool get isStopped => _status == WorkoutStatus.stopped;
+
   bool get isWorkoutComplete {
+    if (workout.exercises.isEmpty) return false;
+
     for (var ex in workout.exercises) {
-      if ((_completedSets[ex.id]?.length ?? 0) < ex.sets.length) return false;
+      final completedCount = _completedSets[ex.id]?.length ?? 0;
+      if (completedCount < ex.sets.length) return false;
     }
     return true;
   }
 
-  int? get activeRestKey => _activeRestKey;
+  String? get activeRestExerciseId => _activeRestExerciseId;
+  int? get activeRestSetIndex => _activeRestSetIndex;
   int get restSeconds => _restSeconds;
-  Map<String, Set<int>> get completedSets => _completedSets;
-  Map<String, int> get customRestTimes => _customRestTimes;
-  bool get isPaused => _isPaused;
-  Duration get elapsed => _elapsed;
-  bool get isForceStopped => _forceStopped;
+  bool get isResting => _activeRestExerciseId != null && _restSeconds > 0;
 
-  // Timer and Progress
+  Map<String, Set<int>> get completedSets => Map.unmodifiable(_completedSets);
+  Map<String, int> get customRestTimes => Map.unmodifiable(_customRestTimes);
+
+  int get totalVolume => _totalVolume;
+  int get totalReps => _totalReps;
+
+  // זמן אימון מעוצב
   String get formattedElapsed {
-    final elapsed =
-        DateTime.now().difference(_startTime!).inSeconds - _totalPausedSeconds;
-    final minutes = (elapsed ~/ 60).toString().padLeft(2, '0');
-    final seconds = (elapsed % 60).toString().padLeft(2, '0');
-    return '$minutes:$seconds';
+    if (_startTime == null) return '00:00';
+
+    final now = DateTime.now();
+    int elapsedSeconds = now.difference(_startTime!).inSeconds;
+
+    // הפחת זמן השהיה
+    elapsedSeconds -= _totalPausedSeconds;
+
+    // אם במצב השהיה כרגע
+    if (_status == WorkoutStatus.paused && _lastPauseTime != null) {
+      elapsedSeconds -= now.difference(_lastPauseTime!).inSeconds;
+    }
+
+    elapsedSeconds = elapsedSeconds.clamp(0, 999999);
+
+    final hours = elapsedSeconds ~/ 3600;
+    final minutes = (elapsedSeconds % 3600) ~/ 60;
+    final seconds = elapsedSeconds % 60;
+
+    if (hours > 0) {
+      return '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+    }
+    return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
   }
 
+  // אחוז התקדמות
   int get progressPercent {
     final totalSets =
         workout.exercises.fold<int>(0, (sum, ex) => sum + ex.sets.length);
-    final completedSets =
+    if (totalSets == 0) return 0;
+
+    final completedCount =
         _completedSets.values.fold<int>(0, (sum, sets) => sum + sets.length);
-    return totalSets > 0 ? (completedSets * 100 ~/ totalSets) : 0;
+    return (completedCount * 100 / totalSets).round().clamp(0, 100);
   }
 
+  // משקל כולל מחושב
   double get totalWeight {
     return workout.exercises.fold<double>(0, (sum, ex) {
+      final completedSetsForEx = _completedSets[ex.id] ?? <int>{};
       return sum +
-          ex.sets.fold<double>(0, (setSum, set) {
-            return setSum + (set.weight ?? 0) * (set.reps ?? 0);
+          ex.sets.asMap().entries.fold<double>(0, (setSum, entry) {
+            final setIndex = entry.key;
+            final set = entry.value;
+
+            // רק סטים שהושלמו
+            if (completedSetsForEx.contains(setIndex)) {
+              return setSum + (set.weight ?? 0) * (set.reps ?? 0);
+            }
+            return setSum;
           });
     });
   }
 
-  // ===== סטופר =====
+  // סטטיסטיקות מפורטות
+  Map<String, dynamic> get workoutStats {
+    final completedSetsCount =
+        _completedSets.values.fold<int>(0, (sum, sets) => sum + sets.length);
+    final totalSetsCount =
+        workout.exercises.fold<int>(0, (sum, ex) => sum + ex.sets.length);
+
+    return {
+      'duration': formattedElapsed,
+      'completedSets': completedSetsCount,
+      'totalSets': totalSetsCount,
+      'progressPercent': progressPercent,
+      'totalWeight': totalWeight,
+      'exercisesCount': workout.exercises.length,
+      'completedExercises': _getCompletedExercisesCount(),
+    };
+  }
+
+  int _getCompletedExercisesCount() {
+    return workout.exercises.where((ex) {
+      final completedCount = _completedSets[ex.id]?.length ?? 0;
+      return completedCount == ex.sets.length;
+    }).length;
+  }
+
+  // ===== ניהול סטופר =====
   void startWorkout() {
-    if (_startTime == null) {
-      _startTime = DateTime.now();
-      _elapsed = Duration.zero;
-      _isPaused = false;
-      _forceStopped = false;
-      _timer = Timer.periodic(const Duration(seconds: 1), _onTick);
-    }
+    if (_status != WorkoutStatus.notStarted) return;
+
+    _startTime = DateTime.now();
+    _status = WorkoutStatus.active;
+    _startWorkoutTimer();
+    notifyListeners();
   }
 
   void pauseWorkout() {
-    _isPaused = true;
-    _timer?.cancel();
+    if (_status != WorkoutStatus.active) return;
+
+    _lastPauseTime = DateTime.now();
+    _status = WorkoutStatus.paused;
+    _workoutTimer?.cancel();
+    _pauseRestTimer();
     notifyListeners();
   }
 
   void resumeWorkout() {
-    if (_isPaused) {
-      _isPaused = false;
-      _timer = Timer.periodic(const Duration(seconds: 1), _onTick);
-      notifyListeners();
+    if (_status != WorkoutStatus.paused) return;
+
+    if (_lastPauseTime != null) {
+      _totalPausedSeconds +=
+          DateTime.now().difference(_lastPauseTime!).inSeconds;
+      _lastPauseTime = null;
     }
+
+    _status = WorkoutStatus.active;
+    _startWorkoutTimer();
+    _resumeRestTimer();
+    notifyListeners();
   }
 
   void stopWorkout() {
-    _timer?.cancel();
-    _forceStopped = true;
+    _status = WorkoutStatus.stopped;
+    _workoutTimer?.cancel();
+    _restTimer?.cancel();
     notifyListeners();
   }
 
-  void _onTick(Timer timer) {
-    if (!_isPaused && !_forceStopped) {
-      _elapsed = DateTime.now().difference(_startTime!);
-      notifyListeners();
+  void completeWorkout() {
+    _status = WorkoutStatus.completed;
+    _workoutTimer?.cancel();
+    _restTimer?.cancel();
+    _activeRestExerciseId = null;
+    _activeRestSetIndex = null;
+    _restSeconds = 0;
+    notifyListeners();
+  }
+
+  void togglePause() {
+    if (_status == WorkoutStatus.active) {
+      pauseWorkout();
+    } else if (_status == WorkoutStatus.paused) {
+      resumeWorkout();
     }
   }
 
-  // Methods
-  void toggleSetComplete(String exId, int setIdx, int restTime) {
+  void _startWorkoutTimer() {
+    _workoutTimer?.cancel();
+    _workoutTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (_status == WorkoutStatus.active) {
+        notifyListeners();
+      }
+    });
+  }
+
+  // ===== ניהול סטים =====
+  void toggleSetComplete(String exId, int setIdx) {
+    if (_status != WorkoutStatus.active && _status != WorkoutStatus.paused)
+      return;
+
     _completedSets.putIfAbsent(exId, () => <int>{});
+
     if (_completedSets[exId]!.contains(setIdx)) {
+      // ביטול השלמת סט
       _completedSets[exId]!.remove(setIdx);
+      _updateStats();
     } else {
+      // השלמת סט
       _completedSets[exId]!.add(setIdx);
-      _activeRestKey = exId.hashCode + setIdx;
-      _restSeconds = _customRestTimes[exId] ?? restTime;
+      _updateStats();
+
+      // התחלת מנוחה
+      final exercise = workout.exercises.firstWhere((ex) => ex.id == exId);
+      if (setIdx < exercise.sets.length) {
+        final restTime = _customRestTimes[exId] ??
+            exercise.sets[setIdx].restTime ??
+            _getDefaultRestTime(exId);
+
+        if (restTime > 0) {
+          _startRestTimer(exId, setIdx, restTime);
+        }
+      }
+
+      // בדיקה אם האימון הושלם
+      if (isWorkoutComplete) {
+        completeWorkout();
+      }
     }
+
     notifyListeners();
   }
 
-  void updateRestTime(String exId, int newRestTime) {
-    _customRestTimes[exId] = newRestTime;
-    notifyListeners();
-  }
+  void _updateStats() {
+    _totalVolume = 0;
+    _totalReps = 0;
 
-  void updateRestSeconds(int seconds) {
-    _restSeconds = seconds;
-    if (_restSeconds <= 0) {
-      _activeRestKey = null;
+    for (var exercise in workout.exercises) {
+      final completedSetsForEx = _completedSets[exercise.id] ?? <int>{};
+
+      for (int i = 0; i < exercise.sets.length; i++) {
+        if (completedSetsForEx.contains(i)) {
+          final set = exercise.sets[i];
+          final weight = set.weight ?? 0;
+          final reps = set.reps ?? 0;
+
+          _totalVolume += (weight * reps).round();
+          _totalReps += reps;
+        }
+      }
     }
+  }
+
+  int _getDefaultRestTime(String exId) {
+    final exerciseDetails = exerciseDetailsMap[exId];
+    if (exerciseDetails != null) {
+      // זמן מנוחה לפי סוג התרגיל
+      switch (exerciseDetails.type.name.toLowerCase()) {
+        case 'strength':
+        case 'powerlifting':
+          return 180; // 3 דקות
+        case 'cardio':
+          return 30;
+        case 'isolation':
+          return 60;
+        default:
+          return 90;
+      }
+    }
+    return 90; // ברירת מחדל
+  }
+
+  // ===== ניהול מנוחה =====
+  void _startRestTimer(String exId, int setIdx, int restTime) {
+    _stopRestTimer();
+
+    _activeRestExerciseId = exId;
+    _activeRestSetIndex = setIdx;
+    _restSeconds = restTime;
+
+    _restTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_status == WorkoutStatus.active) {
+        _restSeconds--;
+        if (_restSeconds <= 0) {
+          _stopRestTimer();
+        }
+        notifyListeners();
+      }
+    });
+  }
+
+  void _stopRestTimer() {
+    _restTimer?.cancel();
+    _restTimer = null;
+    _activeRestExerciseId = null;
+    _activeRestSetIndex = null;
+    _restSeconds = 0;
+  }
+
+  void _pauseRestTimer() {
+    _restTimer?.cancel();
+  }
+
+  void _resumeRestTimer() {
+    if (_activeRestExerciseId != null && _restSeconds > 0) {
+      _restTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+        if (_status == WorkoutStatus.active) {
+          _restSeconds--;
+          if (_restSeconds <= 0) {
+            _stopRestTimer();
+          }
+          notifyListeners();
+        }
+      });
+    }
+  }
+
+  void skipRest() {
+    _stopRestTimer();
     notifyListeners();
   }
 
+  void addRestTime(int seconds) {
+    _restSeconds += seconds;
+    notifyListeners();
+  }
+
+  void updateCustomRestTime(String exId, int newRestTime) {
+    _customRestTimes[exId] = newRestTime.clamp(10, 600); // 10 שניות עד 10 דקות
+    notifyListeners();
+  }
+
+  // ===== ניהול סטים ותרגילים =====
   void updateSet(String exId, int setIdx, ExerciseSet updatedSet) {
     final exercise = workout.exercises.firstWhere((ex) => ex.id == exId);
-    if (setIdx < exercise.sets.length) {
-      final currentSet = exercise.sets[setIdx];
-      exercise.sets[setIdx] = currentSet.copyWith(
-        weight: updatedSet.weight,
-        reps: updatedSet.reps,
-        restTime: updatedSet.restTime,
-        isCompleted: updatedSet.isCompleted,
-        notes: updatedSet.notes,
-      );
+    if (setIdx >= 0 && setIdx < exercise.sets.length) {
+      exercise.sets[setIdx] = updatedSet;
+      _updateStats();
       notifyListeners();
     }
   }
 
-  void addSet(String exId, int afterSetIdx) {
+  void addSet(String exId, {int? afterSetIdx}) {
     final exercise = workout.exercises.firstWhere((ex) => ex.id == exId);
-    if (afterSetIdx < exercise.sets.length) {
-      final templateSet = exercise.sets[afterSetIdx];
-      exercise.sets.insert(
-        afterSetIdx + 1,
-        templateSet.copyWith(
-          id: '${exId}_set_${DateTime.now().millisecondsSinceEpoch}',
-        ),
+    final insertIndex =
+        afterSetIdx != null ? afterSetIdx + 1 : exercise.sets.length;
+
+    // יצירת סט חדש בהתבסס על הסט הקודם
+    ExerciseSet templateSet;
+    if (exercise.sets.isNotEmpty) {
+      final sourceIndex = afterSetIdx ?? exercise.sets.length - 1;
+      templateSet = exercise.sets[sourceIndex];
+    } else {
+      templateSet = ExerciseSet(
+        id: '',
+        reps: 10,
+        weight: 0,
+        restTime: 90,
       );
-      notifyListeners();
     }
+
+    final newSet = templateSet.copyWith(
+      id: '${exId}_set_${DateTime.now().millisecondsSinceEpoch}',
+      isCompleted: false,
+      notes: null,
+    );
+
+    exercise.sets.insert(insertIndex, newSet);
+    notifyListeners();
   }
 
   void deleteSet(String exId, int setIdx) {
     final exercise = workout.exercises.firstWhere((ex) => ex.id == exId);
-    if (exercise.sets.length > 1 && setIdx < exercise.sets.length) {
+    if (exercise.sets.length > 1 &&
+        setIdx >= 0 &&
+        setIdx < exercise.sets.length) {
       exercise.sets.removeAt(setIdx);
+
+      // עדכון סטים שהושלמו
+      final completedSetsForEx = _completedSets[exId];
+      if (completedSetsForEx != null) {
+        // הסרת הסט שנמחק
+        completedSetsForEx.remove(setIdx);
+
+        // עדכון אינדקסים של סטים שהושלמו
+        final updatedCompleted = <int>{};
+        for (final completedIdx in completedSetsForEx) {
+          if (completedIdx > setIdx) {
+            updatedCompleted.add(completedIdx - 1);
+          } else {
+            updatedCompleted.add(completedIdx);
+          }
+        }
+        _completedSets[exId] = updatedCompleted;
+      }
+
+      _updateStats();
       notifyListeners();
     }
   }
 
+  // ===== פונקציות עזר =====
   bool isSetCompleted(String exId, int setIdx) {
     return _completedSets[exId]?.contains(setIdx) ?? false;
   }
 
   bool isSetResting(String exId, int setIdx) {
-    return _activeRestKey == exId.hashCode + setIdx && _restSeconds > 0;
+    return _activeRestExerciseId == exId &&
+        _activeRestSetIndex == setIdx &&
+        _restSeconds > 0;
   }
 
   int getRestTimeForExercise(String exId) {
-    return _customRestTimes[exId] ??
-        workout.exercises
-            .firstWhere((ex) => ex.id == exId)
-            .sets
-            .first
-            .restTime ??
-        60;
+    return _customRestTimes[exId] ?? _getDefaultRestTime(exId);
   }
 
-  void togglePause() {
-    _isPaused = !_isPaused;
-    if (_isPaused) {
-      _pausedTime = DateTime.now();
-    } else if (_pausedTime != null) {
-      _totalPausedSeconds += DateTime.now().difference(_pausedTime!).inSeconds;
-      _pausedTime = null;
+  String getRestTimeFormatted() {
+    if (_restSeconds <= 0) return '';
+
+    final minutes = _restSeconds ~/ 60;
+    final seconds = _restSeconds % 60;
+
+    if (minutes > 0) {
+      return '$minutes:${seconds.toString().padLeft(2, '0')}';
     }
-    notifyListeners();
+    return '${seconds}s';
+  }
+
+  // נתוני סיכום לסיום האימון
+  Map<String, dynamic> getWorkoutSummary() {
+    final duration = _startTime != null
+        ? DateTime.now().difference(_startTime!).inSeconds - _totalPausedSeconds
+        : 0;
+
+    return {
+      'workoutId': workout.id,
+      'title': workout.title,
+      'duration': duration,
+      'completedSets':
+          _completedSets.values.fold<int>(0, (sum, sets) => sum + sets.length),
+      'totalSets':
+          workout.exercises.fold<int>(0, (sum, ex) => sum + ex.sets.length),
+      'totalWeight': totalWeight,
+      'totalReps': _totalReps,
+      'totalVolume': _totalVolume,
+      'exercisesCount': workout.exercises.length,
+      'completedExercises': _getCompletedExercisesCount(),
+      'startTime': _startTime?.toIso8601String(),
+      'endTime': DateTime.now().toIso8601String(),
+      'isCompleted': isWorkoutComplete,
+    };
+  }
+
+  @override
+  void dispose() {
+    _workoutTimer?.cancel();
+    _restTimer?.cancel();
+    super.dispose();
   }
 }

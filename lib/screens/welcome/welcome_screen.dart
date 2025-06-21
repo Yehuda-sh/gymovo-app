@@ -1,3 +1,4 @@
+// lib/screens/welcome/welcome_screen.dart
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../theme/app_theme.dart';
@@ -21,8 +22,7 @@ class WelcomeScreen extends StatelessWidget {
     } catch (e) {
       debugPrint('Error loading demo users: $e');
     }
-    // ברירת מחדל אם לא הצליח לטעון משתמשים
-    return 'demo@gymovo.com';
+    return 'demo@gymovo.com'; // ברירת מחדל
   }
 
   @override
@@ -64,13 +64,11 @@ class WelcomeScreen extends StatelessWidget {
                         color: const Color(0xFF667eea).withOpacity(0.4),
                         blurRadius: 30,
                         offset: const Offset(0, 12),
-                        spreadRadius: 0,
                       ),
                       BoxShadow(
                         color: Colors.black.withOpacity(0.2),
                         blurRadius: 20,
                         offset: const Offset(0, 6),
-                        spreadRadius: 0,
                       ),
                     ],
                   ),
@@ -149,7 +147,6 @@ class WelcomeScreen extends StatelessWidget {
                         color: const Color(0xFFf093fb).withOpacity(0.4),
                         blurRadius: 20,
                         offset: const Offset(0, 8),
-                        spreadRadius: 0,
                       ),
                     ],
                   ),
@@ -221,7 +218,6 @@ class WelcomeScreen extends StatelessWidget {
                         color: const Color(0xFF4facfe).withOpacity(0.4),
                         blurRadius: 20,
                         offset: const Offset(0, 8),
-                        spreadRadius: 0,
                       ),
                     ],
                   ),
@@ -348,7 +344,6 @@ class WelcomeScreen extends StatelessWidget {
                         color: const Color(0xFF43e97b).withOpacity(0.3),
                         blurRadius: 20,
                         offset: const Offset(0, 8),
-                        spreadRadius: 0,
                       ),
                     ],
                   ),

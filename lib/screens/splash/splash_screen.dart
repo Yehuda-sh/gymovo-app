@@ -2,6 +2,7 @@
 // --------------------------------------------------
 // מסך פתיחה (Splash) משופר
 // --------------------------------------------------
+
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -37,7 +38,7 @@ class _SplashScreenState extends State<SplashScreen>
   void initState() {
     super.initState();
 
-    // Hide status bar for immersive experience
+    // הסתרת סרגל סטטוס למצב מלא
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
 
     _initAnimations();
@@ -46,84 +47,61 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   void _initAnimations() {
-    // Logo animations
     _logoController = AnimationController(
       duration: const Duration(milliseconds: 1200),
       vsync: this,
     );
 
-    _logoScale = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _logoController,
-      curve: Curves.elasticOut,
-    ));
+    _logoScale = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _logoController, curve: Curves.elasticOut),
+    );
 
-    _logoRotation = Tween<double>(
-      begin: -0.1,
-      end: 0.0,
-    ).animate(CurvedAnimation(
-      parent: _logoController,
-      curve: Curves.easeOutBack,
-    ));
+    _logoRotation = Tween<double>(begin: -0.1, end: 0.0).animate(
+      CurvedAnimation(parent: _logoController, curve: Curves.easeOutBack),
+    );
 
-    // Text animations
     _textController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
 
-    _textOpacity = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _textController,
-      curve: Curves.easeIn,
-    ));
+    _textOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _textController, curve: Curves.easeIn),
+    );
 
-    _textSlide = Tween<Offset>(
-      begin: const Offset(0, 0.3),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _textController,
-      curve: Curves.easeOutCubic,
-    ));
+    _textSlide =
+        Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero).animate(
+      CurvedAnimation(parent: _textController, curve: Curves.easeOutCubic),
+    );
 
-    // Progress animations
     _progressController = AnimationController(
       duration: const Duration(milliseconds: 600),
       vsync: this,
     );
 
-    _progressOpacity = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _progressController,
-      curve: Curves.easeIn,
-    ));
+    _progressOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _progressController, curve: Curves.easeIn),
+    );
   }
 
-  void _startAnimations() async {
+  Future<void> _startAnimations() async {
     await Future.delayed(const Duration(milliseconds: 300));
-    if (mounted) {
-      _logoController.forward();
-      await Future.delayed(const Duration(milliseconds: 600));
-      if (mounted) {
-        _textController.forward();
-        await Future.delayed(const Duration(milliseconds: 400));
-        if (mounted) {
-          _progressController.forward();
-        }
-      }
-    }
+    if (!mounted) return;
+
+    _logoController.forward();
+    await Future.delayed(const Duration(milliseconds: 600));
+    if (!mounted) return;
+
+    _textController.forward();
+    await Future.delayed(const Duration(milliseconds: 400));
+    if (!mounted) return;
+
+    _progressController.forward();
   }
 
   Future<void> _loadSettings() async {
-    // Load any app settings/preferences
-    await Future.delayed(
-        const Duration(milliseconds: 100)); // Simulated loading
+    // טען הגדרות במידת הצורך (כאן סימולציה בלבד)
+    await Future.delayed(const Duration(milliseconds: 100));
   }
 
   Future<UserModel?> _loadUser() async {
@@ -131,16 +109,14 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _loadTheme() async {
-    // Pre-warm theme if needed
+    // טעינת נושא מראש אם יש צורך
     AppTheme.darkTheme;
   }
 
   Future<void> _initializeApp() async {
     try {
-      // Single initial state update
       setState(() => _loadingMessage = 'טוען נתונים...');
 
-      // Parallel loading of all required data
       await Future.wait([
         _loadSettings(),
         _loadUser(),
@@ -149,33 +125,27 @@ class _SplashScreenState extends State<SplashScreen>
 
       if (!mounted) return;
 
-      // Single final state update
       setState(() {
         _loadingMessage = 'הכל מוכן!';
         _isLoading = false;
       });
 
-      // Minimal delay for UX only (smooth transition)
       await Future.delayed(const Duration(milliseconds: 300));
 
       if (!mounted) return;
 
-      // Restore status bar
+      // החזרת סרגל סטטוס
       SystemChrome.setEnabledSystemUIMode(
         SystemUiMode.manual,
         overlays: SystemUiOverlay.values,
       );
 
-      // Navigate with optimized transition
+      // מעבר למסך האימות (AuthWrapper) עם אנימציית דהייה
       Navigator.of(context).pushReplacement(
         PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              const AuthWrapper(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return FadeTransition(
-              opacity: animation,
-              child: child,
-            );
+          pageBuilder: (_, __, ___) => const AuthWrapper(),
+          transitionsBuilder: (_, animation, __, child) {
+            return FadeTransition(opacity: animation, child: child);
           },
           transitionDuration: const Duration(milliseconds: 300),
         ),
@@ -183,35 +153,28 @@ class _SplashScreenState extends State<SplashScreen>
     } catch (e) {
       if (!mounted) return;
 
-      // Single error state update
       setState(() {
         _isLoading = false;
         _loadingMessage = 'שגיאה בטעינה';
       });
 
-      // Show error dialog
+      // הצגת דיאלוג שגיאה עם אפשרות לנסות שוב
       showDialog(
         context: context,
         barrierDismissible: false,
         builder: (context) => AlertDialog(
-          title: Text(
-            'שגיאה',
-            style: GoogleFonts.assistant(fontWeight: FontWeight.bold),
-          ),
-          content: Text(
-            'אירעה שגיאה בטעינת האפליקציה. אנא נסה שוב.',
-            style: GoogleFonts.assistant(),
-          ),
+          title: Text('שגיאה',
+              style: GoogleFonts.assistant(fontWeight: FontWeight.bold)),
+          content: Text('אירעה שגיאה בטעינת האפליקציה. אנא נסה שוב.',
+              style: GoogleFonts.assistant()),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                _initializeApp(); // Retry
+                _initializeApp(); // נסיון מחודש
               },
-              child: Text(
-                'נסה שוב',
-                style: GoogleFonts.assistant(fontWeight: FontWeight.bold),
-              ),
+              child: Text('נסה שוב',
+                  style: GoogleFonts.assistant(fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -221,7 +184,6 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   void dispose() {
-    // Proper cleanup of all controllers
     _logoController.dispose();
     _textController.dispose();
     _progressController.dispose();
@@ -230,8 +192,6 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-
     return Scaffold(
       body: Container(
         width: double.infinity,
@@ -240,18 +200,13 @@ class _SplashScreenState extends State<SplashScreen>
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF1a1a2e),
-              Color(0xFF16213e),
-              Color(0xFF0f3460),
-            ],
+            colors: [Color(0xFF1a1a2e), Color(0xFF16213e), Color(0xFF0f3460)],
           ),
         ),
         child: SafeArea(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Logo
               AnimatedBuilder(
                 animation: _logoController,
                 builder: (context, child) {
@@ -265,10 +220,7 @@ class _SplashScreenState extends State<SplashScreen>
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(32),
                           gradient: const LinearGradient(
-                            colors: [
-                              Color(0xFF667eea),
-                              Color(0xFF764ba2),
-                            ],
+                            colors: [Color(0xFF667eea), Color(0xFF764ba2)],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
@@ -291,9 +243,7 @@ class _SplashScreenState extends State<SplashScreen>
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(32),
                             border: Border.all(
-                              color: Colors.white.withOpacity(0.2),
-                              width: 1,
-                            ),
+                                color: Colors.white.withOpacity(0.2), width: 1),
                           ),
                           child: Padding(
                             padding: const EdgeInsets.all(24),
@@ -303,9 +253,8 @@ class _SplashScreenState extends State<SplashScreen>
                                 color: Colors.white.withOpacity(0.2),
                                 borderRadius: BorderRadius.circular(24),
                                 border: Border.all(
-                                  color: Colors.white.withOpacity(0.3),
-                                  width: 1,
-                                ),
+                                    color: Colors.white.withOpacity(0.3),
+                                    width: 1),
                               ),
                               child: Image.asset(
                                 'assets/images/gymovo_logo.png',
@@ -326,10 +275,7 @@ class _SplashScreenState extends State<SplashScreen>
                   );
                 },
               ),
-
               const SizedBox(height: 40),
-
-              // Text content
               AnimatedBuilder(
                 animation: _textController,
                 builder: (context, child) {
@@ -338,8 +284,8 @@ class _SplashScreenState extends State<SplashScreen>
                     child: SlideTransition(
                       position: _textSlide,
                       child: Column(
-                        children: [
-                          const Text(
+                        children: const [
+                          Text(
                             'Gymovo',
                             style: TextStyle(
                               fontSize: 48,
@@ -355,8 +301,8 @@ class _SplashScreenState extends State<SplashScreen>
                               ],
                             ),
                           ),
-                          const SizedBox(height: 12),
-                          const Text(
+                          SizedBox(height: 12),
+                          Text(
                             'המקום שלך לכושר מושלם 💪',
                             style: TextStyle(
                               fontSize: 20,
@@ -371,10 +317,7 @@ class _SplashScreenState extends State<SplashScreen>
                   );
                 },
               ),
-
               const SizedBox(height: 60),
-
-              // Loading indicator
               AnimatedBuilder(
                 animation: _progressController,
                 builder: (context, child) {
@@ -389,18 +332,15 @@ class _SplashScreenState extends State<SplashScreen>
                               color: Colors.white.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
-                                color: Colors.white.withOpacity(0.2),
-                                width: 1,
-                              ),
+                                  color: Colors.white.withOpacity(0.2),
+                                  width: 1),
                             ),
-                            child: SizedBox(
+                            child: const SizedBox(
                               width: 40,
                               height: 40,
                               child: CircularProgressIndicator(
                                 color: Colors.white,
                                 strokeWidth: 3,
-                                valueColor: const AlwaysStoppedAnimation<Color>(
-                                    Colors.white),
                               ),
                             ),
                           ),
@@ -409,7 +349,7 @@ class _SplashScreenState extends State<SplashScreen>
                             _loadingMessage,
                             style: GoogleFonts.assistant(
                               fontSize: 16,
-                              color: Colors.white.withOpacity(0.8),
+                              color: Colors.white70,
                               fontWeight: FontWeight.w500,
                               letterSpacing: 0.3,
                             ),
@@ -420,10 +360,7 @@ class _SplashScreenState extends State<SplashScreen>
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(20),
                               gradient: const LinearGradient(
-                                colors: [
-                                  Color(0xFF43e97b),
-                                  Color(0xFF38f9d7),
-                                ],
+                                colors: [Color(0xFF43e97b), Color(0xFF38f9d7)],
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
                               ),
@@ -459,8 +396,6 @@ class _SplashScreenState extends State<SplashScreen>
                   );
                 },
               ),
-
-              // Version info
               const Spacer(),
               FadeTransition(
                 opacity: _textOpacity,
@@ -471,9 +406,7 @@ class _SplashScreenState extends State<SplashScreen>
                     color: Colors.white.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: Colors.white.withOpacity(0.2),
-                      width: 1,
-                    ),
+                        color: Colors.white.withOpacity(0.2), width: 1),
                   ),
                   child: Text(
                     'גרסה 1.0.0',

@@ -26,6 +26,7 @@ class LoginScreen extends StatelessWidget {
         ),
         child: SafeArea(
           child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
             child: Padding(
               padding: const EdgeInsets.all(24),
               child: Column(

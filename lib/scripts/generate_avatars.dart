@@ -3,90 +3,87 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 
+/// הפעל ע"י `dart run lib/scripts/generate_avatars.dart`
+/// חובה להריץ מתוך flutter project אמיתי (ולא רק Dart CLI)
 Future<void> main() async {
-  // Ensure Flutter is initialized
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Create avatars directory if it doesn't exist
-  final appDir = await getApplicationDocumentsDirectory();
+  // קבע את נתיב התיקייה
+  final Directory appDir = await getApplicationDocumentsDirectory();
   final avatarsDir = Directory('${appDir.path}/../assets/avatars');
   if (!await avatarsDir.exists()) {
     await avatarsDir.create(recursive: true);
+    print('יצרתי תיקייה: ${avatarsDir.path}');
   }
 
-  // Generate male avatars
-  for (int i = 1; i <= 5; i++) {
-    await _generateAvatar(
-      'male_$i.png',
-      Colors.blue[700]!,
-      Icons.person,
-    );
+  // תצורה לכל מגדר
+  final avatarConfigs = [
+    {'gender': 'male', 'color': Colors.blue[700]!, 'count': 5},
+    {'gender': 'female', 'color': Colors.pink[600]!, 'count': 5},
+    {'gender': 'other', 'color': Colors.grey[700]!, 'count': 2},
+    {'gender': 'neutral', 'color': Colors.teal[400]!, 'count': 1},
+  ];
+
+  for (final config in avatarConfigs) {
+    final gender = config['gender'] as String;
+    final color = config['color'] as Color;
+    final count = config['count'] as int;
+
+    for (int i = 1; i <= count; i++) {
+      final isNeutral = gender == 'neutral';
+      final filename = isNeutral ? 'default_avatar.png' : '${gender}_$i.png';
+
+      await _generateAvatar(
+        filePath: '${avatarsDir.path}/$filename',
+        color: color,
+        label: isNeutral ? '🙂' : gender[0].toUpperCase(),
+      );
+      print('Created: $filename');
+    }
   }
 
-  // Generate female avatars
-  for (int i = 1; i <= 5; i++) {
-    await _generateAvatar(
-      'female_$i.png',
-      Colors.pink[700]!,
-      Icons.person,
-    );
-  }
-
-  print('Avatar images generated successfully!');
+  print('--- Avatar images generated successfully! ---');
 }
 
-Future<void> _generateAvatar(
-  String filename,
-  Color color,
-  IconData icon,
-) async {
+/// פונקציה ליצירת PNG צבעוני עגול, עם אייקון/אות מגדרית במרכז
+Future<void> _generateAvatar({
+  required String filePath,
+  required Color color,
+  String label = 'U',
+}) async {
+  const double size = 200;
   final recorder = ui.PictureRecorder();
   final canvas = Canvas(recorder);
-  final size = const Size(200, 200);
+
+  // רקע עגול
   final paint = Paint()..color = color;
+  canvas.drawCircle(Offset(size / 2, size / 2), size / 2, paint);
 
-  // Draw circle background
-  canvas.drawCircle(
-    Offset(size.width / 2, size.height / 2),
-    size.width / 2,
-    paint,
-  );
-
-  // Draw icon
-  final iconPaint = Paint()..color = Colors.white;
-  final iconSize = size.width * 0.6;
-  final iconStyle = TextStyle(
+  // טקסט מרכזי (אות מגדר או אייקון)
+  final textStyle = TextStyle(
     color: Colors.white,
-    fontSize: iconSize,
+    fontSize: 80,
+    fontWeight: FontWeight.bold,
+    fontFamily: 'Arial',
+    letterSpacing: 2,
   );
-  final iconSpan = TextSpan(
-    text: String.fromCharCode(icon.codePoint),
-    style: iconStyle,
-  );
-  final iconPainter = TextPainter(
-    text: iconSpan,
+  final textSpan = TextSpan(text: label, style: textStyle);
+  final textPainter = TextPainter(
+    text: textSpan,
     textDirection: TextDirection.ltr,
   );
-  iconPainter.layout();
-  iconPainter.paint(
+  textPainter.layout();
+  textPainter.paint(
     canvas,
-    Offset(
-      (size.width - iconPainter.width) / 2,
-      (size.height - iconPainter.height) / 2,
-    ),
+    Offset((size - textPainter.width) / 2, (size - textPainter.height) / 2),
   );
 
-  // Convert to image
+  // המרה ל־PNG
   final picture = recorder.endRecording();
-  final img = await picture.toImage(
-    size.width.toInt(),
-    size.height.toInt(),
-  );
+  final img = await picture.toImage(size.toInt(), size.toInt());
   final byteData = await img.toByteData(format: ui.ImageByteFormat.png);
   final buffer = byteData!.buffer.asUint8List();
 
-  // Save to file
-  final file = File(
-      '${(await getApplicationDocumentsDirectory()).path}/../assets/avatars/$filename');
-  await file.writeAsBytes(buffer);
+  // כתיבה לקובץ
+  await File(filePath).writeAsBytes(buffer);
 }

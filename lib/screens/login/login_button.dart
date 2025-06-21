@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class LoginButton extends StatelessWidget {
-  final VoidCallback? onPressed; // שים לב ל־?
+  final VoidCallback? onPressed;
   final bool isLoading;
   final String label;
 
@@ -38,6 +38,7 @@ class LoginButton extends StatelessWidget {
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
                   valueColor: AlwaysStoppedAnimation<Color>(colors.onPrimary),
+                  semanticsLabel: 'טוען...',
                 ),
               )
             : Text(

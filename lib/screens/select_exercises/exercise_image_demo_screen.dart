@@ -1,6 +1,8 @@
+// lib/screens/select_exercises/exercise_image_demo_screen.dart
 import 'package:flutter/material.dart';
 import '../../services/exercise_image_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import '../../config/api_keys.dart';
 
 class ExerciseImageDemoScreen extends StatefulWidget {
   const ExerciseImageDemoScreen({super.key});
@@ -24,20 +26,33 @@ class _ExerciseImageDemoScreenState extends State<ExerciseImageDemoScreen> {
   }
 
   Future<void> _loadAllImages() async {
+    if (_searchQuery.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('אנא הזן מונח חיפוש')),
+      );
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     try {
       // טען תמונות מכל המקורות במקביל
       final futures = await Future.wait([
         ExerciseImageService.getWgerExerciseImages(_searchQuery),
-        ExerciseImageService.getPexelsExerciseImages(_searchQuery),
-        ExerciseImageService.getUnsplashExerciseImages(_searchQuery),
+        if (ApiKeys.pexelsApiKey != 'YOUR_PEXELS_API_KEY')
+          ExerciseImageService.getPexelsExerciseImages(_searchQuery)
+        else
+          Future.value([]),
+        if (ApiKeys.unsplashApiKey != 'YOUR_UNSPLASH_API_KEY')
+          ExerciseImageService.getUnsplashExerciseImages(_searchQuery)
+        else
+          Future.value([]),
       ]);
 
       setState(() {
-        _wgerImages = futures[0];
-        _pexelsImages = futures[1];
-        _unsplashImages = futures[2];
+        _wgerImages = futures[0] as List<String>;
+        _pexelsImages = futures.length > 1 ? futures[1] as List<String> : [];
+        _unsplashImages = futures.length > 2 ? futures[2] as List<String> : [];
         _isLoading = false;
       });
     } catch (e) {
@@ -75,7 +90,8 @@ class _ExerciseImageDemoScreenState extends State<ExerciseImageDemoScreen> {
                       hintText: 'חפש תרגיל...',
                       border: OutlineInputBorder(),
                     ),
-                    onChanged: (value) => _searchQuery = value,
+                    onChanged: (value) => setState(() => _searchQuery = value),
+                    onSubmitted: (_) => _loadAllImages(),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -134,7 +150,7 @@ class _ExerciseImageDemoScreenState extends State<ExerciseImageDemoScreen> {
                   // תמונות מומלצות
                   _buildSection(
                     'תמונות מומלצות',
-                    ExerciseImageService.getRecommendedImages('strength'),
+                    [], // או רשימת תמונות סטטית/ריקה
                   ),
                 ],
               ),
@@ -168,7 +184,7 @@ class _ExerciseImageDemoScreenState extends State<ExerciseImageDemoScreen> {
                     ),
                   ),
                 ),
-                if (showApiStatus) _buildApiStatus(apiName!),
+                if (showApiStatus && apiName != null) _buildApiStatus(apiName),
               ],
             ),
           ),
@@ -208,10 +224,10 @@ class _ExerciseImageDemoScreenState extends State<ExerciseImageDemoScreen> {
         isConfigured = true; // WGER לא דורש API key
         break;
       case 'Pexels':
-        isConfigured = false; // צריך להוסיף API key
+        isConfigured = ApiKeys.pexelsApiKey != 'YOUR_PEXELS_API_KEY';
         break;
       case 'Unsplash':
-        isConfigured = false; // צריך להוסיף API key
+        isConfigured = ApiKeys.unsplashApiKey != 'YOUR_UNSPLASH_API_KEY';
         break;
     }
 

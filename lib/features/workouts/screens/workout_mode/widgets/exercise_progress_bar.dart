@@ -16,17 +16,30 @@ class ExerciseProgressBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = AppTheme.colors;
+    final progress = total == 0 ? 0.0 : (completed / total).clamp(0.0, 1.0);
+    final isComplete = completed == total && total != 0;
+
+    // צבע אינדיקציה: ירוק אם סיים, אחרת צבע ראשי או כתום אם קרוב לסיום
+    final progressColor = isComplete
+        ? Colors.green
+        : (progress > 0.7 ? Colors.orange : colors.primary);
+
+    // טקסט אינדיקציה לצד המספרים
+    final progressPercent = (progress * 100).toInt();
+
     return Row(
       children: [
         Expanded(
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: LinearProgressIndicator(
-              value: total == 0 ? 0 : completed / total,
-              backgroundColor: Colors.white10,
-              valueColor: AlwaysStoppedAnimation<Color>(
-                  completed == total ? Colors.green : colors.primary),
-              minHeight: 6,
+          child: Tooltip(
+            message: '$progressPercent% הושלם',
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: LinearProgressIndicator(
+                value: progress,
+                backgroundColor: Colors.white10,
+                valueColor: AlwaysStoppedAnimation<Color>(progressColor),
+                minHeight: 6,
+              ),
             ),
           ),
         ),
@@ -34,8 +47,10 @@ class ExerciseProgressBar extends StatelessWidget {
         Text(
           '$completed/$total',
           style: GoogleFonts.assistant(
-              color: completed == total ? Colors.green : colors.primary,
-              fontWeight: FontWeight.bold),
+            color: progressColor,
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+          ),
         ),
       ],
     );

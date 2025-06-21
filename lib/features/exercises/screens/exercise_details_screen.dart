@@ -1,9 +1,11 @@
+// lib/features/exercises/screens/exercise_details_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../models/exercise.dart';
-import '../../../models/exercise_history.dart';
+import '../../../models/unified_models.dart';
 import '../../../providers/exercise_history_provider.dart';
 import '../../../theme/app_theme.dart';
 import '../widgets/exercise_media_section.dart';
@@ -34,13 +36,11 @@ class _ExerciseDetailsScreenState extends State<ExerciseDetailsScreen>
   late Animation<double> _scaleAnimation;
   late Animation<double> _fabAnimation;
 
-  String? _undoSetId;
   ExerciseSet? _lastDeletedSet;
   bool _isLoading = true;
   bool _hasError = false;
   String? _errorMessage;
 
-  // קבועים פרטיים
   static const Duration _animationDuration = Duration(milliseconds: 300);
   static const Duration _staggerDelay = Duration(milliseconds: 100);
   static const double _cardBorderRadius = 16.0;
@@ -57,43 +57,26 @@ class _ExerciseDetailsScreenState extends State<ExerciseDetailsScreen>
     _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(_handleTabChange);
 
-    _fadeAnimationController = AnimationController(
-      duration: _animationDuration,
-      vsync: this,
-    );
-
-    _scaleAnimationController = AnimationController(
-      duration: _animationDuration,
-      vsync: this,
-    );
-
-    _fabAnimationController = AnimationController(
-      duration: _animationDuration,
-      vsync: this,
-    );
+    _fadeAnimationController =
+        AnimationController(duration: _animationDuration, vsync: this);
+    _scaleAnimationController =
+        AnimationController(duration: _animationDuration, vsync: this);
+    _fabAnimationController =
+        AnimationController(duration: _animationDuration, vsync: this);
   }
 
   void _setupAnimations() {
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
+    _fadeAnimation =
+        Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
       parent: _fadeAnimationController,
       curve: Curves.easeInOut,
     ));
-
-    _scaleAnimation = Tween<double>(
-      begin: 0.8,
-      end: 1.0,
-    ).animate(CurvedAnimation(
+    _scaleAnimation =
+        Tween<double>(begin: 0.8, end: 1.0).animate(CurvedAnimation(
       parent: _scaleAnimationController,
       curve: Curves.elasticOut,
     ));
-
-    _fabAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
+    _fabAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
       parent: _fabAnimationController,
       curve: Curves.easeOutCubic,
     ));
@@ -161,7 +144,12 @@ class _ExerciseDetailsScreenState extends State<ExerciseDetailsScreen>
       }
 
       final provider = context.read<ExerciseHistoryProvider>();
-      if (set.id == _lastDeletedSet?.id) {
+      final exists = provider
+              .getExerciseHistory(widget.exercise.id)
+              ?.sets
+              .any((s) => s.id == set.id) ??
+          false;
+      if (exists) {
         await provider.updateSet(widget.exercise.id, set);
       } else {
         await provider.addSet(widget.exercise.id, set);
@@ -195,18 +183,14 @@ class _ExerciseDetailsScreenState extends State<ExerciseDetailsScreen>
           HapticFeedback.mediumImpact();
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(
-                'הסט נמחק',
-                style: GoogleFonts.assistant(),
-              ),
+              content: Text('הסט נמחק', style: GoogleFonts.assistant()),
               action: SnackBarAction(
                 label: 'בטל',
                 onPressed: _undoDeleteSet,
               ),
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
+                  borderRadius: BorderRadius.circular(10)),
               duration: const Duration(seconds: 5),
             ),
           );
@@ -269,9 +253,7 @@ class _ExerciseDetailsScreenState extends State<ExerciseDetailsScreen>
         child: ExerciseSetForm(
           exerciseId: widget.exercise.id,
           existingSet: set,
-          onSave: (updatedSet) {
-            Navigator.pop(context, updatedSet);
-          },
+          onSave: (updatedSet) => Navigator.pop(context, updatedSet),
         ),
       ),
     );
@@ -309,9 +291,7 @@ class _ExerciseDetailsScreenState extends State<ExerciseDetailsScreen>
         ),
         child: ExerciseSetForm(
           exerciseId: widget.exercise.id,
-          onSave: (set) {
-            Navigator.pop(context, set);
-          },
+          onSave: (set) => Navigator.pop(context, set),
         ),
       ),
     );
@@ -345,39 +325,6 @@ class _ExerciseDetailsScreenState extends State<ExerciseDetailsScreen>
           textColor: Colors.white,
           onPressed: _loadData,
         ),
-      ),
-    );
-  }
-
-  Widget _buildInfoChip(String label, {Color? color, IconData? icon}) {
-    final colors = AppTheme.colors;
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: (color ?? colors.primary).withOpacity(0.1),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: (color ?? colors.primary).withOpacity(0.3),
-          width: 1,
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (icon != null) ...[
-            Icon(icon, size: 16, color: color ?? colors.primary),
-            const SizedBox(width: 6),
-          ],
-          Text(
-            label,
-            style: GoogleFonts.assistant(
-              color: color ?? colors.primary,
-              fontWeight: FontWeight.w600,
-              fontSize: 13,
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -594,7 +541,7 @@ class _ExerciseDetailsScreenState extends State<ExerciseDetailsScreen>
           children: [
             ExerciseMediaSection(exercise: widget.exercise),
             const SizedBox(height: 20),
-            if (widget.exercise.mainMuscles?.isNotEmpty ?? false) ...[
+            if (widget.exercise.primaryMuscles.isNotEmpty) ...[
               _buildSectionCard(
                 title: 'שרירים מעורבים',
                 icon: Icons.fitness_center,
@@ -602,9 +549,9 @@ class _ExerciseDetailsScreenState extends State<ExerciseDetailsScreen>
                 child: Wrap(
                   spacing: 8,
                   runSpacing: 8,
-                  children: widget.exercise.mainMuscles!
+                  children: widget.exercise.primaryMuscles
                       .map((muscle) => _buildInfoChip(
-                            muscle,
+                            muscle.hebrewName,
                             icon: Icons.fitness_center,
                             color: AppTheme.colors.secondary,
                           ))
@@ -644,19 +591,6 @@ class _ExerciseDetailsScreenState extends State<ExerciseDetailsScreen>
                 ),
               ),
               const SizedBox(height: 16),
-            ],
-            if (widget.exercise.tips?.isNotEmpty ?? false) ...[
-              _buildSectionCard(
-                title: 'טיפים חשובים',
-                icon: Icons.lightbulb_outline,
-                color: Colors.amber,
-                backgroundColor: Colors.amber.withOpacity(0.1),
-                child: Column(
-                  children: widget.exercise.tips!
-                      .map((tip) => _buildTipItem(tip))
-                      .toList(),
-                ),
-              ),
             ],
           ],
         ),
@@ -746,33 +680,6 @@ class _ExerciseDetailsScreenState extends State<ExerciseDetailsScreen>
               instruction,
               style: GoogleFonts.assistant(
                 fontSize: 15,
-                color: AppTheme.colors.text,
-                height: 1.5,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTipItem(String tip) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(
-            Icons.check_circle,
-            size: 18,
-            color: Colors.amber[700],
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              tip,
-              style: GoogleFonts.assistant(
-                fontSize: 14,
                 color: AppTheme.colors.text,
                 height: 1.5,
               ),
@@ -897,7 +804,7 @@ class _ExerciseDetailsScreenState extends State<ExerciseDetailsScreen>
   Widget _buildSetsTab(List<ExerciseSet> sets) {
     return ExerciseSetList(
       sets: sets,
-      onEdit: _handleSetEdit,
+      onEdit: (set) => _handleSetSave(set),
       onDelete: _handleSetDelete,
       showDate: true,
     );
@@ -961,6 +868,43 @@ class _ExerciseDetailsScreenState extends State<ExerciseDetailsScreen>
           Colors.indigo,
         ),
       ],
+    );
+  }
+
+  Widget _buildInfoChip(
+    String label, {
+    Color? color,
+    IconData? icon,
+  }) {
+    final colors = AppTheme.colors;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: (color ?? colors.primary).withOpacity(0.08),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: (color ?? colors.primary).withOpacity(0.2),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[
+            Icon(icon, size: 15, color: color ?? colors.primary),
+            const SizedBox(width: 5),
+          ],
+          Text(
+            label,
+            style: GoogleFonts.assistant(
+              color: color ?? colors.primary,
+              fontWeight: FontWeight.w600,
+              fontSize: 13,
+            ),
+          ),
+        ],
+      ),
     );
   }
 

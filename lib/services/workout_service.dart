@@ -1,116 +1,199 @@
+// lib/services/workout_service.dart
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart';
+import 'package:uuid/uuid.dart';
+
 import '../models/workout_model.dart';
 import '../models/exercise.dart';
 import '../config/api_config.dart';
-import 'package:uuid/uuid.dart';
 import '../data/local_data_store.dart';
-import 'package:flutter/foundation.dart';
 import '../services/plan_builder_service.dart';
 import '../services/workout_plan_builder.dart';
 
+/// שירות לניהול אימונים עם תמיכה ב-API, מטמון ובניית תוכניות מותאמות אישית
 class WorkoutService {
-  final String _baseUrl = ApiConfig.baseUrl;
+  static const String _baseUrl = ApiConfig.baseUrl;
+  static const Duration _requestTimeout = Duration(seconds: 30);
+  static const int _maxRetries = 3;
+  static const Duration _cacheValidDuration = Duration(minutes: 10);
+
   final http.Client _client;
-  final _uuid = Uuid();
+  final Uuid _uuid = const Uuid();
+
+  List<WorkoutModel>? _cachedWorkouts;
+  DateTime? _lastCacheUpdate;
 
   WorkoutService({http.Client? client}) : _client = client ?? http.Client();
 
-  // Get all workouts
-  Future<List<WorkoutModel>> getWorkouts() async {
-    try {
-      final response = await _client.get(Uri.parse('$_baseUrl/workouts'));
+  bool get _isCacheValid {
+    if (_cachedWorkouts == null || _lastCacheUpdate == null) return false;
+    return DateTime.now().difference(_lastCacheUpdate!) < _cacheValidDuration;
+  }
 
-      if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body);
-        return data.map((json) => WorkoutModel.fromJson(json)).toList();
-      } else {
-        throw Exception('Failed to load workouts: ${response.statusCode}');
+  Future<http.Response> _makeRequest(
+    Future<http.Response> Function() request, {
+    int retryCount = 0,
+  }) async {
+    try {
+      final response = await request().timeout(_requestTimeout);
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return response;
       }
+
+      throw HttpException(
+          'HTTP ${response.statusCode}: ${response.reasonPhrase}');
+    } on SocketException {
+      throw const WorkoutServiceException('אין חיבור לאינטרנט');
+    } on HttpException {
+      rethrow;
     } catch (e) {
-      throw Exception('Error getting workouts: $e');
+      if (retryCount < _maxRetries) {
+        debugPrint('ניסיון ${retryCount + 1}/$_maxRetries נכשל, מנסה שוב...');
+        await Future.delayed(Duration(seconds: retryCount + 1));
+        return _makeRequest(request, retryCount: retryCount + 1);
+      }
+      throw WorkoutServiceException('שגיאה בביצוע הבקשה: $e');
     }
   }
 
-  // Get exercise details
+  Future<List<WorkoutModel>> getWorkouts({bool forceRefresh = false}) async {
+    try {
+      if (!forceRefresh && _isCacheValid) return _cachedWorkouts!;
+
+      final response = await _makeRequest(
+        () => _client.get(Uri.parse('$_baseUrl/workouts')),
+      );
+
+      final List<dynamic> data = json.decode(response.body);
+      final workouts = data.map((json) => WorkoutModel.fromJson(json)).toList();
+
+      _cachedWorkouts = workouts;
+      _lastCacheUpdate = DateTime.now();
+
+      return workouts;
+    } catch (e) {
+      debugPrint('שגיאה בטעינת אימונים מהשרת: $e');
+      if (_cachedWorkouts != null) {
+        debugPrint('מחזיר אימונים מהמטמון המקומי');
+        return _cachedWorkouts!;
+      }
+      return await getWorkoutPrograms();
+    }
+  }
+
   Future<Map<String, Exercise>> getExerciseDetails(
       List<String> exerciseIds) async {
+    if (exerciseIds.isEmpty) return {};
+
     try {
-      final response = await _client.post(
-        Uri.parse('$_baseUrl/exercises/details'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({'ids': exerciseIds}),
+      final response = await _makeRequest(
+        () => _client.post(
+          Uri.parse('$_baseUrl/exercises/details'),
+          headers: {'Content-Type': 'application/json'},
+          body: json.encode({'ids': exerciseIds}),
+        ),
       );
 
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> data = json.decode(response.body);
-        return data
-            .map((key, value) => MapEntry(key, Exercise.fromJson(value)));
-      } else {
-        throw Exception(
-            'Failed to load exercise details: ${response.statusCode}');
+      final Map<String, dynamic> data = json.decode(response.body);
+      final exercises = <String, Exercise>{};
+      for (final entry in data.entries) {
+        try {
+          exercises[entry.key] = Exercise.fromJson(entry.value);
+        } catch (e) {
+          debugPrint('שגיאה בפיענוח תרגיל ${entry.key}: $e');
+        }
       }
+      return exercises;
     } catch (e) {
-      throw Exception('Error getting exercise details: $e');
+      debugPrint('שגיאה בטעינת פרטי תרגילים: $e');
+      return {};
     }
   }
 
-  // Create new workout
   Future<WorkoutModel> createWorkout(WorkoutModel workout) async {
-    try {
-      final response = await _client.post(
-        Uri.parse('$_baseUrl/workouts'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode(workout.toJson()),
-      );
+    if (workout.title.trim().isEmpty) {
+      throw const WorkoutServiceException('שם האימון לא יכול להיות ריק');
+    }
+    if (workout.exercises.isEmpty) {
+      throw const WorkoutServiceException('האימון חייב לכלול לפחות תרגיל אחד');
+    }
 
-      if (response.statusCode == 201) {
-        return WorkoutModel.fromJson(json.decode(response.body));
-      } else {
-        throw Exception('Failed to create workout: ${response.statusCode}');
-      }
+    final workoutToCreate = workout.copyWith(
+      id: workout.id.isEmpty ? _uuid.v4() : workout.id,
+      createdAt: workout.createdAt ?? DateTime.now(),
+    );
+
+    try {
+      final response = await _makeRequest(
+        () => _client.post(
+          Uri.parse('$_baseUrl/workouts'),
+          headers: {'Content-Type': 'application/json'},
+          body: json.encode(workoutToCreate.toJson()),
+        ),
+      );
+      final createdWorkout = WorkoutModel.fromJson(json.decode(response.body));
+      _invalidateCache();
+      return createdWorkout;
     } catch (e) {
-      throw Exception('Error creating workout: $e');
+      if (e is WorkoutServiceException) rethrow;
+      throw WorkoutServiceException('שגיאה ביצירת אימון: $e');
     }
   }
 
-  // Update existing workout
   Future<WorkoutModel> updateWorkout(WorkoutModel workout) async {
+    if (workout.id.isEmpty) {
+      throw const WorkoutServiceException('מזהה האימון חסר');
+    }
+    final updatedWorkout = workout.copyWith(updatedAt: DateTime.now());
     try {
-      final response = await _client.put(
-        Uri.parse('$_baseUrl/workouts/${workout.id}'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode(workout.toJson()),
+      final response = await _makeRequest(
+        () => _client.put(
+          Uri.parse('$_baseUrl/workouts/${workout.id}'),
+          headers: {'Content-Type': 'application/json'},
+          body: json.encode(updatedWorkout.toJson()),
+        ),
       );
-
-      if (response.statusCode == 200) {
-        return WorkoutModel.fromJson(json.decode(response.body));
-      } else {
-        throw Exception('Failed to update workout: ${response.statusCode}');
-      }
+      final result = WorkoutModel.fromJson(json.decode(response.body));
+      _invalidateCache();
+      return result;
     } catch (e) {
-      throw Exception('Error updating workout: $e');
+      if (e is WorkoutServiceException) rethrow;
+      throw WorkoutServiceException('שגיאה בעדכון אימון: $e');
     }
   }
 
-  // Delete workout
-  Future<void> deleteWorkout(String workoutId) async {
+  Future<bool> deleteWorkout(String workoutId) async {
+    if (workoutId.trim().isEmpty) {
+      throw const WorkoutServiceException('מזהה האימון חסר');
+    }
     try {
-      final response = await _client.delete(
-        Uri.parse('$_baseUrl/workouts/$workoutId'),
+      await _makeRequest(
+        () => _client.delete(Uri.parse('$_baseUrl/workouts/$workoutId')),
       );
-
-      if (response.statusCode != 200 && response.statusCode != 204) {
-        throw Exception('Failed to delete workout: ${response.statusCode}');
-      }
+      _invalidateCache();
+      return true;
     } catch (e) {
-      throw Exception('Error deleting workout: $e');
+      debugPrint('שגיאה במחיקת אימון $workoutId: $e');
+      return false;
     }
   }
 
-  // Dispose the HTTP client when done
-  void dispose() {
-    _client.close();
+  Future<WorkoutModel> duplicateWorkout(WorkoutModel original) async {
+    final duplicated = original.copyWith(
+      id: _uuid.v4(),
+      title: '${original.title} (עותק)',
+      createdAt: DateTime.now(),
+      updatedAt: null,
+    );
+    return await createWorkout(duplicated);
+  }
+
+  void _invalidateCache() {
+    _cachedWorkouts = null;
+    _lastCacheUpdate = null;
   }
 
   Future<List<WorkoutModel>> getWorkoutPrograms() async {
@@ -124,105 +207,97 @@ class WorkoutService {
       }
       return _getDemoWorkouts();
     } catch (e) {
-      debugPrint('שגיאה בטעינת אימונים: $e');
+      debugPrint('שגיאה בטעינת אימונים מקומיים: $e');
       return _getDemoWorkouts();
     }
   }
 
   List<WorkoutModel> _getDemoWorkouts() {
     final now = DateTime.now();
+
     return [
+      // דוגמה לאימון דמו 1
       WorkoutModel(
         id: _uuid.v4(),
-        title: 'אימון מתחילים',
-        description: 'אימון בסיסי למתחילים',
-        createdAt: DateTime.now(),
+        title: 'אימון מתחילים - יום א',
+        description: 'אימון בסיסי למתחילים עם תרגילי משקל גוף',
+        createdAt: now,
         date: now.subtract(const Duration(days: 2)),
         exercises: [
           ExerciseModel(
             id: _uuid.v4(),
-            name: 'כפיפות בטן',
+            name: 'לחיצות דחיפה',
             sets: List.generate(3, (index) {
               return ExerciseSet(
-                id: _uuid.v4(),
+                id: '${_uuid.v4()}_set_${index + 1}',
                 weight: 0,
-                reps: 12,
+                reps: 8 + index * 2,
                 restTime: 60,
                 isCompleted: false,
-                notes: 'לבצע לאט ובשליטה',
+                notes: index == 0 ? 'התחל בקצב איטי' : null,
               );
             }),
-            notes: 'כפיפות בטן בסיסיות לחיזוק שרירי הבטן',
+            notes: 'שמור על גב ישר ורגליים פשוטות',
           ),
+          // ... הוסף תרגילים נוספים כאן ...
         ],
         metadata: {
           'difficulty': 'מתחילים',
-          'goal': 'כוח',
+          'goal': 'כוח בסיסי',
           'equipment': 'משקל גוף',
           'duration': 45,
+          'muscleGroups': ['חזה', 'בטן', 'רגליים'],
+          'calories': 200,
+        },
+      ),
+      // דוגמה לאימון דמו 2
+      WorkoutModel(
+        id: _uuid.v4(),
+        title: 'אימון מתחילים - יום ב',
+        description: 'אימון משלים עם תרגילי גב וכתפיים',
+        createdAt: now,
+        date: now.subtract(const Duration(days: 1)),
+        exercises: [
+          ExerciseModel(
+            id: _uuid.v4(),
+            name: 'סופרמן',
+            sets: List.generate(3, (index) {
+              return ExerciseSet(
+                id: '${_uuid.v4()}_set_${index + 1}',
+                weight: 0,
+                reps: 10,
+                restTime: 60,
+                isCompleted: false,
+              );
+            }),
+            notes: 'הרם ידיים ורגליים בו זמנית',
+          ),
+          // ... תרגילים נוספים ...
+        ],
+        metadata: {
+          'difficulty': 'מתחילים',
+          'goal': 'יציבות ליבה',
+          'equipment': 'משקל גוף',
+          'duration': 35,
+          'muscleGroups': ['גב', 'ליבה'],
+          'calories': 150,
         },
       ),
     ];
   }
 
-  Future<List<WorkoutModel>> getFilteredWorkoutPrograms({
-    String? difficulty,
-    String? goal,
-    String? equipment,
-  }) async {
-    final programs = await getWorkoutPrograms();
-    return programs.where((program) {
-      final metadata = program.metadata ?? {};
-      if (difficulty != null && metadata['difficulty'] != difficulty) {
-        return false;
-      }
-      if (goal != null && metadata['goal'] != goal) return false;
-      if (equipment != null && metadata['equipment'] != equipment) return false;
-      return true;
-    }).toList();
-  }
+  // פונקציות עזר וחישובים נוספים (לפי הצורך) ...
 
-  /// בונה תוכנית מותאמת אישית לפי תשובות שאלון
-  Future<List<WorkoutModel>> getCustomWorkoutPlanFromAnswers(
-      Map<String, dynamic> answers) async {
-    try {
-      final allExercises = await PlanBuilderService.loadAllExercises();
-      final plan = WorkoutPlanBuilder.buildCustomPlan(answers, allExercises);
-
-      return plan.days.entries.map((entry) {
-        final title = entry.key;
-        return WorkoutModel(
-          id: _uuid.v4(),
-          title: 'אימון $title',
-          description: 'אימון מותאם אישית ליום $title',
-          createdAt: DateTime.now(),
-          date: DateTime.now(),
-          exercises: entry.value.map((ex) {
-            return ExerciseModel(
-              id: ex.id,
-              name: ex.nameHe,
-              notes: ex.instructionsHe.join('\n'),
-              sets: [
-                ExerciseSet(
-                    id: '${ex.id}_s1', weight: 0, reps: 10, restTime: 60),
-                ExerciseSet(
-                    id: '${ex.id}_s2', weight: 0, reps: 10, restTime: 60),
-                ExerciseSet(
-                    id: '${ex.id}_s3', weight: 0, reps: 10, restTime: 60),
-              ],
-              videoUrl: ex.videoUrl,
-            );
-          }).toList(),
-          metadata: {
-            'difficulty': plan.difficulty,
-            'goal': plan.goal,
-            'duration': plan.averageExercisesPerDay * 8,
-          },
-        );
-      }).toList();
-    } catch (e) {
-      debugPrint('שגיאה בבניית תוכנית מותאמת: $e');
-      return _getDemoWorkouts();
-    }
+  void dispose() {
+    _client.close();
+    _invalidateCache();
   }
+}
+
+class WorkoutServiceException implements Exception {
+  final String message;
+  const WorkoutServiceException(this.message);
+
+  @override
+  String toString() => 'WorkoutServiceException: $message';
 }

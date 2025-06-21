@@ -26,13 +26,11 @@ class LoginHeader extends StatelessWidget {
                 color: const Color(0xFF667eea).withOpacity(0.4),
                 blurRadius: 30,
                 offset: const Offset(0, 12),
-                spreadRadius: 0,
               ),
               BoxShadow(
                 color: Colors.black.withOpacity(0.2),
                 blurRadius: 20,
                 offset: const Offset(0, 6),
-                spreadRadius: 0,
               ),
             ],
           ),
@@ -62,7 +60,7 @@ class LoginHeader extends StatelessWidget {
                       'assets/images/gymovo_logo.png',
                       height: 120,
                       fit: BoxFit.contain,
-                      errorBuilder: (context, error, stackTrace) => Icon(
+                      errorBuilder: (context, error, stackTrace) => const Icon(
                         Icons.fitness_center,
                         size: 80,
                         color: Colors.white,

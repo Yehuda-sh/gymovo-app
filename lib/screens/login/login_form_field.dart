@@ -12,7 +12,7 @@ class LoginFormField extends StatelessWidget {
   final VoidCallback onTogglePasswordVisibility;
   final TextInputType keyboardType;
   final String? Function(String?)? validator;
-  final List<String>? autofillHints; // חדש! תמיכה באוטופיל
+  final List<String>? autofillHints;
 
   const LoginFormField({
     super.key,
@@ -25,12 +25,15 @@ class LoginFormField extends StatelessWidget {
     required this.onTogglePasswordVisibility,
     this.keyboardType = TextInputType.text,
     this.validator,
-    this.autofillHints, // חדש! חובה להעביר ב־login_form.dart
+    this.autofillHints,
   });
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final labelColor = colors.onSurface.withOpacity(0.7);
+    final iconColor = colors.onSurface.withOpacity(0.7);
+    final borderRadius = BorderRadius.circular(12);
 
     return TextFormField(
       controller: controller,
@@ -42,12 +45,10 @@ class LoginFormField extends StatelessWidget {
         fontSize: 16,
         color: colors.onSurface,
       ),
-      autofillHints: autofillHints, // השורה שמאפשרת אוטופיל!
+      autofillHints: autofillHints,
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: GoogleFonts.assistant(
-          color: colors.onSurface.withValues(alpha: 0.7),
-        ),
+        labelStyle: GoogleFonts.assistant(color: labelColor),
         errorText: error,
         errorStyle: GoogleFonts.assistant(
           color: colors.error,
@@ -57,42 +58,32 @@ class LoginFormField extends StatelessWidget {
             ? IconButton(
                 icon: Icon(
                   isPasswordVisible ? Icons.visibility_off : Icons.visibility,
-                  color: colors.onSurface.withValues(alpha: 0.7),
+                  color: iconColor,
+                  semanticLabel:
+                      isPasswordVisible ? 'הסתר סיסמה' : 'הראה סיסמה',
                 ),
                 onPressed: onTogglePasswordVisibility,
               )
             : null,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
-            color: colors.onSurface.withValues(alpha: 0.2),
-          ),
+          borderRadius: borderRadius,
+          borderSide: BorderSide(color: colors.onSurface.withOpacity(0.2)),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
-            color: colors.onSurface.withValues(alpha: 0.2),
-          ),
+          borderRadius: borderRadius,
+          borderSide: BorderSide(color: colors.onSurface.withOpacity(0.2)),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
-            color: colors.primary,
-            width: 2,
-          ),
+          borderRadius: borderRadius,
+          borderSide: BorderSide(color: colors.primary, width: 2),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
-            color: colors.error,
-          ),
+          borderRadius: borderRadius,
+          borderSide: BorderSide(color: colors.error),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
-            color: colors.error,
-            width: 2,
-          ),
+          borderRadius: borderRadius,
+          borderSide: BorderSide(color: colors.error, width: 2),
         ),
         filled: true,
         fillColor: colors.surface,

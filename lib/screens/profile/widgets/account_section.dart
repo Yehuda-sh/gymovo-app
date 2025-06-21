@@ -16,19 +16,10 @@ import '../../../theme/app_theme.dart';
 /// - מידע על האפליקציה
 /// - התנתקות מאובטחת
 class AccountSection extends StatelessWidget {
-  /// האם בתהליך התנתקות
   final bool isLoading;
-
-  /// פונקציה לפרטיות ואבטחה
   final VoidCallback onPrivacyTap;
-
-  /// פונקציה לעזרה ותמיכה
   final VoidCallback onHelpTap;
-
-  /// פונקציה למידע על האפליקציה
   final VoidCallback onAboutTap;
-
-  /// פונקציה להתנתקות
   final VoidCallback onLogout;
 
   const AccountSection({
@@ -83,7 +74,7 @@ class AccountSection extends StatelessWidget {
                   style: GoogleFonts.assistant(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: theme.colorScheme.onSurface,
+                    color: colors.onSurface,
                   ),
                 ),
               ],
@@ -95,10 +86,7 @@ class AccountSection extends StatelessWidget {
             title: 'פרטיות ואבטחה',
             subtitle: 'נהל את הפרטיות וההגנה של החשבון',
             icon: Icons.security_outlined,
-            onTap: () {
-              HapticFeedback.lightImpact();
-              onPrivacyTap();
-            },
+            onTap: onPrivacyTap,
             colors: AppTheme.colors,
             theme: theme,
           ),
@@ -110,10 +98,7 @@ class AccountSection extends StatelessWidget {
             title: 'עזרה ותמיכה',
             subtitle: 'קבל עזרה, תמיכה טכנית ומדריכים',
             icon: Icons.help_outline,
-            onTap: () {
-              HapticFeedback.lightImpact();
-              onHelpTap();
-            },
+            onTap: onHelpTap,
             colors: AppTheme.colors,
             theme: theme,
           ),
@@ -125,10 +110,7 @@ class AccountSection extends StatelessWidget {
             title: 'אודות האפליקציה',
             subtitle: 'מידע על הגרסה, פיתוח ורישיונות',
             icon: Icons.info_outline,
-            onTap: () {
-              HapticFeedback.lightImpact();
-              onAboutTap();
-            },
+            onTap: onAboutTap,
             colors: AppTheme.colors,
             theme: theme,
           ),
@@ -140,12 +122,7 @@ class AccountSection extends StatelessWidget {
             title: 'התנתק',
             subtitle: isLoading ? 'מתנתק...' : 'התנתק מהחשבון שלך',
             icon: Icons.logout,
-            onTap: isLoading
-                ? null
-                : () {
-                    HapticFeedback.lightImpact();
-                    onLogout();
-                  },
+            onTap: isLoading ? null : onLogout,
             iconColor: colors.error,
             textColor: colors.error,
             showLoading: isLoading,
@@ -157,7 +134,6 @@ class AccountSection extends StatelessWidget {
     );
   }
 
-  /// בונה פריט חשבון
   Widget _buildAccountTile({
     required String title,
     required String subtitle,
@@ -234,7 +210,6 @@ class AccountSection extends StatelessWidget {
     );
   }
 
-  /// בונה קו מפריד
   Widget _buildDivider(AppColors colors, ThemeData theme) {
     return Divider(
       height: 1,

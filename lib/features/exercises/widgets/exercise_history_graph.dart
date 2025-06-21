@@ -1,6 +1,7 @@
+// lib/features/exercises/widgets/exercise_history_graph.dart
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import '../../../models/exercise_history.dart';
+import '../../../models/unified_models.dart';
 
 class ExerciseHistoryGraph extends StatelessWidget {
   final List<ExerciseSet> sets;
@@ -12,19 +13,22 @@ class ExerciseHistoryGraph extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (sets.length < 2) return const SizedBox.shrink();
+    // סינון סטים עם משקל ותאריך תקינים
+    final filteredSets = sets
+        .where((s) =>
+            s.weight != null &&
+            s.weight! > 0 &&
+            s.date.millisecondsSinceEpoch > 0)
+        .toList();
 
-    // מניעת טעויות: רק סטים עם תאריך ומשקל
-    final filteredSets =
-        sets.where((s) => s.weight != null).toList();
     if (filteredSets.length < 2) return const SizedBox.shrink();
 
+    // הכנת נקודות לגרף
     final spots = filteredSets.map((set) {
       final day = set.date.millisecondsSinceEpoch.toDouble();
-      return FlSpot(day, set.weight.toDouble());
-    }).toList();
-
-    spots.sort((a, b) => a.x.compareTo(b.x));
+      return FlSpot(day, set.weight!);
+    }).toList()
+      ..sort((a, b) => a.x.compareTo(b.x));
 
     final minX = spots.first.x;
     final maxX = spots.last.x;
@@ -47,7 +51,7 @@ class ExerciseHistoryGraph extends StatelessWidget {
                 barWidth: 4,
                 dotData: FlDotData(show: false),
                 belowBarData: BarAreaData(show: false),
-                color: theme.colorScheme.primary, // צבע דינמי!
+                color: theme.colorScheme.primary,
               ),
             ],
             minX: minX,

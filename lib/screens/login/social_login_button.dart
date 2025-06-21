@@ -1,4 +1,4 @@
-// features/auth/widgets/social_login_button.dart;
+// lib/screens/login/social_login_button.dart
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -6,7 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 class SocialLoginButton extends StatelessWidget {
   final IconData icon;
   final String label;
-  final VoidCallback? onPressed; // כאן שינוי קטן!
+  final VoidCallback? onPressed;
   final bool isLoading;
   final Color color;
 
@@ -14,7 +14,7 @@ class SocialLoginButton extends StatelessWidget {
     super.key,
     required this.icon,
     required this.label,
-    required this.onPressed, // עכשיו אפשר גם null
+    this.onPressed, // אפשר להיות null
     this.isLoading = false,
     required this.color,
   });
@@ -24,7 +24,7 @@ class SocialLoginButton extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
 
     return ElevatedButton.icon(
-      onPressed: isLoading ? null : onPressed, // עובד מושלם עם VoidCallback?
+      onPressed: isLoading ? null : onPressed,
       icon: isLoading
           ? SizedBox(
               width: 20,

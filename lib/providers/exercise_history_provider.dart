@@ -1,7 +1,7 @@
 // lib/providers/exercise_history_provider.dart
 
 import 'package:flutter/foundation.dart';
-import '../models/exercise_history.dart';
+import '../models/unified_models.dart'; // 🔧 תיקון: במקום exercise_history.dart
 import '../data/local_data_store.dart';
 
 class ExerciseHistoryProvider with ChangeNotifier {
@@ -17,8 +17,12 @@ class ExerciseHistoryProvider with ChangeNotifier {
 
     try {
       final histories = await LocalDataStore.getExerciseHistories();
+
       _exerciseHistories = Map.fromEntries(
-        histories.map((h) => MapEntry(h.exerciseId, h)),
+        histories
+            .whereType<
+                ExerciseHistory>() // מבטיח שכל אובייקט הוא ExerciseHistory
+            .map((history) => MapEntry(history.exerciseId, history)),
       );
     } catch (e) {
       debugPrint('Error loading exercise histories: $e');
@@ -36,11 +40,13 @@ class ExerciseHistoryProvider with ChangeNotifier {
           sets: [...history.sets, set],
           lastWorkoutDate: DateTime.now(),
           totalSets: (history.totalSets ?? 0) + 1,
-          totalVolume:
-              (history.totalVolume ?? 0) + (set.weight * set.reps).round(),
+          totalVolume: (history.totalVolume ?? 0) +
+              set.volume.round(), // 🔧 תיקון: השתמש ב-volume property
         );
         updatedHistory.updatePersonalRecords(set);
         _exerciseHistories[exerciseId] = updatedHistory;
+
+        // המרה לפורמט הישן לשמירה
         await LocalDataStore.saveExerciseHistory(updatedHistory);
         notifyListeners();
       } else {
@@ -49,10 +55,12 @@ class ExerciseHistoryProvider with ChangeNotifier {
           sets: [set],
           lastWorkoutDate: DateTime.now(),
           totalSets: 1,
-          totalVolume: (set.weight * set.reps).round(),
+          totalVolume: set.volume.round(), // 🔧 תיקון: השתמש ב-volume property
         );
         newHistory.updatePersonalRecords(set);
         _exerciseHistories[exerciseId] = newHistory;
+
+        // המרה לפורמט הישן לשמירה
         await LocalDataStore.saveExerciseHistory(newHistory);
         notifyListeners();
       }
@@ -72,10 +80,15 @@ class ExerciseHistoryProvider with ChangeNotifier {
         final updatedHistory = history.copyWith(
           sets: updatedSets,
           lastWorkoutDate: DateTime.now(),
+          totalSets: updatedSets.length,
+          totalVolume:
+              updatedSets.fold<int>(0, (sum, set) => sum + set.volume.round()),
         );
         updatedHistory.updatePersonalRecords(set);
 
         _exerciseHistories[exerciseId] = updatedHistory;
+
+        // המרה לפורמט הישן לשמירה
         await LocalDataStore.saveExerciseHistory(updatedHistory);
         notifyListeners();
       }
@@ -96,6 +109,8 @@ class ExerciseHistoryProvider with ChangeNotifier {
         );
 
         _exerciseHistories[exerciseId] = updatedHistory;
+
+        // המרה לפורמט הישן לשמירה
         await LocalDataStore.saveExerciseHistory(updatedHistory);
         notifyListeners();
       }
@@ -117,6 +132,8 @@ class ExerciseHistoryProvider with ChangeNotifier {
         );
         updatedHistory.updatePersonalRecords(set);
         _exerciseHistories[exerciseId] = updatedHistory;
+
+        // המרה לפורמט הישן לשמירה
         await LocalDataStore.saveExerciseHistory(updatedHistory);
         notifyListeners();
       } else {
@@ -126,10 +143,12 @@ class ExerciseHistoryProvider with ChangeNotifier {
           sets: [set],
           lastWorkoutDate: DateTime.now(),
           totalSets: 1,
-          totalVolume: (set.weight * set.reps).round(),
+          totalVolume: set.volume.round(), // 🔧 תיקון: השתמש ב-volume property
         );
         newHistory.updatePersonalRecords(set);
         _exerciseHistories[exerciseId] = newHistory;
+
+        // המרה לפורמט הישן לשמירה
         await LocalDataStore.saveExerciseHistory(newHistory);
         notifyListeners();
       }
@@ -160,18 +179,21 @@ class ExerciseHistoryProvider with ChangeNotifier {
     return history.getPersonalRecord(type);
   }
 
-  List<ExerciseSet> getSetsByType(String exerciseId, String type) {
+  List<ExerciseSet> getSetsByType(String exerciseId, SetType setType) {
+    // 🔧 תיקון: הסרת async
     final history = _exerciseHistories[exerciseId];
     if (history == null) return [];
-    // For now, return all sets since setType is not implemented
-    return history.sets;
+    return history.sets
+        .where((set) => set.setType == setType)
+        .toList(); // 🔧 תיקון: השתמש ב-setType property
   }
 
   List<ExerciseSet> getSetsByWorkout(String exerciseId, String workoutId) {
     final history = _exerciseHistories[exerciseId];
     if (history == null) return [];
-    // For now, return all sets since workoutId is not implemented
-    return history.sets;
+    return history.sets
+        .where((set) => set.workoutId == workoutId)
+        .toList(); // 🔧 תיקון: השתמש ב-workoutId property
   }
 
   List<ExerciseSet> getIncompleteSets(String exerciseId) {

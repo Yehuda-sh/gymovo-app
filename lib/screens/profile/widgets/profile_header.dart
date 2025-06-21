@@ -1,8 +1,4 @@
 // lib/screens/profile/widgets/profile_header.dart
-// --------------------------------------------------
-// רכיב כותרת פרופיל עם אווטר ופרטי משתמש
-// --------------------------------------------------
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -10,24 +6,10 @@ import '../../../models/user_model.dart';
 import 'profile_avatar.dart';
 import '../../../theme/app_theme.dart';
 
-/// רכיב כותרת פרופיל עם SliverAppBar
-///
-/// תכונות:
-/// - אווטר עם אפשרות עריכה
-/// - פרטי משתמש
-/// - אנימציות חלקות
-/// - כפתור עריכה
 class ProfileHeader extends StatelessWidget {
-  /// נתוני המשתמש
   final UserModel user;
-
-  /// אנימציית scale עבור האווטר
   final Animation<double> scaleAnimation;
-
-  /// פונקציה לעריכת פרופיל
   final VoidCallback onEditProfile;
-
-  /// פונקציה לשינוי אווטר
   final VoidCallback onAvatarTap;
 
   const ProfileHeader({
@@ -40,23 +22,10 @@ class ProfileHeader extends StatelessWidget {
 
   static const double _avatarSize = 100.0;
 
-  /// מחזיר שם התצוגה של המשתמש
-  String _getDisplayName() {
-    if (user.name.isNotEmpty) return user.name;
-    return 'משתמש דמו';
-  }
-
-  /// מחזיר אימייל התצוגה של המשתמש
-  String _getDisplayEmail() {
-    if (user.email.isNotEmpty) return user.email;
-    return 'demo@gymovo.com';
-  }
-
-  /// מחזיר סטטוס המשתמש
-  String _getUserStatus() {
-    // בעתיד ניתן להוסיף לוגיקה לסטטוס דינמי
-    return 'מתאמן פעיל';
-  }
+  String get _displayName => user.name.isNotEmpty ? user.name : 'משתמש דמו';
+  String get _displayEmail =>
+      user.email.isNotEmpty ? user.email : 'demo@gymovo.com';
+  String get _userStatus => 'מתאמן פעיל'; // ניתן להרחיב לוגיקה בעתיד
 
   @override
   Widget build(BuildContext context) {
@@ -64,7 +33,6 @@ class ProfileHeader extends StatelessWidget {
 
     return SliverAppBar(
       expandedHeight: 200,
-      floating: false,
       pinned: true,
       backgroundColor: colors.primary,
       flexibleSpace: FlexibleSpaceBar(
@@ -98,17 +66,16 @@ class ProfileHeader extends StatelessWidget {
       actions: [
         IconButton(
           icon: const Icon(Icons.edit_outlined, color: Colors.white),
+          tooltip: 'ערוך פרופיל',
           onPressed: () {
             HapticFeedback.lightImpact();
             onEditProfile();
           },
-          tooltip: 'ערוך פרופיל',
         ),
       ],
     );
   }
 
-  /// בונה את האווטר עם כפתור עריכה
   Widget _buildProfileAvatar(AppColors colors) {
     return Stack(
       alignment: Alignment.bottomRight,
@@ -129,41 +96,26 @@ class ProfileHeader extends StatelessWidget {
           ),
           child: ProfileAvatar(
             user: user,
+            size: _avatarSize,
             onTap: onAvatarTap,
           ),
         ),
         Positioned(
           bottom: 4,
           right: 4,
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Material(
-              shape: const CircleBorder(),
-              color: colors.secondary,
-              child: InkWell(
-                customBorder: const CircleBorder(),
-                onTap: () {
-                  HapticFeedback.lightImpact();
-                  onAvatarTap();
-                },
-                child: const Padding(
-                  padding: EdgeInsets.all(8),
-                  child: Icon(
-                    Icons.camera_alt,
-                    size: 18,
-                    color: Colors.white,
-                  ),
-                ),
+          child: Material(
+            color: colors.secondary,
+            shape: const CircleBorder(),
+            elevation: 4,
+            child: InkWell(
+              customBorder: const CircleBorder(),
+              onTap: () {
+                HapticFeedback.lightImpact();
+                onAvatarTap();
+              },
+              child: const Padding(
+                padding: EdgeInsets.all(8),
+                child: Icon(Icons.camera_alt, size: 18, color: Colors.white),
               ),
             ),
           ),
@@ -172,12 +124,11 @@ class ProfileHeader extends StatelessWidget {
     );
   }
 
-  /// בונה את מידע המשתמש
   Widget _buildUserInfo(AppColors colors) {
     return Column(
       children: [
         Text(
-          _getDisplayName(),
+          _displayName,
           style: GoogleFonts.assistant(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -189,7 +140,7 @@ class ProfileHeader extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Text(
-          _getDisplayEmail(),
+          _displayEmail,
           style: GoogleFonts.assistant(
             fontSize: 14,
             color: Colors.white.withOpacity(0.9),
@@ -209,14 +160,10 @@ class ProfileHeader extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
-                Icons.fitness_center,
-                size: 14,
-                color: Colors.white,
-              ),
+              const Icon(Icons.fitness_center, size: 14, color: Colors.white),
               const SizedBox(width: 6),
               Text(
-                _getUserStatus(),
+                _userStatus,
                 style: GoogleFonts.assistant(
                   fontWeight: FontWeight.w600,
                   color: Colors.white,

@@ -1,3 +1,4 @@
+// lib/features/workouts/screens/workout_details/workout_details_screen.dart
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../theme/app_theme.dart';
@@ -25,14 +26,23 @@ class WorkoutDetailsScreen extends StatelessWidget {
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
+        centerTitle: true, // נוחות ויזואלית במובייל
       ),
-      body: Column(
-        children: [
-          WorkoutHeader(workout: workout),
-          Expanded(
-            child: ExerciseList(exercises: workout.exercises),
-          ),
-        ],
+      body: SafeArea(
+        child: Column(
+          children: [
+            WorkoutHeader(workout: workout),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: ExerciseList(
+                  exercises: workout.exercises,
+                  key: ValueKey(workout.id), // למקרה של עדכון דינמי
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
       bottomNavigationBar: WorkoutActions(workout: workout),
     );

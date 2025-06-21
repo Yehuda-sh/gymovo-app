@@ -13,27 +13,24 @@ class LoginDivider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final dividerColor = colors.onSurface.withOpacity(0.2);
+    final textColor = colors.onSurface.withOpacity(0.7);
 
     return Row(
       children: [
         Expanded(
-          child: Divider(
-            color: colors.onSurface.withOpacity(0.2),
-          ),
+          child: Divider(color: dividerColor),
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
             text,
-            style: GoogleFonts.assistant(
-              color: colors.onSurface.withOpacity(0.7),
-            ),
+            style: GoogleFonts.assistant(color: textColor),
+            semanticsLabel: text,
           ),
         ),
         Expanded(
-          child: Divider(
-            color: colors.onSurface.withOpacity(0.2),
-          ),
+          child: Divider(color: dividerColor),
         ),
       ],
     );

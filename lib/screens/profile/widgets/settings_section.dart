@@ -1,37 +1,16 @@
 // lib/screens/profile/widgets/settings_section.dart
-// --------------------------------------------------
-// רכיב הגדרות עם שמירה ב-SharedPreferences
-// --------------------------------------------------
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../theme/app_theme.dart';
 
-/// רכיב הגדרות המשתמש
-///
-/// תכונות:
-/// - התראות עם שמירה אוטומטית
-/// - בחירת שפה ונושא
-/// - עיצוב אחיד עם דיבידרים
-/// - נגישות מלאה
 class SettingsSection extends StatelessWidget {
-  /// מצב התראות
   final bool notificationsEnabled;
-
-  /// שפה נבחרת
   final String selectedLanguage;
-
-  /// נושא נבחר
   final String selectedTheme;
-
-  /// פונקציה לשינוי התראות
   final void Function(bool) onNotificationChanged;
-
-  /// פונקציה לפתיחת דיאלוג שפה
   final VoidCallback onLanguageTap;
-
-  /// פונקציה לפתיחת דיאלוג נושא
   final VoidCallback onThemeTap;
 
   const SettingsSection({
@@ -44,13 +23,12 @@ class SettingsSection extends StatelessWidget {
     required this.onThemeTap,
   });
 
-  /// מחזיר תיאור לשפה
   String _getLanguageDescription() {
     switch (selectedLanguage) {
       case 'עברית':
         return 'עברית (ברירת מחדל)';
       case 'English':
-        return 'English (Coming soon)';
+        return 'English (בקרוב)';
       case 'العربية':
         return 'العربية (בקרוב)';
       default:
@@ -58,7 +36,6 @@ class SettingsSection extends StatelessWidget {
     }
   }
 
-  /// מחזיר תיאור לנושא
   String _getThemeDescription() {
     switch (selectedTheme) {
       case 'בהיר':
@@ -72,7 +49,6 @@ class SettingsSection extends StatelessWidget {
     }
   }
 
-  /// מחזיר אייקון לנושא
   IconData _getThemeIcon() {
     switch (selectedTheme) {
       case 'בהיר':
@@ -135,7 +111,7 @@ class SettingsSection extends StatelessWidget {
             ),
           ),
 
-          // הגדרת התראות
+          // התראות
           _buildSettingTile(
             title: 'התראות',
             subtitle: notificationsEnabled
@@ -150,14 +126,14 @@ class SettingsSection extends StatelessWidget {
                 HapticFeedback.selectionClick();
                 onNotificationChanged(value);
               },
-              activeColor: AppTheme.colors.primary,
+              activeColor: colors.primary,
             ),
             colors: colors,
           ),
 
           _buildDivider(colors),
 
-          // הגדרת שפה
+          // שפה
           _buildSettingTile(
             title: 'שפה',
             subtitle: _getLanguageDescription(),
@@ -171,7 +147,7 @@ class SettingsSection extends StatelessWidget {
 
           _buildDivider(colors),
 
-          // הגדרת נושא
+          // נושא
           _buildSettingTile(
             title: 'נושא',
             subtitle: _getThemeDescription(),
@@ -187,7 +163,6 @@ class SettingsSection extends StatelessWidget {
     );
   }
 
-  /// בונה פריט הגדרה
   Widget _buildSettingTile({
     required String title,
     required String subtitle,
@@ -198,6 +173,9 @@ class SettingsSection extends StatelessWidget {
     Color? iconColor,
     Color? textColor,
   }) {
+    final effectiveIconColor = iconColor ?? colors.primary;
+    final effectiveTextColor = textColor ?? colors.headline;
+
     return Semantics(
       button: onTap != null,
       enabled: onTap != null,
@@ -206,12 +184,12 @@ class SettingsSection extends StatelessWidget {
         leading: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: (iconColor ?? colors.primary).withOpacity(0.1),
+            color: effectiveIconColor.withOpacity(0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(
             icon,
-            color: iconColor ?? colors.primary,
+            color: effectiveIconColor,
             size: 20,
           ),
         ),
@@ -219,7 +197,7 @@ class SettingsSection extends StatelessWidget {
           title,
           style: GoogleFonts.assistant(
             fontWeight: FontWeight.w600,
-            color: textColor ?? colors.headline,
+            color: effectiveTextColor,
             fontSize: 16,
           ),
         ),
@@ -243,7 +221,6 @@ class SettingsSection extends StatelessWidget {
     );
   }
 
-  /// בונה קו מפריד
   Widget _buildDivider(AppColors colors) {
     return Divider(
       height: 1,
